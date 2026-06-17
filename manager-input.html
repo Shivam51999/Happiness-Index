@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Pulse — Manager Input · Mangalam</title>
+<style>
+  :root {
+    --navy: #1A3F6F; --brown: #A0522D; --bg: #F5F6FA; --card: #fff;
+    --text: #1F2937; --text-soft: #6B7280; --border: #E5E7EB; --red:#B0413E;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:'Segoe UI', system-ui, sans-serif; background:var(--bg); color:var(--text); }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 28px 20px 60px; }
+  .header { text-align:center; margin-bottom: 24px; }
+  .header h1 { font-size: 20px; color: var(--navy); margin: 0 0 6px; }
+  .header p { font-size: 13px; color: var(--text-soft); margin: 0; }
+  .card { background: var(--card); border-radius: 14px; padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 16px; }
+  .identity-card { display:flex; align-items:center; gap: 12px; }
+  .identity-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--brown); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; flex-shrink:0; }
+  .identity-name { font-size: 16px; font-weight: 700; }
+  .identity-sub { font-size: 12px; color: var(--text-soft); }
+  label { display:block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+  select, textarea {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+    font-size: 14px; font-family: inherit; margin-bottom: 16px; background: #fafbfc;
+  }
+  textarea { min-height: 60px; resize: vertical; }
+  .scale-row { display:flex; gap:6px; margin-bottom: 18px; }
+  .scale-btn {
+    flex:1; padding: 10px 0; border-radius: 8px; border: 1px solid var(--border);
+    background: #fafbfc; font-size: 13px; font-weight: 600; cursor:pointer; color: var(--text-soft);
+  }
+  .scale-btn.selected { background: var(--brown); color:#fff; border-color: var(--brown); }
+  .scale-labels { display:flex; justify-content: space-between; font-size: 11px; color: var(--text-soft); margin-bottom: 18px; margin-top:-12px; }
+  .flag-row { display:flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .flag-item { display:flex; align-items:center; gap: 10px; padding: 10px 12px; border-radius:8px; border:1px solid var(--border); background:#fafbfc; cursor:pointer; }
+  .flag-item input { width: 16px; height: 16px; }
+  .flag-item span { font-size: 13px; }
+  .submit-btn {
+    width:100%; padding: 14px; border-radius: 10px; border:none; background: var(--navy);
+    color:#fff; font-size: 15px; font-weight: 700; cursor:pointer; margin-top: 8px;
+  }
+  .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+  .confirm { text-align:center; padding: 50px 20px; }
+  .confirm h2 { color: var(--navy); }
+  .error-box { text-align:center; padding: 50px 20px; }
+  .error-box h2 { color: var(--red); font-size: 18px; }
+  .error-box p { color: var(--text-soft); font-size: 13px; }
+  .progress-note { font-size: 12px; color: var(--text-soft); text-align:center; margin-bottom: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap" id="formWrap">
+  <div class="header">
+    <h1>Team Pulse — Manager Input</h1>
+    <p>Your perception of each team member's current satisfaction</p>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
+
+// Manager identity comes ONLY from the URL, e.g.
+// manager-input.html?manager=Ram%20Phuge
+// The team dropdown is built only from people whose Manager field
+// in the roster matches this name — a manager can never rate someone
+// outside their own team, and nobody can submit as a manager they aren't.
+var params = new URLSearchParams(window.location.search);
+var managerName = params.get('manager');
+
+var score = null;
+var team = [];
+var submittedIds = [];
+
+function renderError(msg) {
+  document.getElementById('content').innerHTML =
+    '<div class="card error-box"><h2>Link not recognized</h2><p>' + msg + '</p><p>Please use the personal link shared with you, or contact HR if you believe this is an error.</p></div>';
+}
+
+function initials(name) {
+  return name.split(' ').map(function(p){ return p[0]; }).join('').substring(0,2).toUpperCase();
+}
+
+function renderForm() {
+  var html = '';
+  html += '<div class="card identity-card">';
+  html += '<div class="identity-avatar">' + initials(managerName) + '</div>';
+  html += '<div><div class="identity-name">' + managerName + '</div><div class="identity-sub">Rating ' + team.length + ' team member(s)</div></div>';
+  html += '</div>';
+
+  html += '<div class="progress-note" id="progressNote"></div>';
+
+  html += '<div class="card">';
+  html += '<label for="empSelect">Team member</label>';
+  html += '<select id="empSelect"><option value="">Select team member…</option></select>';
+
+  html += '<label>How satisfied do you believe this person currently is?</label>';
+  html += '<div class="scale-row" id="scoreRow"></div>';
+  html += '<div class="scale-labels"><span>Very dissatisfied</span><span>Very satisfied</span></div>';
+
+  html += '<label>Flags (check any that apply)</label>';
+  html += '<div class="flag-row">';
+  html += '<label class="flag-item"><input type="checkbox" id="flagRisk"><span>At risk of leaving in next 3 months</span></label>';
+  html += '<label class="flag-item"><input type="checkbox" id="flagOverload"><span>Currently overloaded / burning out</span></label>';
+  html += '<label class="flag-item"><input type="checkbox" id="flagRecognition"><span>Due for recognition — doing great, underacknowledged</span></label>';
+  html += '</div>';
+
+  html += '<label>Notes (optional, kept confidential to HR/CEO)</label>';
+  html += '<textarea id="notes" placeholder="Any context worth flagging…"></textarea>';
+  html += '</div>';
+
+  html += '<button class="submit-btn" id="submitBtn" disabled>Submit</button>';
+
+  document.getElementById('content').innerHTML = html;
+
+  var sel = document.getElementById('empSelect');
+  team.forEach(function(emp) {
+    var opt = document.createElement('option');
+    opt.value = emp.ID;
+    opt.textContent = emp.Name;
+    opt.dataset.dept = emp.Department;
+    opt.dataset.name = emp.Name;
+    sel.appendChild(opt);
+  });
+
+  buildScoreRow();
+  updateProgress();
+
+  sel.addEventListener('change', checkComplete);
+  document.getElementById('submitBtn').addEventListener('click', submitOne);
+}
+
+function buildScoreRow() {
+  var row = document.getElementById('scoreRow');
+  for (var i = 1; i <= 10; i++) {
+    var btn = document.createElement('button');
+    btn.className = 'scale-btn';
+    btn.type = 'button';
+    btn.textContent = i;
+    btn.addEventListener('click', function(val) {
+      return function() {
+        score = val;
+        Array.prototype.forEach.call(row.children, function(c) { c.classList.remove('selected'); });
+        this.classList.add('selected');
+        checkComplete();
+      };
+    }(i));
+    row.appendChild(btn);
+  }
+}
+
+function updateProgress() {
+  document.getElementById('progressNote').textContent =
+    submittedIds.length + ' of ' + team.length + ' team members rated this month';
+}
+
+function checkComplete() {
+  var ok = document.getElementById('empSelect').value && score !== null;
+  document.getElementById('submitBtn').disabled = !ok;
+}
+
+function resetForNext() {
+  score = null;
+  document.querySelectorAll('#scoreRow .scale-btn').forEach(function(b){ b.classList.remove('selected'); });
+  document.getElementById('flagRisk').checked = false;
+  document.getElementById('flagOverload').checked = false;
+  document.getElementById('flagRecognition').checked = false;
+  document.getElementById('notes').value = '';
+  var sel = document.getElementById('empSelect');
+  // Remove the just-submitted person from the dropdown
+  Array.prototype.slice.call(sel.options).forEach(function(opt) {
+    if (submittedIds.indexOf(opt.value) > -1) opt.remove();
+  });
+  sel.value = '';
+  checkComplete();
+  updateProgress();
+
+  if (team.length > 0 && submittedIds.length >= team.length) {
+    document.getElementById('content').innerHTML = '<div class="card"><div class="confirm"><h2>All done ✓</h2><p>You\\'ve rated your whole team for this month. Thank you.</p></div></div>';
+  }
+}
+
+function submitOne() {
+  var sel = document.getElementById('empSelect');
+  var opt = sel.options[sel.selectedIndex];
+  var payload = {
+    action: 'submitManagerInput',
+    employeeId: sel.value,
+    employeeName: opt.dataset.name,
+    department: opt.dataset.dept,
+    managerName: managerName,
+    perceivedScore: score,
+    attritionRisk: document.getElementById('flagRisk').checked,
+    overload: document.getElementById('flagOverload').checked,
+    needsRecognition: document.getElementById('flagRecognition').checked,
+    notes: document.getElementById('notes').value
+  };
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    btn.textContent = 'Submit';
+    if (res.success) {
+      submittedIds.push(payload.employeeId);
+      resetForNext();
+    } else {
+      alert(res.error || 'Submission failed.');
+      btn.disabled = false;
+    }
+  })
+  .catch(function(err) {
+    alert('Network error: ' + err);
+    btn.disabled = false;
+    btn.textContent = 'Submit';
+  });
+}
+
+// ── Boot sequence ────────────────────────────────────────────────
+if (!managerName) {
+  renderError('No manager link parameter was found in this URL.');
+} else {
+  document.getElementById('content').innerHTML = '<div class="card"><p style="text-align:center;color:var(--text-soft);font-size:13px;">Loading…</p></div>';
+  fetch(APPS_SCRIPT_URL + '?action=roster')
+    .then(function(r) { return r.json(); })
+    .then(function(roster) {
+      team = roster.filter(function(e) { return e.Manager === managerName && e.Status === 'Active'; });
+      if (team.length === 0) {
+        renderError('No active team members found reporting to "' + managerName + '". Check the roster\\'s Manager column matches exactly.');
+      } else {
+        renderForm();
+      }
+    })
+    .catch(function(err) {
+      renderError('Could not load team data right now. Please try again shortly.');
+    });
+}
+</script>
+</body>
+</html>

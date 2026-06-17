@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mangalam Happiness Tracker</title>
+<style>
+  :root { --navy:#1A3F6F; --green:#2E7D5B; --brown:#A0522D; --bg:#F5F6FA; --text:#1F2937; --text-soft:#6B7280; --border:#E5E7EB; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:'Segoe UI', system-ui, sans-serif; background:var(--bg); color:var(--text); }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 50px 20px; }
+  h1 { font-size: 22px; color: var(--navy); text-align:center; margin-bottom: 6px; }
+  p.sub { text-align:center; color: var(--text-soft); font-size: 13px; margin-bottom: 30px; }
+  a.card {
+    display:block; background:#fff; border-radius: 14px; padding: 18px 20px; margin-bottom: 14px;
+    text-decoration:none; color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-left: 4px solid var(--navy);
+  }
+  a.card.green { border-left-color: var(--green); }
+  a.card.brown { border-left-color: var(--brown); }
+  a.card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-soft); margin-bottom: 4px; }
+  a.card .title { font-size: 16px; font-weight: 700; }
+  a.card .desc { font-size: 12.5px; color: var(--text-soft); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Mangalam Happiness Tracker</h1>
+  <p class="sub">Confidential — HR / CEO / Manager use</p>
+
+  <a class="card green" href="self-report.html">
+    <div class="label">Employees</div>
+    <div class="title">Monthly Pulse Check</div>
+    <div class="desc">Self-report your satisfaction — confidential, takes 2 minutes</div>
+  </a>
+
+  <a class="card brown" href="manager-input.html">
+    <div class="label">Managers</div>
+    <div class="title">Team Pulse — Manager Input</div>
+    <div class="desc">Your perception of each team member, plus risk flags</div>
+  </a>
+
+  <a class="card" href="dashboard.html">
+    <div class="label">HR / CEO</div>
+    <div class="title">Happiness Dashboard</div>
+    <div class="desc">Org-wide pulse, department breakdown, alerts</div>
+  </a>
+
+  <a class="card" href="generate-links.html">
+    <div class="label">HR / CEO — admin only</div>
+    <div class="title">Generate Personal Links</div>
+    <div class="desc">Produce each employee's and manager's unique link for this month</div>
+  </a>
+</div>
+</body>
+</html>

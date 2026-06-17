@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generate Links — Mangalam Happiness Tracker</title>
+<style>
+  :root { --navy:#1A3F6F; --green:#2E7D5B; --brown:#A0522D; --bg:#F5F6FA; --text:#1F2937; --text-soft:#6B7280; --border:#E5E7EB; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:'Segoe UI', system-ui, sans-serif; background:var(--bg); color:var(--text); padding: 24px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 20px; color: var(--navy); margin-bottom: 4px; }
+  p.sub { color: var(--text-soft); font-size: 13px; margin-bottom: 24px; }
+  .base-url-card { background:#fff; border-radius: 12px; padding: 16px 18px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .base-url-card label { font-size: 12px; font-weight: 600; display:block; margin-bottom: 6px; }
+  .base-url-card input { width:100%; padding: 9px 12px; border-radius: 8px; border:1px solid var(--border); font-size: 13px; }
+  table { width:100%; border-collapse: collapse; background:#fff; border-radius: 12px; overflow:hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  th { text-align:left; padding: 10px 12px; font-size: 11px; text-transform:uppercase; color:var(--text-soft); background:#FAFBFC; border-bottom: 2px solid var(--border); }
+  td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  .copy-btn { padding: 5px 10px; border-radius: 6px; border:1px solid var(--border); background:#fafbfc; font-size:11.5px; cursor:pointer; }
+  .copy-btn.copied { background: var(--green); color:#fff; border-color:var(--green); }
+  .section-label { font-size: 13px; font-weight: 700; color: var(--navy); margin: 24px 0 10px; }
+  .empty { text-align:center; color:var(--text-soft); font-size:13px; padding: 30px; }
+  .load-bar { font-size: 12.5px; color: var(--text-soft); margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Generate Personal Links</h1>
+  <p class="sub">Pulls the live roster and builds each person's unique link. Copy and send via WhatsApp/email — do not post these in a group where others can see them.</p>
+
+  <div class="base-url-card">
+    <label>GitHub Pages base URL (the folder these pages are hosted in)</label>
+    <input type="text" id="baseUrl" value="https://shivam51999.github.io/mangalam-happiness/" />
+  </div>
+
+  <div class="load-bar" id="loadBar">Loading roster…</div>
+
+  <div class="section-label">Employee self-report links</div>
+  <table id="empTable"><thead><tr><th>Name</th><th>Department</th><th>Link</th><th></th></tr></thead><tbody></tbody></table>
+
+  <div class="section-label">Manager input links</div>
+  <table id="mgrTable"><thead><tr><th>Manager</th><th>Team size</th><th>Link</th><th></th></tr></thead><tbody></tbody></table>
+</div>
+
+<script>
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
+
+function getBase() {
+  var v = document.getElementById('baseUrl').value.trim();
+  if (!v.endsWith('/')) v += '/';
+  return v;
+}
+
+function copyToClipboard(text, btn) {
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+function render(roster) {
+  var active = roster.filter(function(e) { return e.Status === 'Active'; });
+  var base = getBase();
+
+  // Employee links
+  var empBody = document.querySelector('#empTable tbody');
+  if (!active.length) {
+    empBody.innerHTML = '<tr><td colspan="4" class="empty">No active employees in roster yet.</td></tr>';
+  } else {
+    empBody.innerHTML = '';
+    active.forEach(function(e) {
+      var link = base + 'self-report.html?id=' + encodeURIComponent(e.ID);
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + e.Name + '</td><td>' + e.Department + '</td><td style="font-size:11.5px;color:#6B7280;word-break:break-all;">' + link + '</td><td><button class="copy-btn">Copy</button></td>';
+      tr.querySelector('.copy-btn').addEventListener('click', function() { copyToClipboard(link, this); });
+      empBody.appendChild(tr);
+    });
+  }
+
+  // Manager links — unique manager names from roster
+  var managers = {};
+  active.forEach(function(e) {
+    if (e.Manager) {
+      managers[e.Manager] = (managers[e.Manager] || 0) + 1;
+    }
+  });
+  var mgrBody = document.querySelector('#mgrTable tbody');
+  var mgrNames = Object.keys(managers);
+  if (!mgrNames.length) {
+    mgrBody.innerHTML = '<tr><td colspan="4" class="empty">No managers found — check the Manager column in your roster.</td></tr>';
+  } else {
+    mgrBody.innerHTML = '';
+    mgrNames.forEach(function(m) {
+      var link = base + 'manager-input.html?manager=' + encodeURIComponent(m);
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + m + '</td><td>' + managers[m] + '</td><td style="font-size:11.5px;color:#6B7280;word-break:break-all;">' + link + '</td><td><button class="copy-btn">Copy</button></td>';
+      tr.querySelector('.copy-btn').addEventListener('click', function() { copyToClipboard(link, this); });
+      mgrBody.appendChild(tr);
+    });
+  }
+}
+
+document.getElementById('baseUrl').addEventListener('input', function() {
+  if (window.__roster) render(window.__roster);
+});
+
+document.getElementById('loadBar').textContent = 'Loading roster…';
+fetch(APPS_SCRIPT_URL + '?action=roster')
+  .then(function(r) { return r.json(); })
+  .then(function(roster) {
+    window.__roster = roster;
+    document.getElementById('loadBar').textContent = roster.length + ' roster entries loaded.';
+    render(roster);
+  })
+  .catch(function(err) {
+    document.getElementById('loadBar').textContent = 'Could not load roster — check APPS_SCRIPT_URL is set correctly.';
+  });
+</script>
+</body>
+</html>

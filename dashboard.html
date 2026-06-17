@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happiness & Satisfaction — Mangalam HQ</title>
+<style>
+  :root {
+    --navy: #1A3F6F;
+    --navy-l: #2A5490;
+    --purple: #6B4FA0;
+    --purple-l: #8B6FC0;
+    --green: #2E7D5B;
+    --green-l: #E8F5EE;
+    --amber: #B8860B;
+    --amber-l: #FFF5E0;
+    --red: #B0413E;
+    --red-l: #FBE9E8;
+    --bg: #F5F6FA;
+    --card: #FFFFFF;
+    --text: #1F2937;
+    --text-soft: #6B7280;
+    --border: #E5E7EB;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+
+  .view-toggle {
+    display: flex;
+    gap: 4px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 4px;
+    width: fit-content;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .toggle-btn {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .toggle-btn.active { background: var(--purple); color: #fff; }
+
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .title-block h1 { font-size: 22px; margin: 0 0 4px; color: var(--navy); }
+  .title-block p { margin: 0; color: var(--text-soft); font-size: 13px; }
+
+  .month-select {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+  }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+  .kpi-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+  }
+  .kpi-label { font-size: 11px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+  .kpi-value { font-size: 26px; font-weight: 700; color: var(--navy); }
+  .kpi-sub { font-size: 11px; color: var(--text-soft); margin-top: 4px; }
+  .kpi-value.alert-color { color: var(--red); }
+  .kpi-value.good-color { color: var(--green); }
+
+  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+  }
+  .card h3 { font-size: 14px; margin: 0 0 14px; color: var(--navy); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; color: var(--text-soft); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 2px solid var(--border); }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #FAFBFC; }
+
+  .score-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .score-high { background: var(--green-l); color: var(--green); }
+  .score-mid { background: var(--amber-l); color: var(--amber); }
+  .score-low { background: var(--red-l); color: var(--red); }
+  .score-na { background: #F0F0F0; color: var(--text-soft); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-risk { background: var(--red-l); color: var(--red); }
+
+  .alert-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .dot-red { background: var(--red); }
+  .dot-amber { background: var(--amber); }
+  .alert-text { font-size: 12.5px; }
+  .alert-name { font-weight: 600; color: var(--text); }
+  .alert-detail { color: var(--text-soft); }
+
+  .dept-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .dept-name { font-size: 12.5px; width: 130px; flex-shrink: 0; color: var(--text); }
+  .dept-bar-track { flex: 1; height: 8px; background: #EEF0F4; border-radius: 4px; overflow: hidden; }
+  .dept-bar-fill { height: 100%; border-radius: 4px; }
+  .dept-score { font-size: 12.5px; font-weight: 700; width: 32px; text-align: right; color: var(--navy); }
+
+  .empty-state { text-align: center; padding: 30px; color: var(--text-soft); font-size: 13px; }
+
+  .legend { display: flex; gap: 16px; margin-top: 10px; font-size: 11px; color: var(--text-soft); }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  @media (max-width: 900px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="view-toggle">
+    <button class="toggle-btn" id="btnRoi">ROI View</button>
+    <button class="toggle-btn active" id="btnHappiness">Happiness View</button>
+  </div>
+
+  <div class="header-row">
+    <div class="title-block">
+      <h1>Happiness & Satisfaction Pulse</h1>
+      <p>Self-report + manager perception, blended monthly · HR/CEO/Manager view only</p>
+    </div>
+    <select class="month-select" id="monthSelect">
+      <option value="2026-06">June 2026</option>
+      <option value="2026-05">May 2026</option>
+      <option value="2026-04">April 2026</option>
+    </select>
+  </div>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Department Pulse</h3>
+      <div id="deptBars"></div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> 7.5+ Healthy</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span> 5–7.4 Watch</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span> &lt;5 At Risk</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Alerts</h3>
+      <div id="alertsList"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Employee Detail</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Department</th>
+          <th>Self-Report</th>
+          <th>Manager View</th>
+          <th>Combined</th>
+          <th>Gap</th>
+          <th>Flags</th>
+        </tr>
+      </thead>
+      <tbody id="empTableBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG — paste your deployed Apps Script Web App URL here
+// ═══════════════════════════════════════════════════════════════
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
+
+var EMPTY_DATA = {
+  orgAvgScore: null,
+  totalEmployees: 0,
+  reportedCount: 0,
+  employees: [],
+  departmentSummary: [],
+  alerts: []
+};
+
+function fetchDashboard(month) {
+  document.getElementById('kpiRow').innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Loading…</div>';
+
+  if (APPS_SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
+    document.getElementById('kpiRow').innerHTML =
+      '<div class="empty-state" style="grid-column:1/-1;">APPS_SCRIPT_URL is not set yet — open this file and replace PASTE_YOUR_WEB_APP_URL_HERE with your deployed Apps Script URL.</div>';
+    renderAll(EMPTY_DATA);
+    return;
+  }
+
+  fetch(APPS_SCRIPT_URL + '?action=dashboard&month=' + month)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) {
+        document.getElementById('kpiRow').innerHTML = '<div class="empty-state" style="grid-column:1/-1;">' + data.error + '</div>';
+        renderAll(EMPTY_DATA);
+        return;
+      }
+      renderAll(data);
+    })
+    .catch(function(err) {
+      document.getElementById('kpiRow').innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Could not reach the tracker backend. Check your network and the Apps Script deployment.</div>';
+      renderAll(EMPTY_DATA);
+    });
+}
+
+function scoreClass(score) {
+  if (score === null || score === undefined) return 'score-na';
+  if (score >= 7.5) return 'score-high';
+  if (score >= 5) return 'score-mid';
+  return 'score-low';
+}
+
+function barColor(score) {
+  if (score === null) return '#D0D3D9';
+  if (score >= 7.5) return 'var(--green)';
+  if (score >= 5) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+function renderKpis(data) {
+  var pct = data.totalEmployees ? Math.round((data.reportedCount / data.totalEmployees) * 100) : 0;
+  var atRisk = data.alerts.filter(function(a){ return a.type === 'ATTRITION_RISK'; }).length;
+  var html = '';
+  html += '<div class="kpi-card"><div class="kpi-label">Org Happiness Score</div><div class="kpi-value ' + (data.orgAvgScore < 6 ? 'alert-color' : 'good-color') + '">' + (data.orgAvgScore ?? '—') + '</div><div class="kpi-sub">out of 10, blended</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-label">Response Rate</div><div class="kpi-value">' + pct + '%</div><div class="kpi-sub">' + data.reportedCount + ' of ' + data.totalEmployees + ' reported</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-label">Attrition Risk Flags</div><div class="kpi-value ' + (atRisk > 0 ? 'alert-color' : '') + '">' + atRisk + '</div><div class="kpi-sub">flagged by managers this month</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-label">Active Alerts</div><div class="kpi-value">' + data.alerts.length + '</div><div class="kpi-sub">low score, divergence, or risk</div></div>';
+  document.getElementById('kpiRow').innerHTML = html;
+}
+
+function renderDeptBars(data) {
+  var html = '';
+  data.departmentSummary.forEach(function(d) {
+    var pct = d.avgScore !== null ? (d.avgScore / 10 * 100) : 0;
+    html += '<div class="dept-bar-row">';
+    html += '<div class="dept-name">' + d.department + '</div>';
+    html += '<div class="dept-bar-track"><div class="dept-bar-fill" style="width:' + pct + '%; background:' + barColor(d.avgScore) + '"></div></div>';
+    html += '<div class="dept-score">' + (d.avgScore ?? '—') + '</div>';
+    html += '</div>';
+  });
+  document.getElementById('deptBars').innerHTML = html;
+}
+
+function renderAlerts(data) {
+  if (!data.alerts.length) {
+    document.getElementById('alertsList').innerHTML = '<div class="empty-state">No alerts this month.</div>';
+    return;
+  }
+  var html = '';
+  data.alerts.forEach(function(a) {
+    var dotClass = a.type === 'ATTRITION_RISK' ? 'dot-red' : (a.type === 'LOW_SCORE' ? 'dot-red' : 'dot-amber');
+    html += '<div class="alert-item">';
+    html += '<div class="alert-dot ' + dotClass + '"></div>';
+    html += '<div class="alert-text"><span class="alert-name">' + a.name + '</span> · ' + a.department + '<br><span class="alert-detail">' + a.detail + '</span></div>';
+    html += '</div>';
+  });
+  document.getElementById('alertsList').innerHTML = html;
+}
+
+function renderTable(data) {
+  var html = '';
+  data.employees.forEach(function(e) {
+    html += '<tr>';
+    html += '<td>' + e.name + '</td>';
+    html += '<td>' + e.department + '</td>';
+    html += '<td>' + (e.selfReport ? '<span class="score-pill ' + scoreClass(e.combinedScore) + '">✓</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+    html += '<td>' + (e.managerInput ? '<span class="score-pill ' + scoreClass(e.managerInput.Perceived_Satisfaction_Score) + '">' + e.managerInput.Perceived_Satisfaction_Score + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+    html += '<td><span class="score-pill ' + scoreClass(e.combinedScore) + '">' + (e.combinedScore ?? '—') + '</span></td>';
+    html += '<td>' + (e.divergence !== null ? (e.divergence > 0 ? '+' : '') + e.divergence : '—') + '</td>';
+    html += '<td>' + (e.attritionRisk ? '<span class="badge badge-risk">At Risk</span>' : '') + '</td>';
+    html += '</tr>';
+  });
+  document.getElementById('empTableBody').innerHTML = html || '<tr><td colspan="7" class="empty-state">No data for this month yet.</td></tr>';
+}
+
+function renderAll(data) {
+  renderKpis(data);
+  renderDeptBars(data);
+  renderAlerts(data);
+  renderTable(data);
+}
+
+fetchDashboard(document.getElementById('monthSelect').value);
+
+document.getElementById('monthSelect').addEventListener('change', function() {
+  fetchDashboard(this.value);
+});
+
+document.getElementById('btnRoi').addEventListener('click', function() {
+  alert('In the live HQ build, this switches back to the existing ROI View without reloading the page.');
+});
+</script>
+</body>
+</html>

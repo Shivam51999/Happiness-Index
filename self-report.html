@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monthly Pulse — Mangalam</title>
+<style>
+  :root {
+    --navy: #1A3F6F; --green: #2E7D5B; --bg: #F5F6FA; --card: #fff;
+    --text: #1F2937; --text-soft: #6B7280; --border: #E5E7EB; --red:#B0413E;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:'Segoe UI', system-ui, sans-serif; background:var(--bg); color:var(--text); }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 28px 20px 60px; }
+  .header { text-align:center; margin-bottom: 24px; }
+  .header h1 { font-size: 20px; color: var(--navy); margin: 0 0 6px; }
+  .header p { font-size: 13px; color: var(--text-soft); margin: 0; }
+  .card { background: var(--card); border-radius: 14px; padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 16px; }
+  .identity-card { display:flex; align-items:center; gap: 12px; }
+  .identity-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--navy); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; flex-shrink:0; }
+  .identity-name { font-size: 16px; font-weight: 700; }
+  .identity-dept { font-size: 12px; color: var(--text-soft); }
+  label { display:block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+  textarea {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+    font-size: 14px; font-family: inherit; margin-bottom: 0; background: #fafbfc; min-height: 70px; resize: vertical;
+  }
+  .scale-row { display:flex; gap:6px; margin-bottom: 18px; }
+  .scale-btn {
+    flex:1; padding: 10px 0; border-radius: 8px; border: 1px solid var(--border);
+    background: #fafbfc; font-size: 13px; font-weight: 600; cursor:pointer; color: var(--text-soft);
+    transition: all 0.1s;
+  }
+  .scale-btn.selected { background: var(--navy); color:#fff; border-color: var(--navy); }
+  .scale-labels { display:flex; justify-content: space-between; font-size: 11px; color: var(--text-soft); margin-bottom: 18px; margin-top:-12px; }
+  .submit-btn {
+    width:100%; padding: 14px; border-radius: 10px; border:none; background: var(--green);
+    color:#fff; font-size: 15px; font-weight: 700; cursor:pointer; margin-top: 8px;
+  }
+  .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+  .confirm { text-align:center; padding: 50px 20px; }
+  .confirm h2 { color: var(--green); }
+  .privacy-note { font-size: 11.5px; color: var(--text-soft); text-align:center; margin-top: 14px; line-height: 1.5; }
+  .error-box { text-align:center; padding: 50px 20px; }
+  .error-box h2 { color: var(--red); font-size: 18px; }
+  .error-box p { color: var(--text-soft); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap" id="formWrap">
+  <div class="header">
+    <h1>Monthly Pulse Check</h1>
+    <p>Mangalam · Confidential, viewed only by HR & CEO</p>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
+
+// Identity comes ONLY from the URL, e.g. self-report.html?id=EMP_0042
+// This is what closes the "anyone can pick any name" hole — there is
+// no dropdown of names anywhere on this page.
+var params = new URLSearchParams(window.location.search);
+var employeeId = params.get('id');
+
+var answers = { workload: null, managerSupport: null, growth: null, recognition: null, workEnvironment: null, compensation: null, enps: null };
+var currentEmployee = null;
+
+function initials(name) {
+  return name.split(' ').map(function(p){ return p[0]; }).join('').substring(0,2).toUpperCase();
+}
+
+function renderError(msg) {
+  document.getElementById('content').innerHTML =
+    '<div class="card error-box"><h2>Link not recognized</h2><p>' + msg + '</p><p>Please use the personal link shared with you, or contact HR if you believe this is an error.</p></div>';
+}
+
+function renderForm(emp) {
+  currentEmployee = emp;
+  var html = '';
+
+  html += '<div class="card identity-card">';
+  html += '<div class="identity-avatar">' + initials(emp.Name) + '</div>';
+  html += '<div><div class="identity-name">' + emp.Name + '</div><div class="identity-dept">' + emp.Department + ' · ' + emp.Designation + '</div></div>';
+  html += '</div>';
+
+  html += '<div class="card">';
+  var questions = [
+    ['workload', 'How manageable is your current workload?', 'Overwhelming', 'Very manageable'],
+    ['managerSupport', 'How supported do you feel by your manager?', 'Not supported', 'Fully supported'],
+    ['growth', 'How much are you growing / learning in this role?', 'Stagnant', 'Growing fast'],
+    ['recognition', 'Do you feel recognized for your work?', 'Unrecognized', 'Well recognized'],
+    ['workEnvironment', 'How is your day-to-day work environment?', 'Poor', 'Excellent'],
+    ['compensation', 'How fairly do you feel compensated?', 'Unfair', 'Very fair'],
+    ['enps', 'How likely are you to recommend Mangalam as a place to work?', 'Not at all', 'Extremely likely']
+  ];
+  questions.forEach(function(q) {
+    html += '<label>' + q[1] + '</label>';
+    html += '<div class="scale-row" data-q="' + q[0] + '"></div>';
+    html += '<div class="scale-labels"><span>' + q[2] + '</span><span>' + q[3] + '</span></div>';
+  });
+  html += '</div>';
+
+  html += '<div class="card"><label>Anything you\\'d like to share? (optional)</label><textarea id="comments" placeholder="Open feedback, concerns, suggestions…"></textarea></div>';
+
+  html += '<button class="submit-btn" id="submitBtn" disabled>Submit Pulse Check</button>';
+  html += '<div class="privacy-note">Your individual responses are visible only to HR and the CEO — not to peers, and not shown back to managers under your name. Be honest; this is how things actually improve.</div>';
+
+  document.getElementById('content').innerHTML = html;
+
+  document.querySelectorAll('.scale-row').forEach(function(row) {
+    buildScaleRow(row, row.getAttribute('data-q'));
+  });
+  document.getElementById('submitBtn').addEventListener('click', submitForm);
+}
+
+function buildScaleRow(container, q) {
+  for (var i = 1; i <= 10; i++) {
+    var btn = document.createElement('button');
+    btn.className = 'scale-btn';
+    btn.type = 'button';
+    btn.textContent = i;
+    btn.addEventListener('click', function(val, q) {
+      return function() {
+        answers[q] = val;
+        var row = document.querySelector('.scale-row[data-q="' + q + '"]');
+        Array.prototype.forEach.call(row.children, function(c) { c.classList.remove('selected'); });
+        this.classList.add('selected');
+        checkComplete();
+      };
+    }(i, q));
+    container.appendChild(btn);
+  }
+}
+
+function checkComplete() {
+  var allAnswered = Object.keys(answers).every(function(k) { return answers[k] !== null; });
+  document.getElementById('submitBtn').disabled = !allAnswered;
+}
+
+function submitForm() {
+  var payload = {
+    action: 'submitSelfReport',
+    employeeId: currentEmployee.ID,
+    employeeName: currentEmployee.Name,
+    department: currentEmployee.Department,
+    workload: answers.workload,
+    managerSupport: answers.managerSupport,
+    growth: answers.growth,
+    recognition: answers.recognition,
+    workEnvironment: answers.workEnvironment,
+    compensation: answers.compensation,
+    enps: answers.enps,
+    comments: document.getElementById('comments').value
+  };
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      document.getElementById('content').innerHTML = '<div class="card"><div class="confirm"><h2>Thank you ✓</h2><p>Your pulse check has been recorded confidentially.</p></div></div>';
+    } else {
+      alert(res.error || 'Submission failed. Please try again.');
+      btn.disabled = false;
+      btn.textContent = 'Submit Pulse Check';
+    }
+  })
+  .catch(function(err) {
+    alert('Network error: ' + err);
+    btn.disabled = false;
+    btn.textContent = 'Submit Pulse Check';
+  });
+}
+
+// ── Boot sequence ────────────────────────────────────────────────
+if (!employeeId) {
+  renderError('No employee link ID was found in this URL.');
+} else {
+  document.getElementById('content').innerHTML = '<div class="card"><p style="text-align:center;color:var(--text-soft);font-size:13px;">Loading…</p></div>';
+  fetch(APPS_SCRIPT_URL + '?action=roster')
+    .then(function(r) { return r.json(); })
+    .then(function(roster) {
+      var emp = roster.find(function(e) { return e.ID === employeeId && e.Status === 'Active'; });
+      if (!emp) {
+        renderError('We couldn\\'t match this link to an active employee record.');
+      } else {
+        renderForm(emp);
+      }
+    })
+    .catch(function(err) {
+      renderError('Could not load employee data right now. Please try again shortly.');
+    });
+}
+</script>
+</body>
+</html>
