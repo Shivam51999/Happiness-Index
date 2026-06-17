@@ -45,6 +45,7 @@
 
 <script>
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
+var ACCESS_TOKEN = 'e6a7c4f500c089c9fc85f33f1657b49bf20f58ba054ffd53';
 
 function getBase() {
   var v = document.getElementById('baseUrl').value.trim();
@@ -107,7 +108,7 @@ document.getElementById('baseUrl').addEventListener('input', function() {
 });
 
 document.getElementById('loadBar').textContent = 'Loading roster…';
-fetch(APPS_SCRIPT_URL + '?action=roster')
+fetch(APPS_SCRIPT_URL + '?action=roster&token=' + encodeURIComponent(ACCESS_TOKEN))
   .then(function(r) { return r.json(); })
   .then(function(roster) {
     window.__roster = roster;
