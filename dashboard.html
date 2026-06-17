@@ -225,6 +225,7 @@
 // CONFIG — paste your deployed Apps Script Web App URL here
 // ═══════════════════════════════════════════════════════════════
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
+var ACCESS_TOKEN = 'e6a7c4f500c089c9fc85f33f1657b49bf20f58ba054ffd53';
 
 var EMPTY_DATA = {
   orgAvgScore: null,
@@ -245,7 +246,7 @@ function fetchDashboard(month) {
     return;
   }
 
-  fetch(APPS_SCRIPT_URL + '?action=dashboard&month=' + month)
+  fetch(APPS_SCRIPT_URL + '?action=dashboard&month=' + month + '&token=' + encodeURIComponent(ACCESS_TOKEN))
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.error) {
