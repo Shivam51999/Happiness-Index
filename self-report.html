@@ -21,15 +21,23 @@
   .identity-name { font-size: 16px; font-weight: 700; }
   .identity-dept { font-size: 12px; color: var(--text-soft); }
   label { display:block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
-  textarea {
+  input[type=email], textarea {
     width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
-    font-size: 14px; font-family: inherit; margin-bottom: 0; background: #fafbfc; min-height: 70px; resize: vertical;
+    font-size: 14px; font-family: inherit; margin-bottom: 0; background: #fafbfc;
   }
-  .scale-row { display:flex; gap:6px; margin-bottom: 18px; }
+  textarea { min-height: 70px; resize: vertical; }
+  .email-row { display:flex; gap: 8px; }
+  .email-row input { flex:1; }
+  .email-row button {
+    padding: 0 18px; border-radius: 8px; border:none; background: var(--navy); color:#fff;
+    font-size: 13px; font-weight:700; cursor:pointer;
+  }
+  .email-row button:disabled { background:#ccc; cursor:not-allowed; }
+  .field-error { color: var(--red); font-size: 12px; margin-top: 8px; }
+  .scale-row { display:flex; gap:6px; margin-bottom: 18px; margin-top: 14px; }
   .scale-btn {
     flex:1; padding: 10px 0; border-radius: 8px; border: 1px solid var(--border);
     background: #fafbfc; font-size: 13px; font-weight: 600; cursor:pointer; color: var(--text-soft);
-    transition: all 0.1s;
   }
   .scale-btn.selected { background: var(--navy); color:#fff; border-color: var(--navy); }
   .scale-labels { display:flex; justify-content: space-between; font-size: 11px; color: var(--text-soft); margin-bottom: 18px; margin-top:-12px; }
@@ -41,9 +49,9 @@
   .confirm { text-align:center; padding: 50px 20px; }
   .confirm h2 { color: var(--green); }
   .privacy-note { font-size: 11.5px; color: var(--text-soft); text-align:center; margin-top: 14px; line-height: 1.5; }
-  .error-box { text-align:center; padding: 50px 20px; }
-  .error-box h2 { color: var(--red); font-size: 18px; }
-  .error-box p { color: var(--text-soft); font-size: 13px; }
+  .closed-box { text-align:center; padding: 50px 20px; }
+  .closed-box h2 { color: var(--red); font-size: 18px; margin-bottom: 10px; }
+  .closed-box p { color: var(--text-soft); font-size: 13px; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -60,12 +68,7 @@
 // CONFIG
 // ═══════════════════════════════════════════════════════════════
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
-
-// Identity comes ONLY from the URL, e.g. self-report.html?id=EMP_0042
-// This is what closes the "anyone can pick any name" hole — there is
-// no dropdown of names anywhere on this page.
-var params = new URLSearchParams(window.location.search);
-var employeeId = params.get('id');
+var ACCESS_TOKEN = 'e6a7c4f500c089c9fc85f33f1657b49bf20f58ba054ffd53';
 
 var answers = { workload: null, managerSupport: null, growth: null, recognition: null, workEnvironment: null, compensation: null, enps: null };
 var currentEmployee = null;
@@ -74,9 +77,54 @@ function initials(name) {
   return name.split(' ').map(function(p){ return p[0]; }).join('').substring(0,2).toUpperCase();
 }
 
-function renderError(msg) {
+function renderClosed() {
   document.getElementById('content').innerHTML =
-    '<div class="card error-box"><h2>Link not recognized</h2><p>' + msg + '</p><p>Please use the personal link shared with you, or contact HR if you believe this is an error.</p></div>';
+    '<div class="card closed-box"><h2>Happy review of this month is closed</h2>' +
+    '<p>The monthly pulse check is open only on the 1st and 2nd of each month. ' +
+    'Please come back during that window next month.</p></div>';
+}
+
+function renderEmailGate() {
+  var html = '';
+  html += '<div class="card">';
+  html += '<label for="emailInput">Enter your registered email</label>';
+  html += '<div class="email-row"><input type="email" id="emailInput" placeholder="you@example.com"><button id="verifyBtn">Continue</button></div>';
+  html += '<div class="field-error" id="emailError"></div>';
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+
+  document.getElementById('verifyBtn').addEventListener('click', verifyEmail);
+  document.getElementById('emailInput').addEventListener('keydown', function(ev) {
+    if (ev.key === 'Enter') verifyEmail();
+  });
+}
+
+function verifyEmail() {
+  var email = document.getElementById('emailInput').value.trim();
+  var errBox = document.getElementById('emailError');
+  errBox.textContent = '';
+  if (!email) { errBox.textContent = 'Please enter your email.'; return; }
+
+  var btn = document.getElementById('verifyBtn');
+  btn.disabled = true;
+  btn.textContent = 'Checking…';
+
+  fetch(APPS_SCRIPT_URL + '?action=lookupEmployee&email=' + encodeURIComponent(email) + '&token=' + encodeURIComponent(ACCESS_TOKEN))
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      btn.disabled = false;
+      btn.textContent = 'Continue';
+      if (!res.found) {
+        errBox.textContent = res.error || 'Email not recognized.';
+        return;
+      }
+      renderForm(res.employee);
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.textContent = 'Continue';
+      errBox.textContent = 'Could not verify right now. Please try again.';
+    });
 }
 
 function renderForm(emp) {
@@ -145,6 +193,7 @@ function checkComplete() {
 function submitForm() {
   var payload = {
     action: 'submitSelfReport',
+    token: ACCESS_TOKEN,
     employeeId: currentEmployee.ID,
     employeeName: currentEmployee.Name,
     department: currentEmployee.Department,
@@ -171,8 +220,10 @@ function submitForm() {
   .then(function(res) {
     if (res.success) {
       document.getElementById('content').innerHTML = '<div class="card"><div class="confirm"><h2>Thank you ✓</h2><p>Your pulse check has been recorded confidentially.</p></div></div>';
+    } else if (res.error === 'WINDOW_CLOSED') {
+      renderClosed();
     } else {
-      alert(res.error || 'Submission failed. Please try again.');
+      alert(res.error || res.message || 'Submission failed. Please try again.');
       btn.disabled = false;
       btn.textContent = 'Submit Pulse Check';
     }
@@ -185,24 +236,21 @@ function submitForm() {
 }
 
 // ── Boot sequence ────────────────────────────────────────────────
-if (!employeeId) {
-  renderError('No employee link ID was found in this URL.');
-} else {
-  document.getElementById('content').innerHTML = '<div class="card"><p style="text-align:center;color:var(--text-soft);font-size:13px;">Loading…</p></div>';
-  fetch(APPS_SCRIPT_URL + '?action=roster')
-    .then(function(r) { return r.json(); })
-    .then(function(roster) {
-      var emp = roster.find(function(e) { return e.ID === employeeId && e.Status === 'Active'; });
-      if (!emp) {
-        renderError('We couldn' + "'" + 't match this link to an active employee record.');
-      } else {
-        renderForm(emp);
-      }
-    })
-    .catch(function(err) {
-      renderError('Could not load employee data right now. Please try again shortly.');
-    });
-}
+document.getElementById('content').innerHTML = '<div class="card"><p style="text-align:center;color:var(--text-soft);font-size:13px;">Loading…</p></div>';
+fetch(APPS_SCRIPT_URL + '?action=windowStatus&token=' + encodeURIComponent(ACCESS_TOKEN))
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (!res.open) {
+      renderClosed();
+    } else {
+      renderEmailGate();
+    }
+  })
+  .catch(function() {
+    // If the status check itself fails, fall through to the email gate —
+    // the backend will still enforce the window on actual submit.
+    renderEmailGate();
+  });
 </script>
 </body>
 </html>
