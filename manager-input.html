@@ -178,7 +178,7 @@ function resetForNext() {
   updateProgress();
 
   if (team.length > 0 && submittedIds.length >= team.length) {
-    document.getElementById('content').innerHTML = '<div class="card"><div class="confirm"><h2>All done ✓</h2><p>You\\'ve rated your whole team for this month. Thank you.</p></div></div>';
+    document.getElementById('content').innerHTML = '<div class="card"><div class="confirm"><h2>All done ✓</h2><p>You' + "'" + 've rated your whole team for this month. Thank you.</p></div></div>';
   }
 }
 
@@ -235,7 +235,7 @@ if (!managerName) {
     .then(function(roster) {
       team = roster.filter(function(e) { return e.Manager === managerName && e.Status === 'Active'; });
       if (team.length === 0) {
-        renderError('No active team members found reporting to "' + managerName + '". Check the roster\\'s Manager column matches exactly.');
+        renderError('No active team members found reporting to "' + managerName + '". Check the roster' + "'" + 's Manager column matches exactly.');
       } else {
         renderForm();
       }
