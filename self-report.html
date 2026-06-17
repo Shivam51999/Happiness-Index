@@ -105,7 +105,7 @@ function renderForm(emp) {
   });
   html += '</div>';
 
-  html += '<div class="card"><label>Anything you\\'d like to share? (optional)</label><textarea id="comments" placeholder="Open feedback, concerns, suggestions…"></textarea></div>';
+  html += '<div class="card"><label>Anything you' + "'" + 'd like to share? (optional)</label><textarea id="comments" placeholder="Open feedback, concerns, suggestions…"></textarea></div>';
 
   html += '<button class="submit-btn" id="submitBtn" disabled>Submit Pulse Check</button>';
   html += '<div class="privacy-note">Your individual responses are visible only to HR and the CEO — not to peers, and not shown back to managers under your name. Be honest; this is how things actually improve.</div>';
@@ -194,7 +194,7 @@ if (!employeeId) {
     .then(function(roster) {
       var emp = roster.find(function(e) { return e.ID === employeeId && e.Status === 'Active'; });
       if (!emp) {
-        renderError('We couldn\\'t match this link to an active employee record.');
+        renderError('We couldn' + "'" + 't match this link to an active employee record.');
       } else {
         renderForm(emp);
       }
