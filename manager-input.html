@@ -21,19 +21,27 @@
   .identity-name { font-size: 16px; font-weight: 700; }
   .identity-sub { font-size: 12px; color: var(--text-soft); }
   label { display:block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
-  select, textarea {
+  select, textarea, input[type=email] {
     width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
-    font-size: 14px; font-family: inherit; margin-bottom: 16px; background: #fafbfc;
+    font-size: 14px; font-family: inherit; margin-bottom: 0; background: #fafbfc;
   }
-  textarea { min-height: 60px; resize: vertical; }
-  .scale-row { display:flex; gap:6px; margin-bottom: 18px; }
+  textarea { min-height: 60px; resize: vertical; margin-top: 14px; }
+  .email-row { display:flex; gap: 8px; }
+  .email-row input { flex:1; }
+  .email-row button {
+    padding: 0 18px; border-radius: 8px; border:none; background: var(--navy); color:#fff;
+    font-size: 13px; font-weight:700; cursor:pointer;
+  }
+  .email-row button:disabled { background:#ccc; cursor:not-allowed; }
+  .field-error { color: var(--red); font-size: 12px; margin-top: 8px; }
+  .scale-row { display:flex; gap:6px; margin-bottom: 18px; margin-top: 14px; }
   .scale-btn {
     flex:1; padding: 10px 0; border-radius: 8px; border: 1px solid var(--border);
     background: #fafbfc; font-size: 13px; font-weight: 600; cursor:pointer; color: var(--text-soft);
   }
   .scale-btn.selected { background: var(--brown); color:#fff; border-color: var(--brown); }
   .scale-labels { display:flex; justify-content: space-between; font-size: 11px; color: var(--text-soft); margin-bottom: 18px; margin-top:-12px; }
-  .flag-row { display:flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .flag-row { display:flex; flex-direction: column; gap: 10px; margin-bottom: 16px; margin-top: 14px; }
   .flag-item { display:flex; align-items:center; gap: 10px; padding: 10px 12px; border-radius:8px; border:1px solid var(--border); background:#fafbfc; cursor:pointer; }
   .flag-item input { width: 16px; height: 16px; }
   .flag-item span { font-size: 13px; }
@@ -44,9 +52,9 @@
   .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
   .confirm { text-align:center; padding: 50px 20px; }
   .confirm h2 { color: var(--navy); }
-  .error-box { text-align:center; padding: 50px 20px; }
-  .error-box h2 { color: var(--red); font-size: 18px; }
-  .error-box p { color: var(--text-soft); font-size: 13px; }
+  .closed-box { text-align:center; padding: 50px 20px; }
+  .closed-box h2 { color: var(--red); font-size: 18px; margin-bottom: 10px; }
+  .closed-box p { color: var(--text-soft); font-size: 13px; line-height: 1.5; }
   .progress-note { font-size: 12px; color: var(--text-soft); text-align:center; margin-bottom: 14px; }
 </style>
 </head>
@@ -61,33 +69,74 @@
 
 <script>
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
-
-// Manager identity comes ONLY from the URL, e.g.
-// manager-input.html?manager=Ram%20Phuge
-// The team dropdown is built only from people whose Manager field
-// in the roster matches this name — a manager can never rate someone
-// outside their own team, and nobody can submit as a manager they aren't.
-var params = new URLSearchParams(window.location.search);
-var managerName = params.get('manager');
+var ACCESS_TOKEN = 'e6a7c4f500c089c9fc85f33f1657b49bf20f58ba054ffd53';
 
 var score = null;
 var team = [];
 var submittedIds = [];
-
-function renderError(msg) {
-  document.getElementById('content').innerHTML =
-    '<div class="card error-box"><h2>Link not recognized</h2><p>' + msg + '</p><p>Please use the personal link shared with you, or contact HR if you believe this is an error.</p></div>';
-}
+var currentManagerName = '';
 
 function initials(name) {
   return name.split(' ').map(function(p){ return p[0]; }).join('').substring(0,2).toUpperCase();
 }
 
+function renderClosed() {
+  document.getElementById('content').innerHTML =
+    '<div class="card closed-box"><h2>Happy review of this month is closed</h2>' +
+    '<p>The monthly pulse check is open only on the 1st and 2nd of each month. ' +
+    'Please come back during that window next month.</p></div>';
+}
+
+function renderEmailGate() {
+  var html = '';
+  html += '<div class="card">';
+  html += '<label for="emailInput">Enter your registered email</label>';
+  html += '<div class="email-row"><input type="email" id="emailInput" placeholder="you@example.com"><button id="verifyBtn">Continue</button></div>';
+  html += '<div class="field-error" id="emailError"></div>';
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+
+  document.getElementById('verifyBtn').addEventListener('click', verifyEmail);
+  document.getElementById('emailInput').addEventListener('keydown', function(ev) {
+    if (ev.key === 'Enter') verifyEmail();
+  });
+}
+
+function verifyEmail() {
+  var email = document.getElementById('emailInput').value.trim();
+  var errBox = document.getElementById('emailError');
+  errBox.textContent = '';
+  if (!email) { errBox.textContent = 'Please enter your email.'; return; }
+
+  var btn = document.getElementById('verifyBtn');
+  btn.disabled = true;
+  btn.textContent = 'Checking…';
+
+  fetch(APPS_SCRIPT_URL + '?action=lookupManager&email=' + encodeURIComponent(email) + '&token=' + encodeURIComponent(ACCESS_TOKEN))
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      btn.disabled = false;
+      btn.textContent = 'Continue';
+      if (!res.found) {
+        errBox.textContent = res.error || 'Email not recognized.';
+        return;
+      }
+      currentManagerName = res.manager.Name;
+      team = res.team;
+      renderForm();
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.textContent = 'Continue';
+      errBox.textContent = 'Could not verify right now. Please try again.';
+    });
+}
+
 function renderForm() {
   var html = '';
   html += '<div class="card identity-card">';
-  html += '<div class="identity-avatar">' + initials(managerName) + '</div>';
-  html += '<div><div class="identity-name">' + managerName + '</div><div class="identity-sub">Rating ' + team.length + ' team member(s)</div></div>';
+  html += '<div class="identity-avatar">' + initials(currentManagerName) + '</div>';
+  html += '<div><div class="identity-name">' + currentManagerName + '</div><div class="identity-sub">Rating ' + team.length + ' team member(s)</div></div>';
   html += '</div>';
 
   html += '<div class="progress-note" id="progressNote"></div>';
@@ -96,7 +145,7 @@ function renderForm() {
   html += '<label for="empSelect">Team member</label>';
   html += '<select id="empSelect"><option value="">Select team member…</option></select>';
 
-  html += '<label>How satisfied do you believe this person currently is?</label>';
+  html += '<label style="margin-top:14px;">How satisfied do you believe this person currently is?</label>';
   html += '<div class="scale-row" id="scoreRow"></div>';
   html += '<div class="scale-labels"><span>Very dissatisfied</span><span>Very satisfied</span></div>';
 
@@ -169,7 +218,6 @@ function resetForNext() {
   document.getElementById('flagRecognition').checked = false;
   document.getElementById('notes').value = '';
   var sel = document.getElementById('empSelect');
-  // Remove the just-submitted person from the dropdown
   Array.prototype.slice.call(sel.options).forEach(function(opt) {
     if (submittedIds.indexOf(opt.value) > -1) opt.remove();
   });
@@ -187,10 +235,11 @@ function submitOne() {
   var opt = sel.options[sel.selectedIndex];
   var payload = {
     action: 'submitManagerInput',
+    token: ACCESS_TOKEN,
     employeeId: sel.value,
     employeeName: opt.dataset.name,
     department: opt.dataset.dept,
-    managerName: managerName,
+    managerName: currentManagerName,
     perceivedScore: score,
     attritionRisk: document.getElementById('flagRisk').checked,
     overload: document.getElementById('flagOverload').checked,
@@ -213,8 +262,10 @@ function submitOne() {
     if (res.success) {
       submittedIds.push(payload.employeeId);
       resetForNext();
+    } else if (res.error === 'WINDOW_CLOSED') {
+      renderClosed();
     } else {
-      alert(res.error || 'Submission failed.');
+      alert(res.error || res.message || 'Submission failed.');
       btn.disabled = false;
     }
   })
@@ -226,24 +277,19 @@ function submitOne() {
 }
 
 // ── Boot sequence ────────────────────────────────────────────────
-if (!managerName) {
-  renderError('No manager link parameter was found in this URL.');
-} else {
-  document.getElementById('content').innerHTML = '<div class="card"><p style="text-align:center;color:var(--text-soft);font-size:13px;">Loading…</p></div>';
-  fetch(APPS_SCRIPT_URL + '?action=roster')
-    .then(function(r) { return r.json(); })
-    .then(function(roster) {
-      team = roster.filter(function(e) { return e.Manager === managerName && e.Status === 'Active'; });
-      if (team.length === 0) {
-        renderError('No active team members found reporting to "' + managerName + '". Check the roster' + "'" + 's Manager column matches exactly.');
-      } else {
-        renderForm();
-      }
-    })
-    .catch(function(err) {
-      renderError('Could not load team data right now. Please try again shortly.');
-    });
-}
+document.getElementById('content').innerHTML = '<div class="card"><p style="text-align:center;color:var(--text-soft);font-size:13px;">Loading…</p></div>';
+fetch(APPS_SCRIPT_URL + '?action=windowStatus&token=' + encodeURIComponent(ACCESS_TOKEN))
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (!res.open) {
+      renderClosed();
+    } else {
+      renderEmailGate();
+    }
+  })
+  .catch(function() {
+    renderEmailGate();
+  });
 </script>
 </body>
 </html>
