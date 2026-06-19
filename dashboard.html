@@ -152,6 +152,20 @@
 
   .empty-state { text-align: center; padding: 30px; color: var(--text-soft); font-size: 13px; }
 
+  .divergence-item { display:flex; justify-content:space-between; align-items:center; padding: 9px 0; border-bottom:1px solid var(--border); font-size: 12.5px; }
+  .divergence-item:last-child { border-bottom:none; }
+  .divergence-name { font-weight:600; color:var(--text); }
+  .divergence-dept { color:var(--text-soft); font-size:11.5px; }
+  .divergence-gap { font-weight:700; padding:2px 9px; border-radius:6px; font-size:12px; }
+  .gap-pos { background: var(--red-l); color: var(--red); }
+  .gap-neg { background: var(--amber-l); color: var(--amber); }
+
+  .dimension-block { margin-bottom: 14px; }
+  .dimension-block:last-child { margin-bottom: 0; }
+  .dimension-dept-name { font-size: 12.5px; font-weight:700; color:var(--navy); margin-bottom: 4px; }
+  .dimension-weak { font-size: 12px; color: var(--text); }
+  .dimension-weak .dim-score { font-weight:700; color: var(--red); }
+
   .legend { display: flex; gap: 16px; margin-top: 10px; font-size: 11px; color: var(--text-soft); }
   .legend-item { display: flex; align-items: center; gap: 5px; }
   .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
@@ -197,6 +211,19 @@
     <div class="card">
       <h3>Alerts</h3>
       <div id="alertsList"></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Perception Gaps — Manager vs. Self</h3>
+      <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 12px;">Largest gaps between what employees report and what managers perceive. Positive = employee feels worse than manager thinks; negative = manager underestimates them.</p>
+      <div id="divergenceList"></div>
+    </div>
+    <div class="card">
+      <h3>Weakest Dimension by Department</h3>
+      <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 12px;">Average self-report score per dimension, lowest-scoring dimension highlighted per department.</p>
+      <div id="dimensionList"></div>
     </div>
   </div>
 
@@ -316,13 +343,25 @@ function renderAlerts(data) {
   document.getElementById('alertsList').innerHTML = html;
 }
 
+function selfReportAvg(selfRow) {
+  if (!selfRow) return null;
+  var dims = [
+    Number(selfRow.Workload_Score), Number(selfRow.Manager_Support_Score),
+    Number(selfRow.Growth_Score), Number(selfRow.Recognition_Score),
+    Number(selfRow.Work_Environment_Score), Number(selfRow.Compensation_Fairness_Score)
+  ];
+  var avg = dims.reduce(function(a, b) { return a + b; }, 0) / dims.length;
+  return Math.round(avg * 10) / 10;
+}
+
 function renderTable(data) {
   var html = '';
   data.employees.forEach(function(e) {
+    var selfAvg = selfReportAvg(e.selfReport);
     html += '<tr>';
     html += '<td>' + e.name + '</td>';
     html += '<td>' + e.department + '</td>';
-    html += '<td>' + (e.selfReport ? '<span class="score-pill ' + scoreClass(e.combinedScore) + '">✓</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+    html += '<td>' + (selfAvg !== null ? '<span class="score-pill ' + scoreClass(selfAvg) + '">' + selfAvg + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
     html += '<td>' + (e.managerInput ? '<span class="score-pill ' + scoreClass(e.managerInput.Perceived_Satisfaction_Score) + '">' + e.managerInput.Perceived_Satisfaction_Score + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
     html += '<td><span class="score-pill ' + scoreClass(e.combinedScore) + '">' + (e.combinedScore ?? '—') + '</span></td>';
     html += '<td>' + (e.divergence !== null ? (e.divergence > 0 ? '+' : '') + e.divergence : '—') + '</td>';
@@ -332,11 +371,81 @@ function renderTable(data) {
   document.getElementById('empTableBody').innerHTML = html || '<tr><td colspan="7" class="empty-state">No data for this month yet.</td></tr>';
 }
 
+var DIMENSION_LABELS = {
+  Workload_Score: 'Workload',
+  Manager_Support_Score: 'Manager Support',
+  Growth_Score: 'Growth',
+  Recognition_Score: 'Recognition',
+  Work_Environment_Score: 'Work Environment',
+  Compensation_Fairness_Score: 'Compensation Fairness'
+};
+
+function renderDivergence(data) {
+  var withGap = data.employees.filter(function(e) { return e.divergence !== null && e.divergence !== 0; });
+  withGap.sort(function(a, b) { return Math.abs(b.divergence) - Math.abs(a.divergence); });
+  var top = withGap.slice(0, 8);
+
+  if (!top.length) {
+    document.getElementById('divergenceList').innerHTML = '<div class="empty-state">No overlapping self-report + manager data yet this month.</div>';
+    return;
+  }
+
+  var html = '';
+  top.forEach(function(e) {
+    var gapClass = e.divergence > 0 ? 'gap-pos' : 'gap-neg';
+    var sign = e.divergence > 0 ? '+' : '';
+    html += '<div class="divergence-item">';
+    html += '<div><span class="divergence-name">' + e.name + '</span><br><span class="divergence-dept">' + e.department + '</span></div>';
+    html += '<span class="divergence-gap ' + gapClass + '">' + sign + e.divergence + '</span>';
+    html += '</div>';
+  });
+  document.getElementById('divergenceList').innerHTML = html;
+}
+
+function renderDimensions(data) {
+  var deptDims = {};
+  data.employees.forEach(function(e) {
+    if (!e.selfReport) return;
+    if (!deptDims[e.department]) deptDims[e.department] = {};
+    Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+      if (!deptDims[e.department][dim]) deptDims[e.department][dim] = [];
+      var v = Number(e.selfReport[dim]);
+      if (!isNaN(v)) deptDims[e.department][dim].push(v);
+    });
+  });
+
+  var depts = Object.keys(deptDims);
+  if (!depts.length) {
+    document.getElementById('dimensionList').innerHTML = '<div class="empty-state">No self-reports yet this month.</div>';
+    return;
+  }
+
+  var html = '';
+  depts.forEach(function(dept) {
+    var dims = deptDims[dept];
+    var avgs = Object.keys(dims).map(function(dim) {
+      var arr = dims[dim];
+      var avg = arr.reduce(function(a, b) { return a + b; }, 0) / arr.length;
+      return { dim: dim, avg: Math.round(avg * 10) / 10 };
+    });
+    avgs.sort(function(a, b) { return a.avg - b.avg; });
+    var weakest = avgs[0];
+    if (!weakest) return;
+    html += '<div class="dimension-block">';
+    html += '<div class="dimension-dept-name">' + dept + '</div>';
+    html += '<div class="dimension-weak">Weakest: ' + DIMENSION_LABELS[weakest.dim] + ' — <span class="dim-score">' + weakest.avg + '</span> / 10</div>';
+    html += '</div>';
+  });
+  document.getElementById('dimensionList').innerHTML = html;
+}
+
 function renderAll(data) {
   renderKpis(data);
   renderDeptBars(data);
   renderAlerts(data);
   renderTable(data);
+  renderDivergence(data);
+  renderDimensions(data);
 }
 
 fetchDashboard(document.getElementById('monthSelect').value);
