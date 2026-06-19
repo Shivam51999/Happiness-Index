@@ -80,6 +80,13 @@ function initials(name) {
   return name.split(' ').map(function(p){ return p[0]; }).join('').substring(0,2).toUpperCase();
 }
 
+function renderClosed() {
+  document.getElementById('content').innerHTML =
+    '<div class="card closed-box"><h2>Happiness review of this month is closed</h2>' +
+    '<p>From July 2026 onward, the monthly pulse check is open only on the 1st and 2nd of each month. ' +
+    'Please come back during that window next month.</p></div>';
+}
+
 function renderEmailGate() {
   var html = '';
   html += '<div class="card">';
@@ -298,8 +305,19 @@ function submitOne() {
 }
 
 // ── Boot sequence ────────────────────────────────────────────────
-// No date/window restriction — go straight to the email gate.
-renderEmailGate();
+document.getElementById('content').innerHTML = '<div class="card"><p style="text-align:center;color:var(--text-soft);font-size:13px;">Loading…</p></div>';
+fetch(APPS_SCRIPT_URL + '?action=windowStatus&token=' + encodeURIComponent(ACCESS_TOKEN))
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (!res.open) {
+      renderClosed();
+    } else {
+      renderEmailGate();
+    }
+  })
+  .catch(function() {
+    renderEmailGate();
+  });
 </script>
 </body>
 </html>
