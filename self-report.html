@@ -70,11 +70,18 @@
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
 var ACCESS_TOKEN = 'e6a7c4f500c089c9fc85f33f1657b49bf20f58ba054ffd53';
 
-var answers = { workload: null, managerSupport: null, growth: null, recognition: null, workEnvironment: null, compensation: null, enps: null };
+var answers = { workload: null, managerSupport: null, growth: null, recognition: null, workEnvironment: null, compensation: null, enps: null, retentionIntent: null, wellbeingTrend: null };
 var currentEmployee = null;
 
 function initials(name) {
   return name.split(' ').map(function(p){ return p[0]; }).join('').substring(0,2).toUpperCase();
+}
+
+function renderClosed() {
+  document.getElementById('content').innerHTML =
+    '<div class="card closed-box"><h2>Happiness review of this month is closed</h2>' +
+    '<p>From July 2026 onward, the monthly pulse check is open only on the 1st and 2nd of each month. ' +
+    'Please come back during that window next month.</p></div>';
 }
 
 function renderEmailGate() {
@@ -137,7 +144,9 @@ function renderForm(emp) {
     ['recognition', 'Do you feel recognized for your work?', 'Unrecognized', 'Well recognized'],
     ['workEnvironment', 'How is your day-to-day work environment?', 'Poor', 'Excellent'],
     ['compensation', 'How fairly do you feel compensated?', 'Unfair', 'Very fair'],
-    ['enps', 'How likely are you to recommend Mangalam as a place to work?', 'Not at all', 'Extremely likely']
+    ['enps', 'How likely are you to recommend Mangalam as a place to work?', 'Not at all', 'Extremely likely'],
+    ['retentionIntent', 'How likely are you to still be working here a year from now?', 'Very unlikely', 'Very likely'],
+    ['wellbeingTrend', 'Compared to last month, how is your overall wellbeing at work?', 'Much worse', 'Much better']
   ];
   questions.forEach(function(q) {
     html += '<label>' + q[1] + '</label>';
@@ -197,6 +206,8 @@ function submitForm() {
     workEnvironment: answers.workEnvironment,
     compensation: answers.compensation,
     enps: answers.enps,
+    retentionIntent: answers.retentionIntent,
+    wellbeingTrend: answers.wellbeingTrend,
     comments: document.getElementById('comments').value
   };
 
@@ -227,8 +238,21 @@ function submitForm() {
 }
 
 // ── Boot sequence ────────────────────────────────────────────────
-// No date/window restriction — go straight to the email gate.
-renderEmailGate();
+document.getElementById('content').innerHTML = '<div class="card"><p style="text-align:center;color:var(--text-soft);font-size:13px;">Loading…</p></div>';
+fetch(APPS_SCRIPT_URL + '?action=windowStatus&token=' + encodeURIComponent(ACCESS_TOKEN))
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (!res.open) {
+      renderClosed();
+    } else {
+      renderEmailGate();
+    }
+  })
+  .catch(function() {
+    // If the status check itself fails, fall through to the email gate —
+    // the backend will still enforce the window on actual submit.
+    renderEmailGate();
+  });
 </script>
 </body>
 </html>
