@@ -71,7 +71,7 @@
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
 var ACCESS_TOKEN = 'e6a7c4f500c089c9fc85f33f1657b49bf20f58ba054ffd53';
 
-var score = null;
+var scores = { perceived: null, retentionConfidence: null };
 var team = [];
 var submittedIds = [];
 var currentManagerName = '';
@@ -142,11 +142,16 @@ function renderForm() {
   html += '<div class="scale-row" id="scoreRow"></div>';
   html += '<div class="scale-labels"><span>Very dissatisfied</span><span>Very satisfied</span></div>';
 
+  html += '<label>How confident are you this person stays for the next 6 months?</label>';
+  html += '<div class="scale-row" id="retentionRow"></div>';
+  html += '<div class="scale-labels"><span>Not confident</span><span>Very confident</span></div>';
+
   html += '<label>Flags (check any that apply)</label>';
   html += '<div class="flag-row">';
   html += '<label class="flag-item"><input type="checkbox" id="flagRisk"><span>At risk of leaving in next 3 months</span></label>';
   html += '<label class="flag-item"><input type="checkbox" id="flagOverload"><span>Currently overloaded / burning out</span></label>';
   html += '<label class="flag-item"><input type="checkbox" id="flagRecognition"><span>Due for recognition — doing great, underacknowledged</span></label>';
+  html += '<label class="flag-item"><input type="checkbox" id="flagPersonal"><span>Personal reasons may be affecting their work</span></label>';
   html += '</div>';
 
   html += '<label>Notes (optional, kept confidential to HR/CEO)</label>';
@@ -168,6 +173,7 @@ function renderForm() {
   });
 
   buildScoreRow();
+  buildRetentionRow();
   updateProgress();
 
   sel.addEventListener('change', checkComplete);
@@ -183,7 +189,26 @@ function buildScoreRow() {
     btn.textContent = i;
     btn.addEventListener('click', function(val) {
       return function() {
-        score = val;
+        scores.perceived = val;
+        Array.prototype.forEach.call(row.children, function(c) { c.classList.remove('selected'); });
+        this.classList.add('selected');
+        checkComplete();
+      };
+    }(i));
+    row.appendChild(btn);
+  }
+}
+
+function buildRetentionRow() {
+  var row = document.getElementById('retentionRow');
+  for (var i = 1; i <= 10; i++) {
+    var btn = document.createElement('button');
+    btn.className = 'scale-btn';
+    btn.type = 'button';
+    btn.textContent = i;
+    btn.addEventListener('click', function(val) {
+      return function() {
+        scores.retentionConfidence = val;
         Array.prototype.forEach.call(row.children, function(c) { c.classList.remove('selected'); });
         this.classList.add('selected');
         checkComplete();
@@ -199,16 +224,19 @@ function updateProgress() {
 }
 
 function checkComplete() {
-  var ok = document.getElementById('empSelect').value && score !== null;
+  var ok = document.getElementById('empSelect').value && scores.perceived !== null && scores.retentionConfidence !== null;
   document.getElementById('submitBtn').disabled = !ok;
 }
 
 function resetForNext() {
-  score = null;
+  scores.perceived = null;
+  scores.retentionConfidence = null;
   document.querySelectorAll('#scoreRow .scale-btn').forEach(function(b){ b.classList.remove('selected'); });
+  document.querySelectorAll('#retentionRow .scale-btn').forEach(function(b){ b.classList.remove('selected'); });
   document.getElementById('flagRisk').checked = false;
   document.getElementById('flagOverload').checked = false;
   document.getElementById('flagRecognition').checked = false;
+  document.getElementById('flagPersonal').checked = false;
   document.getElementById('notes').value = '';
   var sel = document.getElementById('empSelect');
   Array.prototype.slice.call(sel.options).forEach(function(opt) {
@@ -233,10 +261,12 @@ function submitOne() {
     employeeName: opt.dataset.name,
     department: opt.dataset.dept,
     managerName: currentManagerName,
-    perceivedScore: score,
+    perceivedScore: scores.perceived,
+    retentionConfidence: scores.retentionConfidence,
     attritionRisk: document.getElementById('flagRisk').checked,
     overload: document.getElementById('flagOverload').checked,
     needsRecognition: document.getElementById('flagRecognition').checked,
+    personalReasons: document.getElementById('flagPersonal').checked,
     notes: document.getElementById('notes').value
   };
 
