@@ -189,11 +189,11 @@
       <h1>Happiness & Satisfaction Pulse</h1>
       <p>Self-report + manager perception, blended monthly · HR/CEO/Manager view only</p>
     </div>
-    <select class="month-select" id="monthSelect">
-      <option value="2026-06">June 2026</option>
-      <option value="2026-05">May 2026</option>
-      <option value="2026-04">April 2026</option>
-    </select>
+    <!-- FIX: options are now generated in JS (see populateMonthSelect) instead of being
+         hardcoded to 2026-06 / 05 / 04. Hardcoding meant any month rolling past June 2026
+         (e.g. this month, July 2026) had no option to select, so its data could never be
+         viewed here even though it was being saved correctly to the sheet. -->
+    <select class="month-select" id="monthSelect"></select>
   </div>
 
   <div class="kpi-row" id="kpiRow"></div>
@@ -263,6 +263,23 @@ var EMPTY_DATA = {
   alerts: []
 };
 
+// FIX: builds the month dropdown dynamically instead of a hardcoded list.
+// Generates the current month plus the previous N months, most recent first,
+// and defaults selection to the current calendar month so newly submitted
+// data is visible without ever having to edit this file again.
+function populateMonthSelect(monthsBack) {
+  var sel = document.getElementById('monthSelect');
+  var now = new Date();
+  var opts = [];
+  for (var i = 0; i < monthsBack; i++) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    var label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    opts.push('<option value="' + key + '">' + label + '</option>');
+  }
+  sel.innerHTML = opts.join('');
+}
+
 function fetchDashboard(month) {
   document.getElementById('kpiRow').innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Loading…</div>';
 
@@ -306,8 +323,15 @@ function barColor(score) {
 function renderKpis(data) {
   var pct = data.totalEmployees ? Math.round((data.reportedCount / data.totalEmployees) * 100) : 0;
   var atRisk = data.alerts.filter(function(a){ return a.type === 'ATTRITION_RISK'; }).length;
+  // FIX: previously `data.orgAvgScore < 6` ran even when orgAvgScore was null (no data yet
+  // for that month). JS coerces null to 0, so `null < 6` was true, which silently painted
+  // the "—" placeholder red instead of leaving it neutral. Now null is checked explicitly.
+  var orgColorClass = '';
+  if (data.orgAvgScore !== null && data.orgAvgScore !== undefined) {
+    orgColorClass = data.orgAvgScore < 6 ? 'alert-color' : 'good-color';
+  }
   var html = '';
-  html += '<div class="kpi-card"><div class="kpi-label">Org Happiness Score</div><div class="kpi-value ' + (data.orgAvgScore < 6 ? 'alert-color' : 'good-color') + '">' + (data.orgAvgScore ?? '—') + '</div><div class="kpi-sub">out of 10, blended</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-label">Org Happiness Score</div><div class="kpi-value ' + orgColorClass + '">' + (data.orgAvgScore ?? '—') + '</div><div class="kpi-sub">out of 10, blended</div></div>';
   html += '<div class="kpi-card"><div class="kpi-label">Response Rate</div><div class="kpi-value">' + pct + '%</div><div class="kpi-sub">' + data.reportedCount + ' of ' + data.totalEmployees + ' reported</div></div>';
   html += '<div class="kpi-card"><div class="kpi-label">Attrition Risk Flags</div><div class="kpi-value ' + (atRisk > 0 ? 'alert-color' : '') + '">' + atRisk + '</div><div class="kpi-sub">flagged by managers this month</div></div>';
   html += '<div class="kpi-card"><div class="kpi-label">Active Alerts</div><div class="kpi-value">' + data.alerts.length + '</div><div class="kpi-sub">low score, divergence, or risk</div></div>';
@@ -448,6 +472,9 @@ function renderAll(data) {
   renderDimensions(data);
 }
 
+// FIX: populate the month dropdown (current month + 5 prior) before the first fetch,
+// and default the selection to the current month.
+populateMonthSelect(6);
 fetchDashboard(document.getElementById('monthSelect').value);
 
 document.getElementById('monthSelect').addEventListener('change', function() {
