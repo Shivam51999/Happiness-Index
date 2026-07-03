@@ -295,6 +295,38 @@
   .idea-text { font-size: 13px; color: var(--text); font-style: italic; margin-bottom: 4px; }
   .idea-meta { font-size: 11px; color: var(--text-soft); }
 
+  /* Fixed-height scroll containers so long lists/tables don't push the whole
+     page down — content scrolls within its own card instead. */
+  .scroll-box {
+    max-height: 460px;
+    overflow-y: auto;
+    padding-right: 6px;
+  }
+  .scroll-box::-webkit-scrollbar { width: 8px; }
+  .scroll-box::-webkit-scrollbar-track { background: transparent; }
+  .scroll-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .scroll-box::-webkit-scrollbar-thumb:hover { background: #C7CBD3; }
+
+  .table-scroll-fixed {
+    max-height: 480px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .table-scroll-fixed table { margin: 0; }
+  .table-scroll-fixed thead th {
+    position: sticky;
+    top: 0;
+    background: var(--card);
+    z-index: 2;
+    box-shadow: 0 1px 0 var(--border);
+  }
+  .table-scroll-fixed::-webkit-scrollbar { width: 8px; height: 8px; }
+  .table-scroll-fixed::-webkit-scrollbar-track { background: transparent; }
+  .table-scroll-fixed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .table-scroll-fixed::-webkit-scrollbar-thumb:hover { background: #C7CBD3; }
+
   .tone-pill {
     display: inline-flex;
     align-items: center;
@@ -382,18 +414,6 @@
   </div>
 
   <div class="card">
-    <h3>Innovation Ideas From the Team</h3>
-    <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 14px;">Top 10 most substantive innovation ideas this month — blank or placeholder answers ("nothing", "n/a", etc.) are filtered out automatically.</p>
-    <div id="innovationIdeas"></div>
-  </div>
-
-  <div class="card">
-    <h3>Top Team Remarks</h3>
-    <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 14px;">Top 10 open-text remarks this month — critical and positive — showing who gave each remark and who it's about, auto-tagged by tone. Blank or placeholder answers are filtered out automatically.</p>
-    <div id="teamRemarks"></div>
-  </div>
-
-  <div class="card">
     <h3>Employee Detail</h3>
 
     <div class="filter-bar">
@@ -428,21 +448,35 @@
     </div>
     <div class="filter-count" id="filterCount"></div>
 
-    <table>
-      <thead id="empTableHead">
-        <tr>
-          <th>#</th>
-          <th class="sortable" data-sort="name">Name <span class="sort-arrow">▲▼</span></th>
-          <th class="sortable" data-sort="department">Department <span class="sort-arrow">▲▼</span></th>
-          <th class="sortable" data-sort="selfAvg">Self-Report <span class="sort-arrow">▲▼</span></th>
-          <th class="sortable" data-sort="managerScore">Manager View <span class="sort-arrow">▲▼</span></th>
-          <th class="sortable" data-sort="combinedScore">Combined <span class="sort-arrow">▲▼</span></th>
-          <th class="sortable" data-sort="divergence">Gap <span class="sort-arrow">▲▼</span></th>
-          <th>Flags</th>
-        </tr>
-      </thead>
-      <tbody id="empTableBody"></tbody>
-    </table>
+    <div class="table-scroll-fixed">
+      <table>
+        <thead id="empTableHead">
+          <tr>
+            <th>#</th>
+            <th class="sortable" data-sort="name">Name <span class="sort-arrow">▲▼</span></th>
+            <th class="sortable" data-sort="department">Department <span class="sort-arrow">▲▼</span></th>
+            <th class="sortable" data-sort="selfAvg">Self-Report <span class="sort-arrow">▲▼</span></th>
+            <th class="sortable" data-sort="managerScore">Manager View <span class="sort-arrow">▲▼</span></th>
+            <th class="sortable" data-sort="combinedScore">Combined <span class="sort-arrow">▲▼</span></th>
+            <th class="sortable" data-sort="divergence">Gap <span class="sort-arrow">▲▼</span></th>
+            <th>Flags</th>
+          </tr>
+        </thead>
+        <tbody id="empTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Innovation Ideas From the Team</h3>
+    <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 14px;">Top 10 most substantive innovation ideas this month — blank or placeholder answers ("nothing", "n/a", etc.) are filtered out automatically.</p>
+    <div id="innovationIdeas" class="scroll-box"></div>
+  </div>
+
+  <div class="card">
+    <h3>Top Team Remarks</h3>
+    <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 14px;">Top 10 open-text remarks this month — critical and positive — showing who gave each remark and who it's about, auto-tagged by tone. Blank or placeholder answers are filtered out automatically.</p>
+    <div id="teamRemarks" class="scroll-box"></div>
   </div>
 
 </div>
