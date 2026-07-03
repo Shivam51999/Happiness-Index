@@ -255,6 +255,46 @@
   .pie-legend-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
   .pie-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
+  .insight-banner {
+    background: linear-gradient(135deg, var(--purple), var(--navy));
+    color: #fff;
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .priority-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 11.5px;
+    white-space: nowrap;
+  }
+  .priority-high { background: var(--red-l); color: var(--red); }
+  .priority-watch { background: var(--amber-l); color: var(--amber); }
+  .priority-stable { background: var(--green-l); color: var(--green); }
+
+  .focus-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .focus-item:last-child { border-bottom: none; }
+  .focus-icon { font-size: 14px; flex-shrink: 0; }
+
+  .idea-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .idea-item:last-child { border-bottom: none; }
+  .idea-text { font-size: 13px; color: var(--text); font-style: italic; margin-bottom: 4px; }
+  .idea-meta { font-size: 11px; color: var(--text-soft); }
+
   @media (max-width: 900px) {
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
     .grid-2 { grid-template-columns: 1fr; }
@@ -294,6 +334,12 @@
     </div>
   </div>
 
+  <div class="card">
+    <h3>Management Focus Summary</h3>
+    <div class="insight-banner" id="execInsight"></div>
+    <div id="focusInsights"></div>
+  </div>
+
   <div class="grid-2">
     <div class="card">
       <h3>Perception Gaps — Manager vs. Self</h3>
@@ -308,9 +354,21 @@
   </div>
 
   <div class="card">
+    <h3>Question-wise Focus Areas</h3>
+    <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 14px;">Every rated question this month — % of respondents in each band, and an auto-flagged priority for where to focus first.</p>
+    <div id="focusTable"></div>
+  </div>
+
+  <div class="card">
     <h3>Question-wise Rating Distribution</h3>
     <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 14px;">Self-report ratings for every objective question, grouped into Healthy / Watch / At Risk bands, shown as % of respondents.</p>
     <div id="dimensionPies"></div>
+  </div>
+
+  <div class="card">
+    <h3>Innovation Ideas From the Team</h3>
+    <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 14px;">Open-text answers auto-detected from any innovation-related question in this month's data.</p>
+    <div id="innovationIdeas"></div>
   </div>
 
   <div class="card">
@@ -349,7 +407,7 @@
     <div class="filter-count" id="filterCount"></div>
 
     <table>
-      <thead>
+      <thead id="empTableHead">
         <tr>
           <th>#</th>
           <th class="sortable" data-sort="name">Name <span class="sort-arrow">▲▼</span></th>
@@ -703,6 +761,209 @@ function renderDimensionPies(data) {
   container.innerHTML = html;
 }
 
+// Shared helper: buckets a list of numeric ratings into Healthy/Watch/At Risk
+// counts using the existing scoreBand() thresholds, used by both the focus
+// table and the focus insights below so the bands stay consistent everywhere.
+function computeBandTally(values) {
+  var t = { high: 0, mid: 0, low: 0, total: 0 };
+  values.forEach(function(v) {
+    if (v === null || v === undefined || isNaN(v)) return;
+    var band = scoreBand(v);
+    if (band === 'high') t.high++;
+    else if (band === 'mid') t.mid++;
+    else if (band === 'low') t.low++;
+    t.total++;
+  });
+  t.highPct = t.total ? Math.round((t.high / t.total) * 1000) / 10 : null;
+  t.midPct = t.total ? Math.round((t.mid / t.total) * 1000) / 10 : null;
+  t.lowPct = t.total ? Math.round((t.low / t.total) * 1000) / 10 : null;
+  return t;
+}
+
+// Simple rule-based priority flag: >15% At Risk = needs attention now;
+// >40% combined Watch+At Risk = keep an eye on it; otherwise stable.
+function priorityFromTally(t) {
+  if (!t.total) return { cls: 'priority-stable', label: 'No Data' };
+  if (t.lowPct > 15) return { cls: 'priority-high', label: 'Needs Attention' };
+  if ((t.midPct + t.lowPct) > 40) return { cls: 'priority-watch', label: 'Monitor' };
+  return { cls: 'priority-stable', label: 'Stable' };
+}
+
+function renderFocusTable(data) {
+  var container = document.getElementById('focusTable');
+  if (!container) return;
+
+  var rows = [];
+  Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+    var values = data.employees.filter(function(e) { return e.selfReport; })
+      .map(function(e) { return Number(e.selfReport[dim]); });
+    rows.push({ label: DIMENSION_LABELS[dim], tally: computeBandTally(values) });
+  });
+
+  var mgrValues = data.employees.filter(function(e) { return e.managerInput; })
+    .map(function(e) { return Number(e.managerInput.Perceived_Satisfaction_Score); });
+  rows.push({ label: 'Manager Perceived Satisfaction', tally: computeBandTally(mgrValues) });
+
+  var combinedValues = data.employees.filter(function(e) { return e.combinedScore !== null && e.combinedScore !== undefined; })
+    .map(function(e) { return Number(e.combinedScore); });
+  rows.push({ label: 'Combined Score (Blended)', tally: computeBandTally(combinedValues) });
+
+  var html = '<table><thead><tr>';
+  html += '<th>Question / Metric</th><th>Respondents</th><th>Healthy (7.5+)</th><th>Watch (5–7.4)</th><th>At Risk (&lt;5)</th><th>Priority</th>';
+  html += '</tr></thead><tbody>';
+  rows.forEach(function(r) {
+    var t = r.tally;
+    var pr = priorityFromTally(t);
+    html += '<tr>';
+    html += '<td>' + r.label + '</td>';
+    html += '<td>' + t.total + '</td>';
+    html += '<td>' + (t.total ? t.highPct + '% (' + t.high + ')' : '—') + '</td>';
+    html += '<td>' + (t.total ? t.midPct + '% (' + t.mid + ')' : '—') + '</td>';
+    html += '<td>' + (t.total ? t.lowPct + '% (' + t.low + ')' : '—') + '</td>';
+    html += '<td><span class="priority-pill ' + pr.cls + '">' + pr.label + '</span></td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+// Auto-generated executive one-liner plus a bullet list of specific things to
+// focus on this month, all computed directly from the month's numbers — no
+// fabricated content, only what the data actually shows.
+function renderFocusInsights(data) {
+  var execEl = document.getElementById('execInsight');
+  var listEl = document.getElementById('focusInsights');
+  if (!execEl || !listEl) return;
+
+  var dimAverages = Object.keys(DIMENSION_LABELS).map(function(dim) {
+    var values = data.employees.filter(function(e) { return e.selfReport; })
+      .map(function(e) { return Number(e.selfReport[dim]); })
+      .filter(function(v) { return !isNaN(v); });
+    var avg = values.length ? Math.round((values.reduce(function(a, b) { return a + b; }, 0) / values.length) * 10) / 10 : null;
+    return { dim: dim, label: DIMENSION_LABELS[dim], avg: avg, count: values.length };
+  }).filter(function(d) { return d.avg !== null; });
+
+  var weakestDim = dimAverages.length ? dimAverages.slice().sort(function(a, b) { return a.avg - b.avg; })[0] : null;
+  var strongestDim = dimAverages.length ? dimAverages.slice().sort(function(a, b) { return b.avg - a.avg; })[0] : null;
+
+  var compValues = data.employees.filter(function(e) { return e.selfReport; })
+    .map(function(e) { return Number(e.selfReport.Compensation_Fairness_Score); })
+    .filter(function(v) { return !isNaN(v); });
+  var compTally = computeBandTally(compValues);
+
+  var deptsWithScore = data.departmentSummary.filter(function(d) { return d.avgScore !== null && d.avgScore !== undefined; });
+  var weakestDept = deptsWithScore.length ? deptsWithScore.slice().sort(function(a, b) { return a.avgScore - b.avgScore; })[0] : null;
+
+  var atRiskCount = data.alerts.filter(function(a) { return a.type === 'ATTRITION_RISK'; }).length;
+  var lowScoreCount = data.alerts.filter(function(a) { return a.type === 'LOW_SCORE'; }).length;
+
+  var withGap = data.employees.filter(function(e) { return e.divergence !== null && e.divergence !== undefined; });
+  var biggestGap = withGap.length ? withGap.slice().sort(function(a, b) { return Math.abs(b.divergence) - Math.abs(a.divergence); })[0] : null;
+
+  var pct = data.totalEmployees ? Math.round((data.reportedCount / data.totalEmployees) * 100) : 0;
+  var execHtml = 'The org happiness score this month is <strong>' + (data.orgAvgScore ?? '—') + '/10</strong> from a ' + pct + '% response rate (' + data.reportedCount + ' of ' + data.totalEmployees + ').';
+  if (weakestDim) {
+    execHtml += ' <strong>' + weakestDim.label + '</strong> is the lowest-rated area org-wide at ' + weakestDim.avg + '/10.';
+  }
+  if (atRiskCount > 0) {
+    execHtml += ' ' + atRiskCount + ' employee' + (atRiskCount === 1 ? ' is' : 's are') + ' flagged for attrition risk';
+    if (weakestDept) execHtml += ', with ' + weakestDept.department + ' trending weakest overall (' + weakestDept.avgScore + '/10)';
+    execHtml += '.';
+  } else if (weakestDept) {
+    execHtml += ' ' + weakestDept.department + ' is trending weakest overall at ' + weakestDept.avgScore + '/10.';
+  }
+  execEl.innerHTML = execHtml;
+
+  var items = [];
+
+  items.push({
+    icon: compTally.total ? (compTally.lowPct >= 30 ? '🔴' : ((compTally.midPct + compTally.lowPct) >= 30 ? '🟡' : '🟢')) : '⚪',
+    text: compTally.total
+      ? '<strong>' + compTally.highPct + '%</strong> of respondents (' + compTally.high + ' of ' + compTally.total + ') are happy with <strong>Compensation Fairness</strong> (Healthy band, 7.5+ rating).'
+      : 'No Compensation Fairness ratings submitted yet this month.'
+  });
+
+  if (weakestDim) {
+    items.push({
+      icon: weakestDim.avg < 5 ? '🔴' : (weakestDim.avg < 7.5 ? '🟡' : '🟢'),
+      text: '<strong>' + weakestDim.label + '</strong> is the lowest-scoring question org-wide, averaging <strong>' + weakestDim.avg + '/10</strong> across ' + weakestDim.count + ' respondents.'
+    });
+  }
+
+  if (strongestDim && (!weakestDim || strongestDim.dim !== weakestDim.dim)) {
+    items.push({
+      icon: '🟢',
+      text: '<strong>' + strongestDim.label + '</strong> is the strongest-rated question org-wide, averaging <strong>' + strongestDim.avg + '/10</strong>.'
+    });
+  }
+
+  if (weakestDept) {
+    items.push({
+      icon: weakestDept.avgScore < 5 ? '🔴' : (weakestDept.avgScore < 7.5 ? '🟡' : '🟢'),
+      text: '<strong>' + weakestDept.department + '</strong> is the weakest-performing department this month at <strong>' + weakestDept.avgScore + '/10</strong>.'
+    });
+  }
+
+  if (atRiskCount > 0) {
+    items.push({ icon: '🔴', text: '<strong>' + atRiskCount + '</strong> employee' + (atRiskCount === 1 ? '' : 's') + ' flagged for attrition risk by their manager — prioritize 1:1 check-ins.' });
+  }
+  if (lowScoreCount > 0) {
+    items.push({ icon: '🔴', text: '<strong>' + lowScoreCount + '</strong> employee' + (lowScoreCount === 1 ? '' : 's') + ' self-reported a low overall score this month.' });
+  }
+  if (biggestGap) {
+    items.push({
+      icon: '🟡',
+      text: 'Largest perception gap this month: <strong>' + biggestGap.name + '</strong> (' + biggestGap.department + '), a gap of <strong>' + (biggestGap.divergence > 0 ? '+' : '') + biggestGap.divergence + '</strong> between self-report and manager view.'
+    });
+  }
+
+  if (!items.length) {
+    listEl.innerHTML = '<div class="empty-state">Not enough data yet this month to generate focus insights.</div>';
+  } else {
+    var html = '';
+    items.forEach(function(it) {
+      html += '<div class="focus-item"><div class="focus-icon">' + it.icon + '</div><div>' + it.text + '</div></div>';
+    });
+    listEl.innerHTML = html;
+  }
+}
+
+// Auto-detects any self-report or manager-input field whose name mentions
+// "innovation" and surfaces the actual open-text answers — nothing invented,
+// only what the API returns. If no such field exists yet, says so plainly.
+function renderInnovationIdeas(data) {
+  var container = document.getElementById('innovationIdeas');
+  if (!container) return;
+
+  var ideas = [];
+  data.employees.forEach(function(e) {
+    [{ obj: e.selfReport, source: 'Self-Report' }, { obj: e.managerInput, source: 'Manager Input' }].forEach(function(entry) {
+      if (!entry.obj) return;
+      Object.keys(entry.obj).forEach(function(k) {
+        if (!/innovation/i.test(k)) return;
+        var val = entry.obj[k];
+        if (val && typeof val === 'string' && val.trim() !== '') {
+          ideas.push({ name: e.name, department: e.department, source: entry.source, text: val.trim() });
+        }
+      });
+    });
+  });
+
+  if (!ideas.length) {
+    container.innerHTML = '<div class="empty-state">No innovation-related open-text field was found in this month\'s data. If your Apps Script backend returns a field such as Innovation_Idea or Innovation_Suggestion per employee, ideas will be listed here automatically.</div>';
+    return;
+  }
+
+  var html = '';
+  ideas.forEach(function(idea) {
+    html += '<div class="idea-item">';
+    html += '<div class="idea-text">"' + idea.text + '"</div>';
+    html += '<div class="idea-meta">— ' + idea.name + ', ' + idea.department + ' (' + idea.source + ')</div>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
 function renderDimensions(data) {
   var deptDims = {};
   data.employees.forEach(function(e) {
@@ -747,6 +1008,9 @@ function renderAll(data) {
   renderDivergence(data);
   renderDimensions(data);
   renderDimensionPies(data);
+  renderFocusTable(data);
+  renderFocusInsights(data);
+  renderInnovationIdeas(data);
 
   // Enrich employees once with derived numeric fields used by filter/sort,
   // so the filter bar and table stay in sync off a single source of truth.
