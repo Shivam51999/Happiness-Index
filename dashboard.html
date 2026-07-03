@@ -231,9 +231,34 @@
   th.sortable .sort-arrow { font-size: 9px; margin-left: 3px; opacity: 0.5; }
   th.sortable.sort-active .sort-arrow { opacity: 1; color: var(--purple); }
 
+  .btn-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--navy);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn-link:hover { background: var(--navy-l); }
+
+  .pie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .pie-item { text-align: center; }
+  .pie-title { font-size: 12.5px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+  .pie-circle { width: 108px; height: 108px; border-radius: 50%; margin: 0 auto 12px; }
+  .pie-legend { font-size: 11px; color: var(--text-soft); text-align: left; display: inline-block; }
+  .pie-legend-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .pie-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
   @media (max-width: 900px) {
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
     .grid-2 { grid-template-columns: 1fr; }
+    .pie-grid { grid-template-columns: repeat(2, 1fr); }
   }
 </style>
 </head>
@@ -245,7 +270,10 @@
       <h1>Happiness & Satisfaction Pulse</h1>
       <p>Self-report + manager perception, blended monthly · HR/CEO/Manager view only</p>
     </div>
-    <select class="month-select" id="monthSelect"></select>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <select class="month-select" id="monthSelect"></select>
+      <a class="btn-link" id="fullReportLink" href="full-report.html" target="_blank" rel="noopener">Open Full Report ↗</a>
+    </div>
   </div>
 
   <div class="kpi-row" id="kpiRow"></div>
@@ -280,6 +308,12 @@
   </div>
 
   <div class="card">
+    <h3>Question-wise Rating Distribution</h3>
+    <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 14px;">Self-report ratings for every objective question, grouped into Healthy / Watch / At Risk bands, shown as % of respondents.</p>
+    <div id="dimensionPies"></div>
+  </div>
+
+  <div class="card">
     <h3>Employee Detail</h3>
 
     <div class="filter-bar">
@@ -306,6 +340,10 @@
         <input type="checkbox" id="filterRiskOnly">
         At Risk flag only
       </label>
+      <label class="filter-chip">
+        <input type="checkbox" id="filterMissingOnly">
+        Not Filled (Self or Manager)
+      </label>
       <button class="filter-clear" id="filterClearBtn">Clear filters</button>
     </div>
     <div class="filter-count" id="filterCount"></div>
@@ -313,6 +351,7 @@
     <table>
       <thead>
         <tr>
+          <th>#</th>
           <th class="sortable" data-sort="name">Name <span class="sort-arrow">▲▼</span></th>
           <th class="sortable" data-sort="department">Department <span class="sort-arrow">▲▼</span></th>
           <th class="sortable" data-sort="selfAvg">Self-Report <span class="sort-arrow">▲▼</span></th>
@@ -482,7 +521,8 @@ function getFilters() {
     dept: document.getElementById('filterDept').value,
     scoreField: document.getElementById('filterScoreField').value,
     scoreBand: document.getElementById('filterScoreBand').value,
-    riskOnly: document.getElementById('filterRiskOnly').checked
+    riskOnly: document.getElementById('filterRiskOnly').checked,
+    missingOnly: document.getElementById('filterMissingOnly').checked
   };
 }
 
@@ -499,6 +539,7 @@ function applyFilters() {
       if (scoreBand(val) !== f.scoreBand) return false;
     }
     if (f.riskOnly && !e.attritionRisk) return false;
+    if (f.missingOnly && !(!e.selfReport || !e.managerInput)) return false;
     return true;
   });
 
@@ -554,13 +595,15 @@ function clearFilters() {
   document.getElementById('filterScoreField').value = 'combinedScore';
   document.getElementById('filterScoreBand').value = '';
   document.getElementById('filterRiskOnly').checked = false;
+  document.getElementById('filterMissingOnly').checked = false;
   applyFilters();
 }
 
 function renderTable(employees) {
   var html = '';
-  employees.forEach(function(e) {
+  employees.forEach(function(e, idx) {
     html += '<tr>';
+    html += '<td>' + (idx + 1) + '</td>';
     html += '<td>' + e.name + '</td>';
     html += '<td>' + e.department + '</td>';
     html += '<td>' + (e.selfAvg !== null ? '<span class="score-pill ' + scoreClass(e.selfAvg) + '">' + e.selfAvg + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
@@ -570,7 +613,7 @@ function renderTable(employees) {
     html += '<td>' + (e.attritionRisk ? '<span class="badge badge-risk">At Risk</span>' : '') + '</td>';
     html += '</tr>';
   });
-  document.getElementById('empTableBody').innerHTML = html || '<tr><td colspan="7" class="empty-state">No employees match the current filters.</td></tr>';
+  document.getElementById('empTableBody').innerHTML = html || '<tr><td colspan="8" class="empty-state">No employees match the current filters.</td></tr>';
 }
 
 var DIMENSION_LABELS = {
@@ -602,6 +645,62 @@ function renderDivergence(data) {
     html += '</div>';
   });
   document.getElementById('divergenceList').innerHTML = html;
+}
+
+// Renders one CSS conic-gradient pie chart per objective (self-report) question,
+// bucketing each respondent's score with the existing scoreBand() thresholds
+// (>=7.5 Healthy, >=5 Watch, <5 At Risk) so the bands match the rest of the dashboard.
+function renderDimensionPies(data) {
+  var container = document.getElementById('dimensionPies');
+  if (!container) return;
+
+  var tally = {};
+  Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+    tally[dim] = { high: 0, mid: 0, low: 0, total: 0 };
+  });
+
+  data.employees.forEach(function(e) {
+    if (!e.selfReport) return;
+    Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+      var v = Number(e.selfReport[dim]);
+      if (isNaN(v)) return;
+      var band = scoreBand(v);
+      if (band === 'high') tally[dim].high++;
+      else if (band === 'mid') tally[dim].mid++;
+      else if (band === 'low') tally[dim].low++;
+      tally[dim].total++;
+    });
+  });
+
+  var html = '<div class="pie-grid">';
+  Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+    var t = tally[dim];
+    var label = DIMENSION_LABELS[dim];
+
+    if (!t.total) {
+      html += '<div class="pie-item"><div class="pie-title">' + label + '</div><div class="empty-state" style="padding:14px;">No data</div></div>';
+      return;
+    }
+
+    var highPct = Math.round((t.high / t.total) * 1000) / 10;
+    var midPct = Math.round((t.mid / t.total) * 1000) / 10;
+    var lowPct = Math.round((t.low / t.total) * 1000) / 10;
+    var seg1 = highPct;
+    var seg2 = highPct + midPct;
+    var gradient = 'conic-gradient(var(--green) 0% ' + seg1 + '%, var(--amber) ' + seg1 + '% ' + seg2 + '%, var(--red) ' + seg2 + '% 100%)';
+
+    html += '<div class="pie-item">';
+    html += '<div class="pie-title">' + label + '</div>';
+    html += '<div class="pie-circle" style="background:' + gradient + '"></div>';
+    html += '<div class="pie-legend">';
+    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--green)"></span>Healthy (7.5+): ' + highPct + '% (' + t.high + ')</div>';
+    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--amber)"></span>Watch (5–7.4): ' + midPct + '% (' + t.mid + ')</div>';
+    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--red)"></span>At Risk (&lt;5): ' + lowPct + '% (' + t.low + ')</div>';
+    html += '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
 }
 
 function renderDimensions(data) {
@@ -647,6 +746,7 @@ function renderAll(data) {
   renderAlerts(data);
   renderDivergence(data);
   renderDimensions(data);
+  renderDimensionPies(data);
 
   // Enrich employees once with derived numeric fields used by filter/sort,
   // so the filter bar and table stay in sync off a single source of truth.
@@ -668,7 +768,19 @@ function renderAll(data) {
 populateMonthSelect(6);
 setupSortHeaders();
 
-['filterName', 'filterDept', 'filterScoreField', 'filterScoreBand', 'filterRiskOnly'].forEach(function(id) {
+// Keeps the "Open Full Report" link's ?month= query param in sync with the
+// dashboard's month selector, added as a standalone listener so the existing
+// fetchDashboard() call/listener above is left untouched.
+function updateFullReportLink(month) {
+  var link = document.getElementById('fullReportLink');
+  if (link) link.href = 'full-report.html?month=' + encodeURIComponent(month);
+}
+updateFullReportLink(document.getElementById('monthSelect').value);
+document.getElementById('monthSelect').addEventListener('change', function() {
+  updateFullReportLink(this.value);
+});
+
+['filterName', 'filterDept', 'filterScoreField', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
   var el = document.getElementById(id);
   var evt = (id === 'filterName') ? 'input' : 'change';
   el.addEventListener(evt, applyFilters);
