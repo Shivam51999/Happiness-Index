@@ -295,6 +295,22 @@
   .idea-text { font-size: 13px; color: var(--text); font-style: italic; margin-bottom: 4px; }
   .idea-meta { font-size: 11px; color: var(--text-soft); }
 
+  .tone-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 9px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-right: 8px;
+  }
+  .tone-critical { background: var(--red-l); color: var(--red); }
+  .tone-good { background: var(--green-l); color: var(--green); }
+  .tone-neutral { background: #F0F0F0; color: var(--text-soft); }
+
   @media (max-width: 900px) {
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
     .grid-2 { grid-template-columns: 1fr; }
@@ -367,8 +383,14 @@
 
   <div class="card">
     <h3>Innovation Ideas From the Team</h3>
-    <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 14px;">Open-text answers auto-detected from any innovation-related question in this month's data.</p>
+    <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 14px;">Top 10 most substantive innovation ideas this month — blank or placeholder answers ("nothing", "n/a", etc.) are filtered out automatically.</p>
     <div id="innovationIdeas"></div>
+  </div>
+
+  <div class="card">
+    <h3>Top Team Remarks</h3>
+    <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 14px;">Top 10 open-text remarks this month — critical and positive — auto-tagged by tone. Blank or placeholder answers are filtered out automatically.</p>
+    <div id="teamRemarks"></div>
   </div>
 
   <div class="card">
@@ -928,37 +950,127 @@ function renderFocusInsights(data) {
   }
 }
 
+// Placeholder / non-answers ("nothing", "n/a", "none", etc.) that should never
+// be treated as a real idea or remark, however an employee happened to phrase them.
+var JUNK_ANSWERS = [
+  'nothing', 'none', 'na', 'n a', 'nil', 'no', 'not applicable', 'no comment',
+  'no comments', 'no idea', 'no ideas', 'no remarks', 'no remark', 'no feedback',
+  'nan', 'null', 'undefined', 'nothing much', 'nothing for now', 'nothing as of now',
+  '-', '--', '...', '.', 'ok', 'okay', 'fine'
+];
+
+function isJunkAnswer(text) {
+  if (!text) return true;
+  var clean = text.trim().toLowerCase().replace(/[.\-!]+$/g, '').trim();
+  if (clean.length < 3) return true;
+  return JUNK_ANSWERS.indexOf(clean) !== -1;
+}
+
+// Fields that are structural/meta rather than a real open-text answer — same
+// exclusion approach used on the Full Report page, kept here so this file
+// stays self-contained.
+var META_KEY_PATTERNS = [
+  /^timestamp$/i, /^e[-_ ]?mail$/i, /^name$/i, /^department$/i,
+  /^employee[_ ]?id$/i, /^employee[_ ]?name$/i, /^entry[_ ]?id$/i,
+  /^\s*id\s*$/i, /^ml[_ ]?id$/i, /^month$/i, /^submitted[_ ]?on$/i,
+  /^submission[_ ]?date$/i, /^legacy[_ ]?unmapped[_ ]?\d*$/i
+];
+function isMetaKey(key) {
+  return META_KEY_PATTERNS.some(function(re) { return re.test(key); });
+}
+
+// Very lightweight keyword-based tone tag for remarks — not real sentiment
+// analysis, just a transparent heuristic to help management scan quickly.
+var TONE_POSITIVE_WORDS = ['great', 'good', 'love', 'happy', 'appreciate', 'excellent', 'amazing', 'supportive', 'positive', 'helpful', 'enjoy', 'proud', 'fantastic', 'wonderful', 'satisfied', 'thank', 'grateful', 'motivat'];
+var TONE_NEGATIVE_WORDS = ['bad', 'poor', 'unhappy', 'frustrat', 'issue', 'problem', 'concern', 'disappoint', 'lack', 'unfair', 'stress', 'overwhelm', 'toxic', 'worried', 'worse', 'negative', 'delay', 'ignored', 'burnout', 'micromanag', 'complain', 'unclear', 'confus'];
+function classifyTone(text) {
+  var t = text.toLowerCase();
+  var pos = TONE_POSITIVE_WORDS.reduce(function(n, w) { return n + (t.indexOf(w) !== -1 ? 1 : 0); }, 0);
+  var neg = TONE_NEGATIVE_WORDS.reduce(function(n, w) { return n + (t.indexOf(w) !== -1 ? 1 : 0); }, 0);
+  if (neg > pos) return { cls: 'tone-critical', label: 'Critical' };
+  if (pos > neg) return { cls: 'tone-good', label: 'Positive' };
+  return { cls: 'tone-neutral', label: 'Neutral' };
+}
+
 // Auto-detects any self-report or manager-input field whose name mentions
-// "innovation" and surfaces the actual open-text answers — nothing invented,
-// only what the API returns. If no such field exists yet, says so plainly.
+// "innovation", filters out blank/placeholder answers, and shows only the
+// top 10 most substantive ideas (ranked by length, as a proxy for detail/effort)
+// — just the idea itself, no added reasoning or commentary.
 function renderInnovationIdeas(data) {
   var container = document.getElementById('innovationIdeas');
   if (!container) return;
 
   var ideas = [];
   data.employees.forEach(function(e) {
-    [{ obj: e.selfReport, source: 'Self-Report' }, { obj: e.managerInput, source: 'Manager Input' }].forEach(function(entry) {
-      if (!entry.obj) return;
-      Object.keys(entry.obj).forEach(function(k) {
+    [e.selfReport, e.managerInput].forEach(function(obj) {
+      if (!obj) return;
+      Object.keys(obj).forEach(function(k) {
         if (!/innovation/i.test(k)) return;
-        var val = entry.obj[k];
-        if (val && typeof val === 'string' && val.trim() !== '') {
-          ideas.push({ name: e.name, department: e.department, source: entry.source, text: val.trim() });
+        var val = obj[k];
+        if (typeof val === 'string' && !isJunkAnswer(val)) {
+          ideas.push({ name: e.name, department: e.department, text: val.trim() });
         }
       });
     });
   });
 
   if (!ideas.length) {
-    container.innerHTML = '<div class="empty-state">No innovation-related open-text field was found in this month\'s data. If your Apps Script backend returns a field such as Innovation_Idea or Innovation_Suggestion per employee, ideas will be listed here automatically.</div>';
+    container.innerHTML = '<div class="empty-state">No usable innovation-related open-text answers were found in this month\'s data (either no such field exists yet, or every response was blank/placeholder). If your Apps Script backend returns a field such as Innovation_Idea or Innovation_Suggestion per employee, ideas will be listed here automatically.</div>';
     return;
   }
 
+  ideas.sort(function(a, b) { return b.text.length - a.text.length; });
+  var top = ideas.slice(0, 10);
+
   var html = '';
-  ideas.forEach(function(idea) {
+  top.forEach(function(idea) {
     html += '<div class="idea-item">';
     html += '<div class="idea-text">"' + idea.text + '"</div>';
-    html += '<div class="idea-meta">— ' + idea.name + ', ' + idea.department + ' (' + idea.source + ')</div>';
+    html += '<div class="idea-meta">— ' + idea.name + ', ' + idea.department + '</div>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
+// Auto-detects any other open-text field (not a rating, not innovation, not
+// structural/meta) and surfaces the top 10 most substantive remarks — a mix
+// of critical and positive — tagged by a lightweight tone heuristic so
+// management can scan the good and the bad at a glance.
+function renderTeamRemarks(data) {
+  var container = document.getElementById('teamRemarks');
+  if (!container) return;
+
+  var remarks = [];
+  data.employees.forEach(function(e) {
+    [e.selfReport, e.managerInput].forEach(function(obj) {
+      if (!obj) return;
+      Object.keys(obj).forEach(function(k) {
+        if (DIMENSION_LABELS.hasOwnProperty(k)) return;
+        if (k === 'Perceived_Satisfaction_Score') return;
+        if (isMetaKey(k)) return;
+        if (/innovation/i.test(k)) return;
+        var val = obj[k];
+        if (typeof val === 'string' && !isJunkAnswer(val)) {
+          remarks.push({ name: e.name, department: e.department, text: val.trim() });
+        }
+      });
+    });
+  });
+
+  if (!remarks.length) {
+    container.innerHTML = '<div class="empty-state">No usable open-text remarks were found in this month\'s data (either no such field exists yet, or every response was blank/placeholder).</div>';
+    return;
+  }
+
+  remarks.sort(function(a, b) { return b.text.length - a.text.length; });
+  var top = remarks.slice(0, 10);
+
+  var html = '';
+  top.forEach(function(r) {
+    var tone = classifyTone(r.text);
+    html += '<div class="idea-item">';
+    html += '<div class="idea-text"><span class="tone-pill ' + tone.cls + '">' + tone.label + '</span>"' + r.text + '"</div>';
+    html += '<div class="idea-meta">— ' + r.name + ', ' + r.department + '</div>';
     html += '</div>';
   });
   container.innerHTML = html;
@@ -1011,6 +1123,7 @@ function renderAll(data) {
   renderFocusTable(data);
   renderFocusInsights(data);
   renderInnovationIdeas(data);
+  renderTeamRemarks(data);
 
   // Enrich employees once with derived numeric fields used by filter/sort,
   // so the filter bar and table stay in sync off a single source of truth.
