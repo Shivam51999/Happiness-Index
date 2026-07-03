@@ -389,7 +389,7 @@
 
   <div class="card">
     <h3>Top Team Remarks</h3>
-    <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 14px;">Top 10 open-text remarks this month — critical and positive — auto-tagged by tone. Blank or placeholder answers are filtered out automatically.</p>
+    <p style="font-size:11.5px; color:var(--text-soft); margin:0 0 14px;">Top 10 open-text remarks this month — critical and positive — showing who gave each remark and who it's about, auto-tagged by tone. Blank or placeholder answers are filtered out automatically.</p>
     <div id="teamRemarks"></div>
   </div>
 
@@ -877,7 +877,14 @@ function renderFocusInsights(data) {
   var weakestDept = deptsWithScore.length ? deptsWithScore.slice().sort(function(a, b) { return a.avgScore - b.avgScore; })[0] : null;
 
   var atRiskCount = data.alerts.filter(function(a) { return a.type === 'ATTRITION_RISK'; }).length;
-  var lowScoreCount = data.alerts.filter(function(a) { return a.type === 'LOW_SCORE'; }).length;
+  // Computed live from data.employees (not from the alerts array) so this list
+  // — and the bullet below — automatically reflects any new/removed employee
+  // the moment the month's data changes, with no manual list to maintain.
+  var lowScoreEmployees = data.employees
+    .filter(function(e) { return e.selfReport; })
+    .map(function(e) { return { name: e.name, department: e.department, selfAvg: selfReportAvg(e.selfReport) }; })
+    .filter(function(p) { return p.selfAvg !== null && p.selfAvg < 5; })
+    .sort(function(a, b) { return a.selfAvg - b.selfAvg; });
 
   var withGap = data.employees.filter(function(e) { return e.divergence !== null && e.divergence !== undefined; });
   var biggestGap = withGap.length ? withGap.slice().sort(function(a, b) { return Math.abs(b.divergence) - Math.abs(a.divergence); })[0] : null;
@@ -929,8 +936,12 @@ function renderFocusInsights(data) {
   if (atRiskCount > 0) {
     items.push({ icon: '🔴', text: '<strong>' + atRiskCount + '</strong> employee' + (atRiskCount === 1 ? '' : 's') + ' flagged for attrition risk by their manager — prioritize 1:1 check-ins.' });
   }
-  if (lowScoreCount > 0) {
-    items.push({ icon: '🔴', text: '<strong>' + lowScoreCount + '</strong> employee' + (lowScoreCount === 1 ? '' : 's') + ' self-reported a low overall score this month.' });
+  if (lowScoreEmployees.length > 0) {
+    var lowScoreNames = lowScoreEmployees.map(function(p) { return p.name + ' (' + p.selfAvg + '/10)'; }).join(', ');
+    items.push({
+      icon: '🔴',
+      text: '<strong>' + lowScoreEmployees.length + '</strong> employee' + (lowScoreEmployees.length === 1 ? '' : 's') + ' self-reported a low overall score this month: ' + lowScoreNames + '.'
+    });
   }
   if (biggestGap) {
     items.push({
@@ -995,7 +1006,15 @@ function classifyTone(text) {
 // Auto-detects any self-report or manager-input field whose name mentions
 // "innovation", filters out blank/placeholder answers, and shows only the
 // top 10 most substantive ideas (ranked by length, as a proxy for detail/effort)
-// — just the idea itself, no added reasoning or commentary.
+// — just the idea itself, no added reasoning or commentary. Fields that pair
+// "innovation" with reason/rationale/why/justification wording (e.g. an
+// "Innovation_Reasoning" column explaining *why* the idea was suggested) are
+// deliberately excluded — only the idea text itself is read here.
+var INNOVATION_REASONING_PATTERN = /reason|rational|why|justif/i;
+function isInnovationIdeaKey(key) {
+  return /innovation/i.test(key) && !INNOVATION_REASONING_PATTERN.test(key);
+}
+
 function renderInnovationIdeas(data) {
   var container = document.getElementById('innovationIdeas');
   if (!container) return;
@@ -1005,7 +1024,7 @@ function renderInnovationIdeas(data) {
     [e.selfReport, e.managerInput].forEach(function(obj) {
       if (!obj) return;
       Object.keys(obj).forEach(function(k) {
-        if (!/innovation/i.test(k)) return;
+        if (!isInnovationIdeaKey(k)) return;
         var val = obj[k];
         if (typeof val === 'string' && !isJunkAnswer(val)) {
           ideas.push({ name: e.name, department: e.department, text: val.trim() });
@@ -1032,26 +1051,53 @@ function renderInnovationIdeas(data) {
   container.innerHTML = html;
 }
 
+// Field-name patterns that identify who authored a manager-input remark
+// (if the backend provides one) — auto-detected the same way subjective
+// fields are detected elsewhere in this file, so no backend change is needed.
+var MANAGER_NAME_KEY_PATTERNS = [/manager[_ ]?name/i, /reviewed[_ ]?by/i, /evaluator/i, /appraiser/i, /assessed[_ ]?by/i];
+function isManagerNameKey(key) {
+  return MANAGER_NAME_KEY_PATTERNS.some(function(re) { return re.test(key); });
+}
+function findManagerName(managerInputObj) {
+  if (!managerInputObj) return null;
+  var found = null;
+  Object.keys(managerInputObj).forEach(function(k) {
+    if (found) return;
+    if (isManagerNameKey(k) && typeof managerInputObj[k] === 'string' && managerInputObj[k].trim() !== '') {
+      found = managerInputObj[k].trim();
+    }
+  });
+  return found;
+}
+
 // Auto-detects any other open-text field (not a rating, not innovation, not
 // structural/meta) and surfaces the top 10 most substantive remarks — a mix
-// of critical and positive — tagged by a lightweight tone heuristic so
-// management can scan the good and the bad at a glance.
+// of critical and positive — tagged by a lightweight tone heuristic, and
+// labeled with who gave the remark and who it's about.
 function renderTeamRemarks(data) {
   var container = document.getElementById('teamRemarks');
   if (!container) return;
 
   var remarks = [];
   data.employees.forEach(function(e) {
-    [e.selfReport, e.managerInput].forEach(function(obj) {
-      if (!obj) return;
-      Object.keys(obj).forEach(function(k) {
+    var managerName = findManagerName(e.managerInput);
+    [{ obj: e.selfReport, source: 'self' }, { obj: e.managerInput, source: 'manager' }].forEach(function(entry) {
+      if (!entry.obj) return;
+      Object.keys(entry.obj).forEach(function(k) {
         if (DIMENSION_LABELS.hasOwnProperty(k)) return;
         if (k === 'Perceived_Satisfaction_Score') return;
         if (isMetaKey(k)) return;
+        if (isManagerNameKey(k)) return;
         if (/innovation/i.test(k)) return;
-        var val = obj[k];
+        var val = entry.obj[k];
         if (typeof val === 'string' && !isJunkAnswer(val)) {
-          remarks.push({ name: e.name, department: e.department, text: val.trim() });
+          remarks.push({
+            name: e.name,
+            department: e.department,
+            text: val.trim(),
+            source: entry.source,
+            authorName: entry.source === 'manager' ? managerName : null
+          });
         }
       });
     });
@@ -1068,9 +1114,10 @@ function renderTeamRemarks(data) {
   var html = '';
   top.forEach(function(r) {
     var tone = classifyTone(r.text);
+    var givenBy = r.source === 'self' ? (r.name + ' (self-report)') : (r.authorName ? (r.authorName + ' (manager)') : 'Manager');
     html += '<div class="idea-item">';
     html += '<div class="idea-text"><span class="tone-pill ' + tone.cls + '">' + tone.label + '</span>"' + r.text + '"</div>';
-    html += '<div class="idea-meta">— ' + r.name + ', ' + r.department + '</div>';
+    html += '<div class="idea-meta">Given by ' + givenBy + ' — About ' + r.name + ', ' + r.department + '</div>';
     html += '</div>';
   });
   container.innerHTML = html;
