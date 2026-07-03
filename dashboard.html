@@ -32,29 +32,6 @@
   }
   .wrap { max-width: 1200px; margin: 0 auto; }
 
-  .view-toggle {
-    display: flex;
-    gap: 4px;
-    background: #fff;
-    border-radius: 10px;
-    padding: 4px;
-    width: fit-content;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  }
-  .toggle-btn {
-    padding: 8px 18px;
-    border-radius: 8px;
-    border: none;
-    background: transparent;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-soft);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .toggle-btn.active { background: var(--purple); color: #fff; }
-
   .header-row {
     display: flex;
     justify-content: space-between;
@@ -170,6 +147,90 @@
   .legend-item { display: flex; align-items: center; gap: 5px; }
   .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
 
+  /* ── Employee Detail filter bar ── */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-search {
+    position: relative;
+    flex: 1 1 220px;
+    min-width: 180px;
+  }
+  .filter-search svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-soft);
+    pointer-events: none;
+  }
+  .filter-search input {
+    width: 100%;
+    padding: 8px 10px 8px 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .filter-search input:focus {
+    outline: none;
+    border-color: var(--purple-l);
+  }
+  .filter-select {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--text);
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .filter-chip input { accent-color: var(--purple); cursor: pointer; }
+  .filter-clear {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 12.5px;
+    color: var(--text-soft);
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .filter-clear:hover { color: var(--red); border-color: var(--red-l); }
+  .filter-count {
+    font-size: 11.5px;
+    color: var(--text-soft);
+    margin-bottom: 12px;
+  }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: var(--navy); }
+  th.sortable .sort-arrow { font-size: 9px; margin-left: 3px; opacity: 0.5; }
+  th.sortable.sort-active .sort-arrow { opacity: 1; color: var(--purple); }
+
   @media (max-width: 900px) {
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
     .grid-2 { grid-template-columns: 1fr; }
@@ -179,20 +240,11 @@
 <body>
 <div class="wrap">
 
-  <div class="view-toggle">
-    <button class="toggle-btn" id="btnRoi">ROI View</button>
-    <button class="toggle-btn active" id="btnHappiness">Happiness View</button>
-  </div>
-
   <div class="header-row">
     <div class="title-block">
       <h1>Happiness & Satisfaction Pulse</h1>
       <p>Self-report + manager perception, blended monthly · HR/CEO/Manager view only</p>
     </div>
-    <!-- FIX: options are now generated in JS (see populateMonthSelect) instead of being
-         hardcoded to 2026-06 / 05 / 04. Hardcoding meant any month rolling past June 2026
-         (e.g. this month, July 2026) had no option to select, so its data could never be
-         viewed here even though it was being saved correctly to the sheet. -->
     <select class="month-select" id="monthSelect"></select>
   </div>
 
@@ -229,15 +281,44 @@
 
   <div class="card">
     <h3>Employee Detail</h3>
+
+    <div class="filter-bar">
+      <div class="filter-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="filterName" placeholder="Search name or department…" autocomplete="off">
+      </div>
+      <select class="filter-select" id="filterDept">
+        <option value="">All Departments</option>
+      </select>
+      <select class="filter-select" id="filterScoreField">
+        <option value="combinedScore">Combined Score</option>
+        <option value="selfAvg">Self-Report</option>
+        <option value="managerScore">Manager View</option>
+      </select>
+      <select class="filter-select" id="filterScoreBand">
+        <option value="">Any Score</option>
+        <option value="high">7.5+ Healthy</option>
+        <option value="mid">5–7.4 Watch</option>
+        <option value="low">&lt;5 At Risk</option>
+        <option value="na">No Data</option>
+      </select>
+      <label class="filter-chip">
+        <input type="checkbox" id="filterRiskOnly">
+        At Risk flag only
+      </label>
+      <button class="filter-clear" id="filterClearBtn">Clear filters</button>
+    </div>
+    <div class="filter-count" id="filterCount"></div>
+
     <table>
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Department</th>
-          <th>Self-Report</th>
-          <th>Manager View</th>
-          <th>Combined</th>
-          <th>Gap</th>
+          <th class="sortable" data-sort="name">Name <span class="sort-arrow">▲▼</span></th>
+          <th class="sortable" data-sort="department">Department <span class="sort-arrow">▲▼</span></th>
+          <th class="sortable" data-sort="selfAvg">Self-Report <span class="sort-arrow">▲▼</span></th>
+          <th class="sortable" data-sort="managerScore">Manager View <span class="sort-arrow">▲▼</span></th>
+          <th class="sortable" data-sort="combinedScore">Combined <span class="sort-arrow">▲▼</span></th>
+          <th class="sortable" data-sort="divergence">Gap <span class="sort-arrow">▲▼</span></th>
           <th>Flags</th>
         </tr>
       </thead>
@@ -263,10 +344,12 @@ var EMPTY_DATA = {
   alerts: []
 };
 
-// FIX: builds the month dropdown dynamically instead of a hardcoded list.
-// Generates the current month plus the previous N months, most recent first,
-// and defaults selection to the current calendar month so newly submitted
-// data is visible without ever having to edit this file again.
+// Holds the full employee list for the currently loaded month, enriched with
+// derived fields (selfAvg, managerScore) so filtering/sorting never needs to
+// re-fetch or re-derive from raw sheet rows.
+var currentEmployees = [];
+var sortState = { field: null, dir: 1 };
+
 function populateMonthSelect(monthsBack) {
   var sel = document.getElementById('monthSelect');
   var now = new Date();
@@ -313,6 +396,13 @@ function scoreClass(score) {
   return 'score-low';
 }
 
+function scoreBand(score) {
+  if (score === null || score === undefined) return 'na';
+  if (score >= 7.5) return 'high';
+  if (score >= 5) return 'mid';
+  return 'low';
+}
+
 function barColor(score) {
   if (score === null) return '#D0D3D9';
   if (score >= 7.5) return 'var(--green)';
@@ -323,9 +413,6 @@ function barColor(score) {
 function renderKpis(data) {
   var pct = data.totalEmployees ? Math.round((data.reportedCount / data.totalEmployees) * 100) : 0;
   var atRisk = data.alerts.filter(function(a){ return a.type === 'ATTRITION_RISK'; }).length;
-  // FIX: previously `data.orgAvgScore < 6` ran even when orgAvgScore was null (no data yet
-  // for that month). JS coerces null to 0, so `null < 6` was true, which silently painted
-  // the "—" placeholder red instead of leaving it neutral. Now null is checked explicitly.
   var orgColorClass = '';
   if (data.orgAvgScore !== null && data.orgAvgScore !== undefined) {
     orgColorClass = data.orgAvgScore < 6 ? 'alert-color' : 'good-color';
@@ -378,21 +465,112 @@ function selfReportAvg(selfRow) {
   return Math.round(avg * 10) / 10;
 }
 
-function renderTable(data) {
+// ── Filter bar population & wiring ──────────────────────────────
+function populateDeptFilter(employees) {
+  var sel = document.getElementById('filterDept');
+  var current = sel.value;
+  var depts = Array.from(new Set(employees.map(function(e) { return e.department; }))).sort();
+  var opts = ['<option value="">All Departments</option>'];
+  depts.forEach(function(d) { opts.push('<option value="' + d + '">' + d + '</option>'); });
+  sel.innerHTML = opts.join('');
+  if (depts.indexOf(current) !== -1) sel.value = current;
+}
+
+function getFilters() {
+  return {
+    name: document.getElementById('filterName').value.trim().toLowerCase(),
+    dept: document.getElementById('filterDept').value,
+    scoreField: document.getElementById('filterScoreField').value,
+    scoreBand: document.getElementById('filterScoreBand').value,
+    riskOnly: document.getElementById('filterRiskOnly').checked
+  };
+}
+
+function applyFilters() {
+  var f = getFilters();
+  var filtered = currentEmployees.filter(function(e) {
+    if (f.name) {
+      var haystack = (e.name + ' ' + e.department).toLowerCase();
+      if (haystack.indexOf(f.name) === -1) return false;
+    }
+    if (f.dept && e.department !== f.dept) return false;
+    if (f.scoreBand) {
+      var val = e[f.scoreField];
+      if (scoreBand(val) !== f.scoreBand) return false;
+    }
+    if (f.riskOnly && !e.attritionRisk) return false;
+    return true;
+  });
+
+  if (sortState.field) {
+    filtered = sortEmployees(filtered, sortState.field, sortState.dir);
+  }
+
+  renderTable(filtered);
+
+  var countEl = document.getElementById('filterCount');
+  if (filtered.length === currentEmployees.length) {
+    countEl.textContent = currentEmployees.length + ' employee' + (currentEmployees.length === 1 ? '' : 's');
+  } else {
+    countEl.textContent = 'Showing ' + filtered.length + ' of ' + currentEmployees.length + ' employees';
+  }
+}
+
+function sortEmployees(list, field, dir) {
+  var copy = list.slice();
+  copy.sort(function(a, b) {
+    var av = a[field], bv = b[field];
+    var aNull = av === null || av === undefined;
+    var bNull = bv === null || bv === undefined;
+    if (aNull && bNull) return 0;
+    if (aNull) return 1;  // nulls always sort last
+    if (bNull) return -1;
+    if (typeof av === 'string') return av.localeCompare(bv) * dir;
+    return (av - bv) * dir;
+  });
+  return copy;
+}
+
+function setupSortHeaders() {
+  document.querySelectorAll('th.sortable').forEach(function(th) {
+    th.addEventListener('click', function() {
+      var field = th.getAttribute('data-sort');
+      if (sortState.field === field) {
+        sortState.dir *= -1;
+      } else {
+        sortState.field = field;
+        sortState.dir = 1;
+      }
+      document.querySelectorAll('th.sortable').forEach(function(h) { h.classList.remove('sort-active'); });
+      th.classList.add('sort-active');
+      applyFilters();
+    });
+  });
+}
+
+function clearFilters() {
+  document.getElementById('filterName').value = '';
+  document.getElementById('filterDept').value = '';
+  document.getElementById('filterScoreField').value = 'combinedScore';
+  document.getElementById('filterScoreBand').value = '';
+  document.getElementById('filterRiskOnly').checked = false;
+  applyFilters();
+}
+
+function renderTable(employees) {
   var html = '';
-  data.employees.forEach(function(e) {
-    var selfAvg = selfReportAvg(e.selfReport);
+  employees.forEach(function(e) {
     html += '<tr>';
     html += '<td>' + e.name + '</td>';
     html += '<td>' + e.department + '</td>';
-    html += '<td>' + (selfAvg !== null ? '<span class="score-pill ' + scoreClass(selfAvg) + '">' + selfAvg + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
-    html += '<td>' + (e.managerInput ? '<span class="score-pill ' + scoreClass(e.managerInput.Perceived_Satisfaction_Score) + '">' + e.managerInput.Perceived_Satisfaction_Score + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+    html += '<td>' + (e.selfAvg !== null ? '<span class="score-pill ' + scoreClass(e.selfAvg) + '">' + e.selfAvg + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+    html += '<td>' + (e.managerScore !== null ? '<span class="score-pill ' + scoreClass(e.managerScore) + '">' + e.managerScore + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
     html += '<td><span class="score-pill ' + scoreClass(e.combinedScore) + '">' + (e.combinedScore ?? '—') + '</span></td>';
     html += '<td>' + (e.divergence !== null ? (e.divergence > 0 ? '+' : '') + e.divergence : '—') + '</td>';
     html += '<td>' + (e.attritionRisk ? '<span class="badge badge-risk">At Risk</span>' : '') + '</td>';
     html += '</tr>';
   });
-  document.getElementById('empTableBody').innerHTML = html || '<tr><td colspan="7" class="empty-state">No data for this month yet.</td></tr>';
+  document.getElementById('empTableBody').innerHTML = html || '<tr><td colspan="7" class="empty-state">No employees match the current filters.</td></tr>';
 }
 
 var DIMENSION_LABELS = {
@@ -467,22 +645,40 @@ function renderAll(data) {
   renderKpis(data);
   renderDeptBars(data);
   renderAlerts(data);
-  renderTable(data);
   renderDivergence(data);
   renderDimensions(data);
+
+  // Enrich employees once with derived numeric fields used by filter/sort,
+  // so the filter bar and table stay in sync off a single source of truth.
+  currentEmployees = data.employees.map(function(e) {
+    var selfAvg = selfReportAvg(e.selfReport);
+    var managerScore = e.managerInput ? Number(e.managerInput.Perceived_Satisfaction_Score) : null;
+    return Object.assign({}, e, {
+      selfAvg: selfAvg,
+      managerScore: (managerScore !== null && !isNaN(managerScore)) ? managerScore : null
+    });
+  });
+
+  populateDeptFilter(currentEmployees);
+  sortState = { field: null, dir: 1 };
+  document.querySelectorAll('th.sortable').forEach(function(h) { h.classList.remove('sort-active'); });
+  applyFilters();
 }
 
-// FIX: populate the month dropdown (current month + 5 prior) before the first fetch,
-// and default the selection to the current month.
 populateMonthSelect(6);
+setupSortHeaders();
+
+['filterName', 'filterDept', 'filterScoreField', 'filterScoreBand', 'filterRiskOnly'].forEach(function(id) {
+  var el = document.getElementById(id);
+  var evt = (id === 'filterName') ? 'input' : 'change';
+  el.addEventListener(evt, applyFilters);
+});
+document.getElementById('filterClearBtn').addEventListener('click', clearFilters);
+
 fetchDashboard(document.getElementById('monthSelect').value);
 
 document.getElementById('monthSelect').addEventListener('change', function() {
   fetchDashboard(this.value);
-});
-
-document.getElementById('btnRoi').addEventListener('click', function() {
-  alert('In the live HQ build, this switches back to the existing ROI View without reloading the page.');
 });
 </script>
 </body>
