@@ -144,6 +144,75 @@
 
   .empty-state { text-align: center; padding: 30px; color: var(--text-soft); font-size: 13px; }
   .result-count { font-size: 11.5px; color: var(--text-soft); margin-bottom: 10px; }
+
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .filter-search {
+    position: relative;
+    flex: 1 1 220px;
+    min-width: 180px;
+  }
+  .filter-search svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-soft);
+    pointer-events: none;
+  }
+  .filter-search input {
+    width: 100%;
+    padding: 8px 10px 8px 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .filter-search input:focus { outline: none; border-color: var(--purple-l); }
+  .filter-select {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--text);
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .filter-chip input { accent-color: var(--purple); cursor: pointer; }
+  .filter-clear {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 12.5px;
+    color: var(--text-soft);
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .filter-clear:hover { color: var(--red); border-color: var(--red-l); }
 </style>
 </head>
 <body>
@@ -156,7 +225,6 @@
     </div>
     <div class="controls-row" style="margin-bottom:0;">
       <select class="month-select" id="monthSelect"></select>
-      <input type="text" class="search-input" id="searchInput" placeholder="Search name or department…" autocomplete="off">
       <a class="btn-link" id="backLink" href="happiness-tracker.html">← Back to Dashboard</a>
     </div>
   </div>
@@ -164,6 +232,37 @@
   <div id="subjectiveNote"></div>
 
   <div class="card">
+    <div class="filter-bar">
+      <div class="filter-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="searchInput" placeholder="Search name or department…" autocomplete="off">
+      </div>
+      <select class="filter-select" id="filterDept">
+        <option value="">All Departments</option>
+      </select>
+      <select class="filter-select" id="filterScoreField">
+        <option value="combinedScore">Combined Score</option>
+        <option value="selfAvg">Self-Report</option>
+        <option value="managerScore">Manager View</option>
+      </select>
+      <select class="filter-select" id="filterScoreBand">
+        <option value="">Any Score</option>
+        <option value="high">7.5+ Healthy</option>
+        <option value="mid">5–7.4 Watch</option>
+        <option value="low">&lt;5 At Risk</option>
+        <option value="na">No Data</option>
+      </select>
+      <label class="filter-chip">
+        <input type="checkbox" id="filterRiskOnly">
+        At Risk flag only
+      </label>
+      <label class="filter-chip">
+        <input type="checkbox" id="filterMissingOnly">
+        Not Filled (Self or Manager)
+      </label>
+      <button class="filter-clear" id="filterClearBtn">Clear filters</button>
+    </div>
+
     <div class="result-count" id="resultCount"></div>
     <div class="table-scroll">
       <table>
@@ -192,9 +291,29 @@ var DIMENSION_LABELS = {
   Compensation_Fairness_Score: 'Compensation Fairness'
 };
 
-// Keys that are structural/meta rather than a rating or an open-text answer —
+// Fields that are structural/meta rather than a rating or an open-text answer —
 // excluded when auto-detecting "subjective" columns from whatever the API returns.
-var META_KEYS = ['Timestamp', 'Email', 'Name', 'Department', 'EmployeeID', 'Employee_ID', 'ID', 'ML_ID', 'Month'];
+// Pattern-based (not just exact keys) so naming variants like "EntryID", "Entry Id",
+// "Submitted On", "Legacy_Unmapped_1" etc. are all caught regardless of exact casing/spacing.
+var META_KEY_PATTERNS = [
+  /^timestamp$/i,
+  /^e[-_ ]?mail$/i,
+  /^name$/i,
+  /^department$/i,
+  /^employee[_ ]?id$/i,
+  /^employee[_ ]?name$/i,
+  /^entry[_ ]?id$/i,
+  /^\s*id\s*$/i,
+  /^ml[_ ]?id$/i,
+  /^month$/i,
+  /^submitted[_ ]?on$/i,
+  /^submission[_ ]?date$/i,
+  /^legacy[_ ]?unmapped[_ ]?\d*$/i
+];
+
+function isMetaKey(key) {
+  return META_KEY_PATTERNS.some(function(re) { return re.test(key); });
+}
 
 var currentEmployees = [];
 var subjectiveKeys = [];
@@ -205,6 +324,14 @@ function scoreClass(score) {
   if (v >= 7.5) return 'score-high';
   if (v >= 5) return 'score-mid';
   return 'score-low';
+}
+
+function scoreBand(score) {
+  if (score === null || score === undefined || score === '' || isNaN(Number(score))) return 'na';
+  var v = Number(score);
+  if (v >= 7.5) return 'high';
+  if (v >= 5) return 'mid';
+  return 'low';
 }
 
 function getMonthFromQuery() {
@@ -244,7 +371,7 @@ function detectSubjectiveKeys(employees) {
       if (!obj) return;
       Object.keys(obj).forEach(function(k) {
         if (DIMENSION_LABELS.hasOwnProperty(k)) return;
-        if (META_KEYS.indexOf(k) !== -1) return;
+        if (isMetaKey(k)) return;
         if (k === 'Perceived_Satisfaction_Score') return;
         found[k] = true;
       });
@@ -304,19 +431,60 @@ function renderTable(employees) {
   body.innerHTML = html;
 }
 
-function applySearch() {
-  var q = document.getElementById('searchInput').value.trim().toLowerCase();
-  var filtered = currentEmployees;
-  if (q) {
-    filtered = currentEmployees.filter(function(e) {
-      return (e.name + ' ' + e.department).toLowerCase().indexOf(q) !== -1;
-    });
-  }
+function populateDeptFilter(employees) {
+  var sel = document.getElementById('filterDept');
+  var current = sel.value;
+  var depts = Array.from(new Set(employees.map(function(e) { return e.department; }))).sort();
+  var opts = ['<option value="">All Departments</option>'];
+  depts.forEach(function(d) { opts.push('<option value="' + d + '">' + d + '</option>'); });
+  sel.innerHTML = opts.join('');
+  if (depts.indexOf(current) !== -1) sel.value = current;
+}
+
+function getFilters() {
+  return {
+    name: document.getElementById('searchInput').value.trim().toLowerCase(),
+    dept: document.getElementById('filterDept').value,
+    scoreField: document.getElementById('filterScoreField').value,
+    scoreBand: document.getElementById('filterScoreBand').value,
+    riskOnly: document.getElementById('filterRiskOnly').checked,
+    missingOnly: document.getElementById('filterMissingOnly').checked
+  };
+}
+
+function applyFilters() {
+  var f = getFilters();
+  var filtered = currentEmployees.filter(function(e) {
+    if (f.name) {
+      var haystack = (e.name + ' ' + e.department).toLowerCase();
+      if (haystack.indexOf(f.name) === -1) return false;
+    }
+    if (f.dept && e.department !== f.dept) return false;
+    if (f.scoreBand) {
+      var val = e[f.scoreField];
+      if (scoreBand(val) !== f.scoreBand) return false;
+    }
+    if (f.riskOnly && !e.attritionRisk) return false;
+    if (f.missingOnly && !(!e.selfReport || !e.managerInput)) return false;
+    return true;
+  });
+
   renderTable(filtered);
+
   var countEl = document.getElementById('resultCount');
   countEl.textContent = filtered.length === currentEmployees.length
     ? currentEmployees.length + ' employee' + (currentEmployees.length === 1 ? '' : 's')
     : 'Showing ' + filtered.length + ' of ' + currentEmployees.length + ' employees';
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filterDept').value = '';
+  document.getElementById('filterScoreField').value = 'combinedScore';
+  document.getElementById('filterScoreBand').value = '';
+  document.getElementById('filterRiskOnly').checked = false;
+  document.getElementById('filterMissingOnly').checked = false;
+  applyFilters();
 }
 
 function renderSubjectiveNote() {
@@ -347,12 +515,17 @@ function fetchFullReport(month) {
         return;
       }
       currentEmployees = (data.employees || []).map(function(e) {
-        return Object.assign({}, e, { selfAvg: selfReportAvg(e.selfReport) });
+        var mgrScore = e.managerInput ? Number(e.managerInput.Perceived_Satisfaction_Score) : null;
+        return Object.assign({}, e, {
+          selfAvg: selfReportAvg(e.selfReport),
+          managerScore: (mgrScore !== null && !isNaN(mgrScore)) ? mgrScore : null
+        });
       });
       subjectiveKeys = detectSubjectiveKeys(currentEmployees);
       renderSubjectiveNote();
       buildHeader();
-      applySearch();
+      populateDeptFilter(currentEmployees);
+      applyFilters();
     })
     .catch(function() {
       document.getElementById('resultCount').textContent = '';
@@ -366,7 +539,12 @@ fetchFullReport(document.getElementById('monthSelect').value);
 document.getElementById('monthSelect').addEventListener('change', function() {
   fetchFullReport(this.value);
 });
-document.getElementById('searchInput').addEventListener('input', applySearch);
+['searchInput', 'filterDept', 'filterScoreField', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
+  var el = document.getElementById(id);
+  var evt = (id === 'searchInput') ? 'input' : 'change';
+  el.addEventListener(evt, applyFilters);
+});
+document.getElementById('filterClearBtn').addEventListener('click', clearFilters);
 </script>
 </body>
 </html>
