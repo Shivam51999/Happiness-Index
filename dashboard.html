@@ -361,6 +361,7 @@
     <div style="display:flex; align-items:center; gap:10px;">
       <select class="month-select" id="monthSelect"></select>
       <a class="btn-link" id="fullReportLink" href="full-report.html" target="_blank" rel="noopener">Open Full Report ↗</a>
+      <a class="btn-link" id="monthlyComparisonLink" href="monthly-comparison.html" target="_blank" rel="noopener">Monthly Comparison ↗</a>
     </div>
   </div>
 
@@ -1232,6 +1233,8 @@ setupSortHeaders();
 function updateFullReportLink(month) {
   var link = document.getElementById('fullReportLink');
   if (link) link.href = 'full-report.html?month=' + encodeURIComponent(month);
+  var cmpLink = document.getElementById('monthlyComparisonLink');
+  if (cmpLink) cmpLink.href = 'monthly-comparison.html?month=' + encodeURIComponent(month);
 }
 updateFullReportLink(document.getElementById('monthSelect').value);
 document.getElementById('monthSelect').addEventListener('change', function() {
