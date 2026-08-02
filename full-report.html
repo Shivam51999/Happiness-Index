@@ -3,216 +3,88 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Full Report — Happiness & Satisfaction — Mangalam HQ</title>
+<title>Full Report — Happiness & Satisfaction · Mangalam HQ</title>
 <style>
   :root {
-    --navy: #1A3F6F;
-    --navy-l: #2A5490;
-    --purple: #6B4FA0;
-    --purple-l: #8B6FC0;
-    --green: #2E7D5B;
-    --green-l: #E8F5EE;
-    --amber: #B8860B;
-    --amber-l: #FFF5E0;
-    --red: #B0413E;
-    --red-l: #FBE9E8;
-    --bg: #F5F6FA;
-    --card: #FFFFFF;
-    --text: #1F2937;
-    --text-soft: #6B7280;
-    --border: #E5E7EB;
+    --navy: #1A3F6F; --navy-l: #2A5490; --purple: #6B4FA0; --purple-l: #8B6FC0;
+    --green: #2E7D5B; --green-l: #E8F5EE; --amber: #B8860B; --amber-l: #FFF5E0;
+    --red: #B0413E; --red-l: #FBE9E8; --teal: #1F8A8C; --teal-l: #E3F5F5;
+    --pink: #B0467E; --pink-l: #FBE9F3; --slate: #55627A; --slate-l: #EAEDF2;
+    --bg: #F5F6FA; --card: #FFFFFF; --text: #1F2937; --text-soft: #6B7280; --border: #E5E7EB;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 24px;
-  }
-  .wrap { max-width: 1600px; margin: 0 auto; }
+  body { margin:0; font-family:'Segoe UI', system-ui, -apple-system, sans-serif; background:var(--bg); color:var(--text); padding:24px; }
+  .wrap { max-width: 1240px; margin: 0 auto; }
 
-  .header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .title-block h1 { font-size: 22px; margin: 0 0 4px; color: var(--navy); }
-  .title-block p { margin: 0; color: var(--text-soft); font-size: 13px; }
+  .header-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+  .title-block h1 { font-size:22px; margin:0 0 4px; color:var(--navy); }
+  .title-block p { margin:0; color:var(--text-soft); font-size:13px; }
+  .header-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .select-ctl { padding:8px 14px; border-radius:8px; border:1px solid var(--border); font-size:13px; background:#fff; color:var(--text); font-family:inherit; }
+  .btn-link { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; border:1px solid var(--border); background:var(--navy); color:#fff; font-size:13px; font-weight:600; text-decoration:none; white-space:nowrap; }
+  .btn-link:hover { background:var(--navy-l); }
+  .btn-link.secondary { background:#fff; color:var(--navy); border-color:var(--navy); }
+  .btn-link.secondary:hover { background:var(--navy); color:#fff; }
 
-  .btn-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: #fff;
-    color: var(--navy);
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-  .btn-link:hover { background: var(--bg); }
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+  .kpi-card { background:var(--card); border-radius:12px; padding:16px 18px; box-shadow:0 1px 3px rgba(0,0,0,0.06); border:1px solid var(--border); }
+  .kpi-label { font-size:11px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:6px; }
+  .kpi-value { font-size:26px; font-weight:700; color:var(--navy); }
+  .kpi-sub { font-size:11px; color:var(--text-soft); margin-top:4px; }
+  .kpi-value.alert-color { color:var(--red); }
+  .kpi-value.good-color { color:var(--green); }
+  .delta { font-size:11.5px; font-weight:700; margin-left:6px; }
+  .delta-up { color:var(--green); }
+  .delta-down { color:var(--red); }
+  .delta-flat { color:var(--text-soft); }
 
-  .controls-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 18px;
-  }
-  .month-select, .search-input {
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    font-size: 13px;
-    background: #fff;
-    color: var(--text);
-    font-family: inherit;
-  }
-  .search-input { min-width: 220px; }
+  .card { background:var(--card); border-radius:12px; padding:18px 20px; box-shadow:0 1px 3px rgba(0,0,0,0.06); border:1px solid var(--border); margin-bottom:16px; }
+  .card h3 { font-size:14px; margin:0 0 4px; color:var(--navy); }
+  .card .card-note { font-size:11.5px; color:var(--text-soft); margin:0 0 14px; }
 
-  .note-banner {
-    background: var(--amber-l);
-    color: var(--amber);
-    border: 1px solid #F0DFA8;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 12.5px;
-    margin-bottom: 16px;
-  }
+  .legend-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+  .legend-chip { display:flex; align-items:center; gap:6px; padding:5px 10px; border-radius:16px; border:1px solid var(--border); font-size:11.5px; cursor:pointer; user-select:none; background:#fff; color:var(--text); }
+  .legend-chip.off { opacity:0.35; }
+  .legend-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
 
-  .card {
-    background: var(--card);
-    border-radius: 12px;
-    padding: 18px 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    border: 1px solid var(--border);
-  }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:left; padding:8px 10px; color:var(--text-soft); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.3px; border-bottom:2px solid var(--border); white-space:nowrap; }
+  td { padding:9px 10px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  tr:hover td { background:#FAFBFC; }
+  .table-scroll { max-height:480px; overflow:auto; border:1px solid var(--border); border-radius:8px; }
+  .table-scroll table { margin:0; }
+  .table-scroll thead th { position:sticky; top:0; background:var(--card); z-index:2; box-shadow:0 1px 0 var(--border); }
+  .table-scroll th:first-child, .table-scroll td:first-child { position:sticky; left:0; background:var(--card); z-index:1; box-shadow:1px 0 0 var(--border); }
+  .table-scroll thead th:first-child { z-index:3; }
+  .row-label { font-weight:600; color:var(--text); }
+  .row-sub { color:var(--text-soft); font-size:12px; padding-left:16px; }
 
-  .table-scroll { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 900px; }
-  th {
-    text-align: left;
-    padding: 9px 10px;
-    color: #fff;
-    background: var(--navy);
-    font-weight: 600;
-    font-size: 10.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    white-space: nowrap;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-  }
-  th.subjective-col { background: var(--purple); }
-  td {
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
-  }
-  td.subjective-cell {
-    max-width: 260px;
-    white-space: normal;
-    color: var(--text-soft);
-    font-style: italic;
-  }
-  tr:hover td { background: #FAFBFC; }
-  tr:nth-child(even) td { background: #FBFCFE; }
-  tr:nth-child(even):hover td { background: #F5F7FA; }
+  .empty-state { text-align:center; padding:30px; color:var(--text-soft); font-size:13px; }
 
-  .score-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 32px;
-    padding: 2px 7px;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 11.5px;
-  }
-  .score-high { background: var(--green-l); color: var(--green); }
-  .score-mid { background: var(--amber-l); color: var(--amber); }
-  .score-low { background: var(--red-l); color: var(--red); }
-  .score-na { background: #F0F0F0; color: var(--text-soft); }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:0; }
 
-  .empty-state { text-align: center; padding: 30px; color: var(--text-soft); font-size: 13px; }
-  .result-count { font-size: 11.5px; color: var(--text-soft); margin-bottom: 10px; }
+  .dim-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; }
+  .dim-card { border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+  .dim-name { font-size:12.5px; font-weight:700; color:var(--navy); margin-bottom:2px; }
+  .dim-current { font-size:20px; font-weight:700; }
+  .dim-trend-wrap { margin-top:6px; }
 
-  .filter-bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 14px;
+  .mover-list { display:flex; flex-direction:column; gap:0; }
+  .mover-item { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--border); font-size:12.5px; }
+  .mover-item:last-child { border-bottom:none; }
+  .mover-name { font-weight:600; color:var(--text); }
+  .mover-dept { color:var(--text-soft); font-size:11.5px; }
+  .mover-delta { font-weight:700; padding:2px 9px; border-radius:6px; font-size:12px; }
+  .mover-up { background:var(--green-l); color:var(--green); }
+  .mover-down { background:var(--red-l); color:var(--red); }
+
+  .badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:600; }
+
+  @media (max-width: 900px) {
+    .kpi-row { grid-template-columns:repeat(2,1fr); }
+    .grid-2 { grid-template-columns:1fr; }
+    .dim-grid { grid-template-columns:repeat(2,1fr); }
   }
-  .filter-search {
-    position: relative;
-    flex: 1 1 220px;
-    min-width: 180px;
-  }
-  .filter-search svg {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-soft);
-    pointer-events: none;
-  }
-  .filter-search input {
-    width: 100%;
-    padding: 8px 10px 8px 32px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    font-size: 13px;
-    background: #fff;
-    color: var(--text);
-    font-family: inherit;
-  }
-  .filter-search input:focus { outline: none; border-color: var(--purple-l); }
-  .filter-select {
-    padding: 8px 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    font-size: 13px;
-    background: #fff;
-    color: var(--text);
-    font-family: inherit;
-    cursor: pointer;
-  }
-  .filter-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    font-size: 12.5px;
-    color: var(--text);
-    background: #fff;
-    cursor: pointer;
-    user-select: none;
-    white-space: nowrap;
-  }
-  .filter-chip input { accent-color: var(--purple); cursor: pointer; }
-  .filter-clear {
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: #fff;
-    font-size: 12.5px;
-    color: var(--text-soft);
-    cursor: pointer;
-    font-family: inherit;
-    white-space: nowrap;
-  }
-  .filter-clear:hover { color: var(--red); border-color: var(--red-l); }
 </style>
 </head>
 <body>
@@ -220,65 +92,78 @@
 
   <div class="header-row">
     <div class="title-block">
-      <h1>Full Report — Happiness & Satisfaction</h1>
-      <p>Every employee, every objective rating, and any open-text answers for the selected month</p>
+      <h1>Full Report — Month-wise Comparison</h1>
+      <p>Happiness & Satisfaction Pulse · trends across months, org-wide and by department</p>
     </div>
-    <div class="controls-row" style="margin-bottom:0;">
-      <select class="month-select" id="monthSelect"></select>
-      <a class="btn-link" id="backLink" href="happiness-tracker.html">← Back to Dashboard</a>
+    <div class="header-controls">
+      <select class="select-ctl" id="rangeSelect">
+        <option value="3">Last 3 months</option>
+        <option value="6" selected>Last 6 months</option>
+        <option value="12">Last 12 months</option>
+        <option value="24">Last 24 months</option>
+      </select>
+      <a class="btn-link secondary" href="dashboard.html">← Back to Dashboard</a>
     </div>
   </div>
 
-  <div id="subjectiveNote"></div>
+  <div class="kpi-row" id="kpiRow"></div>
 
   <div class="card">
-    <div class="filter-bar">
-      <div class="filter-search">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input type="text" id="searchInput" placeholder="Search name or department…" autocomplete="off">
-      </div>
-      <select class="filter-select" id="filterDept">
-        <option value="">All Departments</option>
-      </select>
-      <select class="filter-select" id="filterScoreField">
-        <option value="combinedScore">Combined Score</option>
-        <option value="selfAvg">Self-Report</option>
-        <option value="managerScore">Manager View</option>
-      </select>
-      <select class="filter-select" id="filterScoreBand">
-        <option value="">Any Score</option>
-        <option value="high">7.5+ Healthy</option>
-        <option value="mid">5–7.4 Watch</option>
-        <option value="low">&lt;5 At Risk</option>
-        <option value="na">No Data</option>
-      </select>
-      <label class="filter-chip">
-        <input type="checkbox" id="filterRiskOnly">
-        At Risk flag only
-      </label>
-      <label class="filter-chip">
-        <input type="checkbox" id="filterMissingOnly">
-        Not Filled (Self or Manager)
-      </label>
-      <button class="filter-clear" id="filterClearBtn">Clear filters</button>
+    <h3>Org Happiness Score — Month over Month</h3>
+    <p class="card-note">Blended score (60% self-report + 40% manager perception), out of 10, alongside response rate.</p>
+    <div id="orgChart"></div>
+    <div class="legend-row">
+      <div class="legend-chip"><span class="legend-dot" style="background:var(--navy)"></span>Org Happiness Score</div>
+      <div class="legend-chip"><span class="legend-dot" style="background:var(--purple)"></span>Response Rate %</div>
     </div>
+  </div>
 
-    <div class="result-count" id="resultCount"></div>
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr id="tableHeadRow"></tr>
-        </thead>
-        <tbody id="fullTableBody"></tbody>
-      </table>
+  <div class="card">
+    <h3>Department Score Trend</h3>
+    <p class="card-note">Click a department in the legend to show/hide it on the chart.</p>
+    <div id="deptChart"></div>
+    <div class="legend-row" id="deptLegend"></div>
+  </div>
+
+  <div class="card">
+    <h3>Question-wise Trend</h3>
+    <p class="card-note">Average score per question each month, across all self-reports (and manager perception where noted). Sparkline shows direction over the selected range.</p>
+    <div class="dim-grid" id="dimGrid"></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Attrition Risk & Alerts Trend</h3>
+      <p class="card-note">Count of flagged alerts each month, by type.</p>
+      <div id="alertsChart"></div>
+      <div class="legend-row">
+        <div class="legend-chip"><span class="legend-dot" style="background:var(--red)"></span>Attrition Risk</div>
+        <div class="legend-chip"><span class="legend-dot" style="background:var(--amber)"></span>Low Score</div>
+        <div class="legend-chip"><span class="legend-dot" style="background:var(--purple)"></span>Perception Gap</div>
+      </div>
     </div>
+    <div class="card">
+      <h3>Month-over-Month Movers</h3>
+      <p class="card-note" id="moversNote">Biggest combined-score changes between the two most recent months with data.</p>
+      <div id="moversUp"><strong style="font-size:12px;color:var(--green);">Improved</strong></div>
+      <div class="mover-list" id="moversUpList"></div>
+      <div style="margin-top:12px;"><strong style="font-size:12px;color:var(--red);">Declined</strong></div>
+      <div class="mover-list" id="moversDownList"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Full Comparison Table</h3>
+    <p class="card-note">Every headline metric, side by side across the selected months.</p>
+    <div class="table-scroll" id="fullTableWrap"></div>
   </div>
 
 </div>
 
 <script>
-// Same backend as the main dashboard — this page reuses the existing
-// action=dashboard endpoint and does not require any backend changes.
+// ═══════════════════════════════════════════════════════════════
+// CONFIG — same backend as dashboard.html / self-report.html / manager-input.html
+// ═══════════════════════════════════════════════════════════════
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
 var ACCESS_TOKEN = 'e6a7c4f500c089c9fc85f33f1657b49bf20f58ba054ffd53';
 
@@ -288,263 +173,474 @@ var DIMENSION_LABELS = {
   Growth_Score: 'Growth',
   Recognition_Score: 'Recognition',
   Work_Environment_Score: 'Work Environment',
-  Compensation_Fairness_Score: 'Compensation Fairness'
+  Compensation_Fairness_Score: 'Compensation Fairness',
+  eNPS_Score: 'eNPS',
+  Retention_Intent_Score: 'Retention Intent',
+  Wellbeing_Trend_Score: 'Wellbeing Trend'
 };
 
-// Fields that are structural/meta rather than a rating or an open-text answer —
-// excluded when auto-detecting "subjective" columns from whatever the API returns.
-// Pattern-based (not just exact keys) so naming variants like "EntryID", "Entry Id",
-// "Submitted On", "Legacy_Unmapped_1" etc. are all caught regardless of exact casing/spacing.
-var META_KEY_PATTERNS = [
-  /^timestamp$/i,
-  /^e[-_ ]?mail$/i,
-  /^name$/i,
-  /^department$/i,
-  /^employee[_ ]?id$/i,
-  /^employee[_ ]?name$/i,
-  /^entry[_ ]?id$/i,
-  /^\s*id\s*$/i,
-  /^ml[_ ]?id$/i,
-  /^month$/i,
-  /^submitted[_ ]?on$/i,
-  /^submission[_ ]?date$/i,
-  /^legacy[_ ]?unmapped[_ ]?\d*$/i
-];
+var PALETTE = ['#1A3F6F', '#6B4FA0', '#2E7D5B', '#B8860B', '#B0413E', '#1F8A8C', '#B0467E', '#55627A'];
 
-function isMetaKey(key) {
-  return META_KEY_PATTERNS.some(function(re) { return re.test(key); });
-}
+var monthsInRange = [];      // ['2026-06', '2026-07', ...] ascending
+var monthDataList = [];      // [{month, data}] aligned with monthsInRange, data may be null on fetch failure
+var deptHidden = {};         // department -> bool (hidden from dept chart)
 
-var currentEmployees = [];
-var subjectiveKeys = [];
+// ── Utilities ──────────────────────────────────────────────────
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
 
-function scoreClass(score) {
-  if (score === null || score === undefined || score === '' || isNaN(Number(score))) return 'score-na';
-  var v = Number(score);
-  if (v >= 7.5) return 'score-high';
-  if (v >= 5) return 'score-mid';
-  return 'score-low';
-}
-
-function scoreBand(score) {
-  if (score === null || score === undefined || score === '' || isNaN(Number(score))) return 'na';
-  var v = Number(score);
-  if (v >= 7.5) return 'high';
-  if (v >= 5) return 'mid';
-  return 'low';
-}
-
-function getMonthFromQuery() {
-  var params = new URLSearchParams(window.location.search);
-  return params.get('month');
-}
-
-function populateMonthSelect(monthsBack) {
-  var sel = document.getElementById('monthSelect');
-  var now = new Date();
-  var opts = [];
-  var queryMonth = getMonthFromQuery();
-  for (var i = 0; i < monthsBack; i++) {
-    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-    var label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-    opts.push('<option value="' + key + '">' + label + '</option>');
+function monthsBackFrom(anchorMonthKey, count) {
+  var parts = anchorMonthKey.split('-');
+  var anchor = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+  var out = [];
+  for (var i = count - 1; i >= 0; i--) {
+    var d = new Date(anchor.getFullYear(), anchor.getMonth() - i, 1);
+    out.push(d.getFullYear() + '-' + pad2(d.getMonth() + 1));
   }
-  sel.innerHTML = opts.join('');
-  if (queryMonth) sel.value = queryMonth;
+  return out;
 }
 
-function selfReportAvg(selfRow) {
-  if (!selfRow) return null;
-  var dims = Object.keys(DIMENSION_LABELS).map(function(k) { return Number(selfRow[k]); });
-  var avg = dims.reduce(function(a, b) { return a + b; }, 0) / dims.length;
-  return Math.round(avg * 10) / 10;
+function formatMonthLabel(m) {
+  var parts = m.split('-');
+  var d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+  return d.toLocaleString('en-US', { month: 'short', year: '2-digit' });
 }
 
-// Detects any extra text/answer fields on selfReport or managerInput objects
-// beyond the known rating dimensions and structural meta keys, and treats
-// those as the "subjective question" answer columns for this report.
-function detectSubjectiveKeys(employees) {
-  var found = {};
-  employees.forEach(function(e) {
-    [e.selfReport, e.managerInput].forEach(function(obj) {
-      if (!obj) return;
-      Object.keys(obj).forEach(function(k) {
-        if (DIMENSION_LABELS.hasOwnProperty(k)) return;
-        if (isMetaKey(k)) return;
-        if (k === 'Perceived_Satisfaction_Score') return;
-        found[k] = true;
-      });
+function currentMonthKey() {
+  var d = new Date();
+  return d.getFullYear() + '-' + pad2(d.getMonth() + 1);
+}
+
+function fmtScore(v) { return (v === null || v === undefined || isNaN(v)) ? '—' : (Math.round(v * 10) / 10); }
+
+function round1(v) { return Math.round(v * 10) / 10; }
+
+// ── Fetch ─────────────────────────────────────────────────────
+function fetchMonth(month) {
+  return fetch(APPS_SCRIPT_URL + '?action=dashboard&month=' + encodeURIComponent(month) + '&token=' + encodeURIComponent(ACCESS_TOKEN))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) return { month: month, data: null };
+      return { month: month, data: data };
+    })
+    .catch(function() { return { month: month, data: null }; });
+}
+
+function loadRange() {
+  var anchor = (new URLSearchParams(window.location.search)).get('month') || currentMonthKey();
+  var count = Number(document.getElementById('rangeSelect').value);
+  monthsInRange = monthsBackFrom(anchor, count);
+
+  document.getElementById('kpiRow').innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Loading…</div>';
+
+  Promise.all(monthsInRange.map(fetchMonth)).then(function(results) {
+    monthDataList = results;
+    var anyData = results.some(function(r) { return r.data && r.data.totalEmployees > 0; });
+    if (!anyData) {
+      document.getElementById('kpiRow').innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Could not reach the tracker backend, or no data exists yet for the selected range.</div>';
+    }
+    renderAll();
+  });
+}
+
+// ── SVG line chart (generic) ────────────────────────────────────
+// series: [{label, color, data:[v0,v1,...]}]  (v may be null)
+// months: ['2026-06', ...] aligned with data arrays
+function lineChartSVG(series, months, opts) {
+  opts = opts || {};
+  var W = opts.width || 1160, H = opts.height || 260;
+  var padL = 34, padR = 12, padT = 14, padB = 26;
+  var plotW = W - padL - padR, plotH = H - padT - padB;
+
+  var allVals = [];
+  series.forEach(function(s) { s.data.forEach(function(v) { if (v !== null && v !== undefined && !isNaN(v)) allVals.push(v); }); });
+
+  var yMin = opts.yMin !== undefined ? opts.yMin : 0;
+  var yMax = opts.yMax !== undefined ? opts.yMax : 10;
+  if (opts.autoScale) {
+    yMin = allVals.length ? Math.min.apply(null, allVals) : 0;
+    yMax = allVals.length ? Math.max.apply(null, allVals) : 1;
+    var pad = (yMax - yMin) * 0.15 || 1;
+    yMin = Math.max(0, yMin - pad);
+    yMax = yMax + pad;
+  }
+  if (yMin === yMax) yMax = yMin + 1;
+
+  var n = months.length;
+  function xPos(i) { return padL + (n <= 1 ? plotW / 2 : (i / (n - 1)) * plotW); }
+  function yPos(v) { return padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH; }
+
+  if (!allVals.length) {
+    return '<div class="empty-state">No data yet for this range.</div>';
+  }
+
+  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">';
+  var gridCount = 4;
+  for (var g = 0; g <= gridCount; g++) {
+    var gv = yMin + (yMax - yMin) * g / gridCount;
+    var gy = yPos(gv);
+    svg += '<line x1="' + padL + '" y1="' + gy + '" x2="' + (W - padR) + '" y2="' + gy + '" stroke="#E5E7EB" stroke-width="1"/>';
+    svg += '<text x="' + (padL - 6) + '" y="' + (gy + 3) + '" font-size="9" fill="#6B7280" text-anchor="end">' + round1(gv) + '</text>';
+  }
+  var labelEvery = n > 14 ? Math.ceil(n / 10) : 1;
+  months.forEach(function(m, i) {
+    if (i % labelEvery !== 0 && i !== n - 1) return;
+    svg += '<text x="' + xPos(i).toFixed(1) + '" y="' + (H - 8) + '" font-size="9" fill="#6B7280" text-anchor="middle">' + formatMonthLabel(m) + '</text>';
+  });
+
+  series.forEach(function(s) {
+    var pathParts = [];
+    var open = false;
+    s.data.forEach(function(v, i) {
+      if (v === null || v === undefined || isNaN(v)) { open = false; return; }
+      pathParts.push((open ? 'L' : 'M') + xPos(i).toFixed(1) + ',' + yPos(v).toFixed(1));
+      open = true;
+    });
+    if (pathParts.length) {
+      svg += '<path d="' + pathParts.join(' ') + '" fill="none" stroke="' + s.color + '" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+    }
+    s.data.forEach(function(v, i) {
+      if (v === null || v === undefined || isNaN(v)) return;
+      svg += '<circle cx="' + xPos(i).toFixed(1) + '" cy="' + yPos(v).toFixed(1) + '" r="3.2" fill="' + s.color + '"><title>' + s.label + ' · ' + formatMonthLabel(months[i]) + ': ' + round1(v) + '</title></circle>';
     });
   });
-  return Object.keys(found);
+  svg += '</svg>';
+  return svg;
 }
 
-function prettyKey(k) {
-  return k.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
-}
+// ── SVG stacked bar chart (generic) ─────────────────────────────
+function stackedBarChartSVG(series, months, opts) {
+  opts = opts || {};
+  var W = opts.width || 1160, H = opts.height || 220;
+  var padL = 30, padR = 12, padT = 14, padB = 26;
+  var plotW = W - padL - padR, plotH = H - padT - padB;
+  var n = months.length;
 
-function buildHeader() {
-  var headRow = document.getElementById('tableHeadRow');
-  var html = '<th>#</th><th>Name</th><th>Department</th>';
-  Object.keys(DIMENSION_LABELS).forEach(function(k) {
-    html += '<th>' + DIMENSION_LABELS[k] + '</th>';
+  var totals = months.map(function(_, i) {
+    return series.reduce(function(sum, s) { return sum + (s.data[i] || 0); }, 0);
   });
-  html += '<th>Manager Perceived Score</th>';
-  subjectiveKeys.forEach(function(k) {
-    html += '<th class="subjective-col">' + prettyKey(k) + '</th>';
+  var maxTotal = Math.max.apply(null, totals.concat([1]));
+  var yMax = Math.ceil(maxTotal * 1.15) || 1;
+
+  function yPos(v) { return padT + plotH - (v / yMax) * plotH; }
+  var slotW = plotW / n;
+  var barW = Math.min(34, slotW * 0.5);
+
+  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">';
+  var gridCount = 4;
+  for (var g = 0; g <= gridCount; g++) {
+    var gv = yMax * g / gridCount;
+    var gy = yPos(gv);
+    svg += '<line x1="' + padL + '" y1="' + gy + '" x2="' + (W - padR) + '" y2="' + gy + '" stroke="#E5E7EB" stroke-width="1"/>';
+    svg += '<text x="' + (padL - 6) + '" y="' + (gy + 3) + '" font-size="9" fill="#6B7280" text-anchor="end">' + Math.round(gv) + '</text>';
+  }
+
+  months.forEach(function(m, i) {
+    var cx = padL + slotW * i + slotW / 2;
+    var yCursor = padT + plotH;
+    series.forEach(function(s) {
+      var v = s.data[i] || 0;
+      if (v <= 0) return;
+      var segH = (v / yMax) * plotH;
+      svg += '<rect x="' + (cx - barW / 2).toFixed(1) + '" y="' + (yCursor - segH).toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + segH.toFixed(1) + '" fill="' + s.color + '"><title>' + s.label + ' · ' + formatMonthLabel(m) + ': ' + v + '</title></rect>';
+      yCursor -= segH;
+    });
+    svg += '<text x="' + cx.toFixed(1) + '" y="' + (H - 8) + '" font-size="9" fill="#6B7280" text-anchor="middle">' + formatMonthLabel(m) + '</text>';
   });
-  headRow.innerHTML = html;
+  svg += '</svg>';
+  return svg;
 }
 
-function findSubjectiveValue(e, key) {
-  if (e.selfReport && e.selfReport[key] !== undefined && e.selfReport[key] !== '') return e.selfReport[key];
-  if (e.managerInput && e.managerInput[key] !== undefined && e.managerInput[key] !== '') return e.managerInput[key];
-  return null;
+// Tiny sparkline used inside the dimension cards
+function sparklineSVG(values, color) {
+  var W = 200, H = 44, pad = 4;
+  var vals = values.filter(function(v) { return v !== null && v !== undefined && !isNaN(v); });
+  if (!vals.length) return '<div class="empty-state" style="padding:8px;font-size:11px;">No data</div>';
+  var yMin = Math.min.apply(null, vals), yMax = Math.max.apply(null, vals);
+  if (yMin === yMax) { yMin -= 1; yMax += 1; }
+  var n = values.length;
+  function xPos(i) { return pad + (n <= 1 ? (W - pad * 2) / 2 : (i / (n - 1)) * (W - pad * 2)); }
+  function yPos(v) { return H - pad - ((v - yMin) / (yMax - yMin)) * (H - pad * 2); }
+  var pathParts = []; var open = false;
+  values.forEach(function(v, i) {
+    if (v === null || v === undefined || isNaN(v)) { open = false; return; }
+    pathParts.push((open ? 'L' : 'M') + xPos(i).toFixed(1) + ',' + yPos(v).toFixed(1));
+    open = true;
+  });
+  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:44px;display:block;">';
+  svg += '<path d="' + pathParts.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+  values.forEach(function(v, i) {
+    if (v === null || v === undefined || isNaN(v)) return;
+    svg += '<circle cx="' + xPos(i).toFixed(1) + '" cy="' + yPos(v).toFixed(1) + '" r="2" fill="' + color + '"/>';
+  });
+  svg += '</svg>';
+  return svg;
 }
 
-function renderTable(employees) {
-  var body = document.getElementById('fullTableBody');
-  if (!employees.length) {
-    var colCount = 3 + Object.keys(DIMENSION_LABELS).length + 1 + subjectiveKeys.length;
-    body.innerHTML = '<tr><td colspan="' + colCount + '" class="empty-state">No employees match the current search, or no data for this month yet.</td></tr>';
+// ── Derived data per month ──────────────────────────────────────
+function selfReportAvgFields(selfRow, fields) {
+  var out = {};
+  fields.forEach(function(f) {
+    out[f] = selfRow ? Number(selfRow[f]) : NaN;
+  });
+  return out;
+}
+
+function computeDimensionAverages(monthEntry) {
+  var out = {};
+  Object.keys(DIMENSION_LABELS).forEach(function(dim) { out[dim] = { sum: 0, count: 0 }; });
+  out['Manager_Perceived'] = { sum: 0, count: 0 };
+  if (!monthEntry || !monthEntry.data) {
+    var empty = {};
+    Object.keys(out).forEach(function(k) { empty[k] = null; });
+    return empty;
+  }
+  monthEntry.data.employees.forEach(function(e) {
+    if (e.selfReport) {
+      Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+        var v = Number(e.selfReport[dim]);
+        if (!isNaN(v)) { out[dim].sum += v; out[dim].count++; }
+      });
+    }
+    if (e.managerInput) {
+      var mv = Number(e.managerInput.Perceived_Satisfaction_Score);
+      if (!isNaN(mv)) { out['Manager_Perceived'].sum += mv; out['Manager_Perceived'].count++; }
+    }
+  });
+  var result = {};
+  Object.keys(out).forEach(function(k) {
+    result[k] = out[k].count ? round1(out[k].sum / out[k].count) : null;
+  });
+  return result;
+}
+
+function alertCounts(monthEntry) {
+  var counts = { ATTRITION_RISK: 0, LOW_SCORE: 0, DIVERGENCE: 0 };
+  if (!monthEntry || !monthEntry.data) return counts;
+  monthEntry.data.alerts.forEach(function(a) {
+    if (counts.hasOwnProperty(a.type)) counts[a.type]++;
+  });
+  return counts;
+}
+
+function allDepartments() {
+  var set = {};
+  monthDataList.forEach(function(m) {
+    if (!m.data) return;
+    m.data.departmentSummary.forEach(function(d) { set[d.department] = true; });
+  });
+  return Object.keys(set).sort();
+}
+
+// ── Renderers ────────────────────────────────────────────────────
+function renderKpis() {
+  var valid = monthDataList.filter(function(m) { return m.data; });
+  if (!valid.length) { document.getElementById('kpiRow').innerHTML = ''; return; }
+  var latest = valid[valid.length - 1];
+  var prev = valid.length > 1 ? valid[valid.length - 2] : null;
+
+  function deltaHtml(curr, prevVal, higherIsBetter, suffix) {
+    if (curr === null || curr === undefined || prevVal === null || prevVal === undefined) return '';
+    var d = round1(curr - prevVal);
+    if (d === 0) return '<span class="delta delta-flat">no change</span>';
+    var good = higherIsBetter ? d > 0 : d < 0;
+    return '<span class="delta ' + (good ? 'delta-up' : 'delta-down') + '">' + (d > 0 ? '+' : '') + d + (suffix || '') + ' vs prev</span>';
+  }
+
+  var latestPct = latest.data.totalEmployees ? Math.round((latest.data.reportedCount / latest.data.totalEmployees) * 100) : 0;
+  var prevPct = prev && prev.data && prev.data.totalEmployees ? Math.round((prev.data.reportedCount / prev.data.totalEmployees) * 100) : null;
+  var latestRisk = latest.data.alerts.filter(function(a) { return a.type === 'ATTRITION_RISK'; }).length;
+  var prevRisk = prev && prev.data ? prev.data.alerts.filter(function(a) { return a.type === 'ATTRITION_RISK'; }).length : null;
+
+  var orgColorClass = (latest.data.orgAvgScore !== null && latest.data.orgAvgScore !== undefined) ? (latest.data.orgAvgScore < 6 ? 'alert-color' : 'good-color') : '';
+
+  var html = '';
+  html += '<div class="kpi-card"><div class="kpi-label">Org Score — ' + formatMonthLabel(latest.month) + '</div><div class="kpi-value ' + orgColorClass + '">' + fmtScore(latest.data.orgAvgScore) + '</div><div class="kpi-sub">' + deltaHtml(latest.data.orgAvgScore, prev && prev.data ? prev.data.orgAvgScore : null, true) + '</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-label">Response Rate</div><div class="kpi-value">' + latestPct + '%</div><div class="kpi-sub">' + deltaHtml(latestPct, prevPct, true, '%') + '</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-label">Attrition Risk Flags</div><div class="kpi-value ' + (latestRisk > 0 ? 'alert-color' : '') + '">' + latestRisk + '</div><div class="kpi-sub">' + deltaHtml(latestRisk, prevRisk, false) + '</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-label">Months in Range</div><div class="kpi-value">' + valid.length + ' / ' + monthDataList.length + '</div><div class="kpi-sub">months with reported data</div></div>';
+  document.getElementById('kpiRow').innerHTML = html;
+}
+
+function renderOrgChart() {
+  var scoreData = monthDataList.map(function(m) { return m.data ? m.data.orgAvgScore : null; });
+  var pctData = monthDataList.map(function(m) {
+    if (!m.data || !m.data.totalEmployees) return null;
+    return round1((m.data.reportedCount / m.data.totalEmployees) * 100 / 10); // scaled to 0-10 to share axis
+  });
+  var series = [
+    { label: 'Org Happiness Score', color: 'var(--navy)'.replace('var(--navy)', '#1A3F6F'), data: scoreData },
+    { label: 'Response Rate (scaled /10)', color: '#6B4FA0', data: pctData }
+  ];
+  document.getElementById('orgChart').innerHTML = lineChartSVG(series, monthsInRange, { yMin: 0, yMax: 10 });
+}
+
+function renderDeptChart() {
+  var depts = allDepartments();
+  var series = depts.filter(function(d) { return !deptHidden[d]; }).map(function(d, idx) {
+    var color = PALETTE[depts.indexOf(d) % PALETTE.length];
+    var data = monthDataList.map(function(m) {
+      if (!m.data) return null;
+      var found = m.data.departmentSummary.find(function(ds) { return ds.department === d; });
+      return found ? found.avgScore : null;
+    });
+    return { label: d, color: color, data: data };
+  });
+  document.getElementById('deptChart').innerHTML = series.length ? lineChartSVG(series, monthsInRange, { yMin: 0, yMax: 10 }) : '<div class="empty-state">No department data yet.</div>';
+
+  var legendHtml = '';
+  depts.forEach(function(d, idx) {
+    var color = PALETTE[idx % PALETTE.length];
+    legendHtml += '<div class="legend-chip' + (deptHidden[d] ? ' off' : '') + '" data-dept="' + d.replace(/"/g, '&quot;') + '"><span class="legend-dot" style="background:' + color + '"></span>' + d + '</div>';
+  });
+  document.getElementById('deptLegend').innerHTML = legendHtml || '<div class="empty-state">No departments found.</div>';
+  document.querySelectorAll('#deptLegend .legend-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      var d = chip.getAttribute('data-dept');
+      deptHidden[d] = !deptHidden[d];
+      renderDeptChart();
+    });
+  });
+}
+
+function renderDimGrid() {
+  var perMonthAverages = monthDataList.map(computeDimensionAverages);
+  var keys = Object.keys(DIMENSION_LABELS).concat(['Manager_Perceived']);
+  var labels = Object.assign({}, DIMENSION_LABELS, { Manager_Perceived: 'Manager Perceived Satisfaction' });
+
+  var html = '';
+  keys.forEach(function(k, idx) {
+    var series = perMonthAverages.map(function(m) { return m[k]; });
+    var latestVal = series.length ? series[series.length - 1] : null;
+    var color = PALETTE[idx % PALETTE.length];
+    var colorClass = (latestVal !== null && latestVal !== undefined) ? (latestVal < 5 ? 'alert-color' : (latestVal < 7.5 ? '' : 'good-color')) : '';
+    html += '<div class="dim-card">';
+    html += '<div class="dim-name">' + labels[k] + '</div>';
+    html += '<div class="dim-current ' + colorClass + '">' + fmtScore(latestVal) + ' <span style="font-size:11px;color:var(--text-soft);font-weight:400;">/ 10</span></div>';
+    html += '<div class="dim-trend-wrap">' + sparklineSVG(series, color) + '</div>';
+    html += '</div>';
+  });
+  document.getElementById('dimGrid').innerHTML = html;
+}
+
+function renderAlertsChart() {
+  var risk = monthDataList.map(function(m) { return alertCounts(m).ATTRITION_RISK; });
+  var low = monthDataList.map(function(m) { return alertCounts(m).LOW_SCORE; });
+  var gap = monthDataList.map(function(m) { return alertCounts(m).DIVERGENCE; });
+  var series = [
+    { label: 'Attrition Risk', color: '#B0413E', data: risk },
+    { label: 'Low Score', color: '#B8860B', data: low },
+    { label: 'Perception Gap', color: '#6B4FA0', data: gap }
+  ];
+  var anyData = risk.concat(low, gap).some(function(v) { return v > 0; });
+  document.getElementById('alertsChart').innerHTML = anyData ? stackedBarChartSVG(series, monthsInRange) : '<div class="empty-state">No alerts recorded in this range.</div>';
+}
+
+function renderMovers() {
+  var valid = monthDataList.filter(function(m) { return m.data && m.data.employees && m.data.employees.length; });
+  if (valid.length < 2) {
+    document.getElementById('moversNote').textContent = 'Need at least two months of data in range to compute movers.';
+    document.getElementById('moversUpList').innerHTML = '<div class="empty-state">Not enough data yet.</div>';
+    document.getElementById('moversDownList').innerHTML = '';
     return;
   }
-  var html = '';
-  employees.forEach(function(e, idx) {
-    html += '<tr>';
-    html += '<td>' + (idx + 1) + '</td>';
-    html += '<td>' + e.name + '</td>';
-    html += '<td>' + e.department + '</td>';
-    Object.keys(DIMENSION_LABELS).forEach(function(k) {
-      var v = e.selfReport ? e.selfReport[k] : null;
-      html += '<td>' + (v !== null && v !== undefined && v !== '' ? '<span class="score-pill ' + scoreClass(v) + '">' + v + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+  var latest = valid[valid.length - 1];
+  var prev = valid[valid.length - 2];
+  document.getElementById('moversNote').textContent = 'Comparing ' + formatMonthLabel(prev.month) + ' → ' + formatMonthLabel(latest.month) + ', combined score.';
+
+  var prevMap = {};
+  prev.data.employees.forEach(function(e) { if (e.combinedScore !== null) prevMap[e.employeeId] = e; });
+
+  var deltas = [];
+  latest.data.employees.forEach(function(e) {
+    if (e.combinedScore === null) return;
+    var p = prevMap[e.employeeId];
+    if (!p || p.combinedScore === null) return;
+    var d = round1(e.combinedScore - p.combinedScore);
+    if (d === 0) return;
+    deltas.push({ name: e.name, department: e.department, delta: d, from: p.combinedScore, to: e.combinedScore });
+  });
+
+  var improved = deltas.filter(function(d) { return d.delta > 0; }).sort(function(a, b) { return b.delta - a.delta; }).slice(0, 5);
+  var declined = deltas.filter(function(d) { return d.delta < 0; }).sort(function(a, b) { return a.delta - b.delta; }).slice(0, 5);
+
+  function rowHtml(d, cls, sign) {
+    return '<div class="mover-item"><div><span class="mover-name">' + d.name + '</span><br><span class="mover-dept">' + d.department + ' · ' + d.from + ' → ' + d.to + '</span></div><span class="mover-delta ' + cls + '">' + sign + d.delta + '</span></div>';
+  }
+
+  document.getElementById('moversUpList').innerHTML = improved.length
+    ? improved.map(function(d) { return rowHtml(d, 'mover-up', '+'); }).join('')
+    : '<div class="empty-state">No improvements between these two months.</div>';
+  document.getElementById('moversDownList').innerHTML = declined.length
+    ? declined.map(function(d) { return rowHtml(d, 'mover-down', ''); }).join('')
+    : '<div class="empty-state">No declines between these two months.</div>';
+}
+
+function renderFullTable() {
+  var depts = allDepartments();
+  var perMonthAverages = monthDataList.map(computeDimensionAverages);
+
+  var html = '<table><thead><tr><th>Metric</th>';
+  monthsInRange.forEach(function(m) { html += '<th>' + formatMonthLabel(m) + '</th>'; });
+  html += '</tr></thead><tbody>';
+
+  function metricRow(label, values, isPct) {
+    html += '<tr><td class="row-label">' + label + '</td>';
+    values.forEach(function(v) {
+      html += '<td>' + (v === null || v === undefined ? '—' : (isPct ? v + '%' : v)) + '</td>';
     });
-    var mgrScore = e.managerInput ? e.managerInput.Perceived_Satisfaction_Score : null;
-    html += '<td>' + (mgrScore !== null && mgrScore !== undefined && mgrScore !== '' ? '<span class="score-pill ' + scoreClass(mgrScore) + '">' + mgrScore + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
-    subjectiveKeys.forEach(function(k) {
-      var val = findSubjectiveValue(e, k);
-      html += '<td class="subjective-cell">' + (val ? val : '<span style="color:var(--text-soft); font-style:normal;">No response</span>') + '</td>';
+    html += '</tr>';
+  }
+
+  metricRow('Org Happiness Score', monthDataList.map(function(m) { return m.data ? fmtScore(m.data.orgAvgScore) : null; }));
+  metricRow('Response Rate', monthDataList.map(function(m) { return (m.data && m.data.totalEmployees) ? Math.round((m.data.reportedCount / m.data.totalEmployees) * 100) : null; }), true);
+  metricRow('Reported / Total Headcount', monthDataList.map(function(m) { return m.data ? (m.data.reportedCount + ' / ' + m.data.totalEmployees) : null; }));
+  metricRow('Attrition Risk Flags', monthDataList.map(function(m) { return alertCounts(m).ATTRITION_RISK; }));
+  metricRow('Low Score Alerts', monthDataList.map(function(m) { return alertCounts(m).LOW_SCORE; }));
+  metricRow('Perception Gap Alerts', monthDataList.map(function(m) { return alertCounts(m).DIVERGENCE; }));
+
+  html += '<tr><td class="row-label" colspan="' + (monthsInRange.length + 1) + '" style="background:#FAFBFC;">By Department (Avg Score)</td></tr>';
+  depts.forEach(function(d) {
+    html += '<tr><td class="row-sub">' + d + '</td>';
+    monthDataList.forEach(function(m) {
+      var found = m.data ? m.data.departmentSummary.find(function(ds) { return ds.department === d; }) : null;
+      html += '<td>' + (found && found.avgScore !== null ? found.avgScore : '—') + '</td>';
     });
     html += '</tr>';
   });
-  body.innerHTML = html;
-}
 
-function populateDeptFilter(employees) {
-  var sel = document.getElementById('filterDept');
-  var current = sel.value;
-  var depts = Array.from(new Set(employees.map(function(e) { return e.department; }))).sort();
-  var opts = ['<option value="">All Departments</option>'];
-  depts.forEach(function(d) { opts.push('<option value="' + d + '">' + d + '</option>'); });
-  sel.innerHTML = opts.join('');
-  if (depts.indexOf(current) !== -1) sel.value = current;
-}
-
-function getFilters() {
-  return {
-    name: document.getElementById('searchInput').value.trim().toLowerCase(),
-    dept: document.getElementById('filterDept').value,
-    scoreField: document.getElementById('filterScoreField').value,
-    scoreBand: document.getElementById('filterScoreBand').value,
-    riskOnly: document.getElementById('filterRiskOnly').checked,
-    missingOnly: document.getElementById('filterMissingOnly').checked
-  };
-}
-
-function applyFilters() {
-  var f = getFilters();
-  var filtered = currentEmployees.filter(function(e) {
-    if (f.name) {
-      var haystack = (e.name + ' ' + e.department).toLowerCase();
-      if (haystack.indexOf(f.name) === -1) return false;
-    }
-    if (f.dept && e.department !== f.dept) return false;
-    if (f.scoreBand) {
-      var val = e[f.scoreField];
-      if (scoreBand(val) !== f.scoreBand) return false;
-    }
-    if (f.riskOnly && !e.attritionRisk) return false;
-    if (f.missingOnly && !(!e.selfReport || !e.managerInput)) return false;
-    return true;
+  html += '<tr><td class="row-label" colspan="' + (monthsInRange.length + 1) + '" style="background:#FAFBFC;">By Question (Org Avg)</td></tr>';
+  Object.keys(DIMENSION_LABELS).forEach(function(k) {
+    html += '<tr><td class="row-sub">' + DIMENSION_LABELS[k] + '</td>';
+    perMonthAverages.forEach(function(m) { html += '<td>' + (m[k] === null ? '—' : m[k]) + '</td>'; });
+    html += '</tr>';
   });
+  html += '<tr><td class="row-sub">Manager Perceived Satisfaction</td>';
+  perMonthAverages.forEach(function(m) { html += '<td>' + (m['Manager_Perceived'] === null ? '—' : m['Manager_Perceived']) + '</td>'; });
+  html += '</tr>';
 
-  renderTable(filtered);
-
-  var countEl = document.getElementById('resultCount');
-  countEl.textContent = filtered.length === currentEmployees.length
-    ? currentEmployees.length + ' employee' + (currentEmployees.length === 1 ? '' : 's')
-    : 'Showing ' + filtered.length + ' of ' + currentEmployees.length + ' employees';
+  html += '</tbody></table>';
+  document.getElementById('fullTableWrap').innerHTML = html;
 }
 
-function clearFilters() {
-  document.getElementById('searchInput').value = '';
-  document.getElementById('filterDept').value = '';
-  document.getElementById('filterScoreField').value = 'combinedScore';
-  document.getElementById('filterScoreBand').value = '';
-  document.getElementById('filterRiskOnly').checked = false;
-  document.getElementById('filterMissingOnly').checked = false;
-  applyFilters();
+function renderAll() {
+  renderKpis();
+  renderOrgChart();
+  renderDeptChart();
+  renderDimGrid();
+  renderAlertsChart();
+  renderMovers();
+  renderFullTable();
 }
 
-function renderSubjectiveNote() {
-  var el = document.getElementById('subjectiveNote');
-  if (!subjectiveKeys.length) {
-    el.innerHTML = '<div class="note-banner">No open-text / subjective answer fields were found in the data returned for this month — only rating fields are shown below. If the backend later returns additional text fields (comments, retention reason, etc.), they will appear here automatically.</div>';
-  } else {
-    el.innerHTML = '';
+// ── Boot ──────────────────────────────────────────────────────
+(function() {
+  var qMonth = (new URLSearchParams(window.location.search)).get('month');
+  if (qMonth) {
+    // keep the range selector as-is; qMonth is just the anchor (latest) month
   }
-}
-
-function fetchFullReport(month) {
-  document.getElementById('resultCount').textContent = 'Loading…';
-  document.getElementById('fullTableBody').innerHTML = '';
-
-  if (APPS_SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
-    document.getElementById('resultCount').textContent = '';
-    document.getElementById('fullTableBody').innerHTML = '<tr><td class="empty-state">APPS_SCRIPT_URL is not set yet.</td></tr>';
-    return;
-  }
-
-  fetch(APPS_SCRIPT_URL + '?action=dashboard&month=' + month + '&token=' + encodeURIComponent(ACCESS_TOKEN))
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.error) {
-        document.getElementById('resultCount').textContent = '';
-        document.getElementById('fullTableBody').innerHTML = '<tr><td class="empty-state">' + data.error + '</td></tr>';
-        return;
-      }
-      currentEmployees = (data.employees || []).map(function(e) {
-        var mgrScore = e.managerInput ? Number(e.managerInput.Perceived_Satisfaction_Score) : null;
-        return Object.assign({}, e, {
-          selfAvg: selfReportAvg(e.selfReport),
-          managerScore: (mgrScore !== null && !isNaN(mgrScore)) ? mgrScore : null
-        });
-      });
-      subjectiveKeys = detectSubjectiveKeys(currentEmployees);
-      renderSubjectiveNote();
-      buildHeader();
-      populateDeptFilter(currentEmployees);
-      applyFilters();
-    })
-    .catch(function() {
-      document.getElementById('resultCount').textContent = '';
-      document.getElementById('fullTableBody').innerHTML = '<tr><td class="empty-state">Could not reach the tracker backend. Check your network and the Apps Script deployment.</td></tr>';
-    });
-}
-
-populateMonthSelect(6);
-fetchFullReport(document.getElementById('monthSelect').value);
-
-document.getElementById('monthSelect').addEventListener('change', function() {
-  fetchFullReport(this.value);
-});
-['searchInput', 'filterDept', 'filterScoreField', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
-  var el = document.getElementById(id);
-  var evt = (id === 'searchInput') ? 'input' : 'change';
-  el.addEventListener(evt, applyFilters);
-});
-document.getElementById('filterClearBtn').addEventListener('click', clearFilters);
+  document.getElementById('rangeSelect').addEventListener('change', loadRange);
+  loadRange();
+})();
 </script>
 </body>
 </html>
