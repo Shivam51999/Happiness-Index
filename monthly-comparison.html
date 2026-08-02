@@ -67,7 +67,11 @@
   .dim-card { border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
   .dim-name { font-size:12.5px; font-weight:700; color:var(--navy); margin-bottom:2px; }
   .dim-current { font-size:20px; font-weight:700; }
-  .dim-trend-wrap { margin-top:6px; }
+  .dim-trend-wrap { margin-top:10px; }
+  .pie-mini-row { display:flex; align-items:center; gap:14px; }
+  .pie-circle-sm { width:64px; height:64px; border-radius:50%; flex-shrink:0; }
+  .pie-mini-legend { font-size:11px; color:var(--text-soft); line-height:1.7; }
+  .pie-mini-legend .mo { font-weight:600; color:var(--text); }
 
   .section-count { font-size:11px; color:var(--text-soft); font-weight:600; }
   .pie-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:24px; }
@@ -512,6 +516,17 @@ function renderDeptChart() {
   });
 }
 
+function dimensionGaugePieHtml(series, months, color, latestVal) {
+  var pct = (latestVal !== null && latestVal !== undefined && !isNaN(latestVal)) ? Math.max(0, Math.min(100, (latestVal / 10) * 100)) : 0;
+  var gradient = 'conic-gradient(' + color + ' 0% ' + pct.toFixed(1) + '%, #E5E7EB ' + pct.toFixed(1) + '% 100%)';
+  var legend = '';
+  months.forEach(function(m, i) {
+    var v = series[i];
+    legend += '<div><span class="mo">' + formatMonthLabel(m) + ':</span> ' + (v === null || v === undefined || isNaN(v) ? '—' : v) + '</div>';
+  });
+  return '<div class="pie-mini-row"><div class="pie-circle-sm" style="background:' + gradient + '"></div><div class="pie-mini-legend">' + legend + '</div></div>';
+}
+
 function renderDimGrid() {
   var perMonthAverages = monthDataList.map(computeDimensionAverages);
   var keys = Object.keys(DIMENSION_LABELS).concat(['Manager_Perceived']);
@@ -526,7 +541,7 @@ function renderDimGrid() {
     html += '<div class="dim-card">';
     html += '<div class="dim-name">' + labels[k] + '</div>';
     html += '<div class="dim-current ' + colorClass + '">' + fmtScore(latestVal) + ' <span style="font-size:11px;color:var(--text-soft);font-weight:400;">/ 10</span></div>';
-    html += '<div class="dim-trend-wrap">' + sparklineSVG(series, color) + '</div>';
+    html += '<div class="dim-trend-wrap">' + dimensionGaugePieHtml(series, monthsInRange, color, latestVal) + '</div>';
     html += '</div>';
   });
   document.getElementById('dimGrid').innerHTML = html;
