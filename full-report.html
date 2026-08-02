@@ -3,127 +3,215 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Full Report — Happiness & Satisfaction · Mangalam HQ</title>
+<title>Full Report — Happiness & Satisfaction — Mangalam HQ</title>
 <style>
   :root {
-    --navy: #1A3F6F; --navy-l: #2A5490; --purple: #6B4FA0; --purple-l: #8B6FC0;
-    --green: #2E7D5B; --green-l: #E8F5EE; --amber: #B8860B; --amber-l: #FFF5E0;
-    --red: #B0413E; --red-l: #FBE9E8;
-    --bg: #F5F6FA; --card: #FFFFFF; --text: #1F2937; --text-soft: #6B7280; --border: #E5E7EB;
+    --navy: #1A3F6F;
+    --navy-l: #2A5490;
+    --purple: #6B4FA0;
+    --purple-l: #8B6FC0;
+    --green: #2E7D5B;
+    --green-l: #E8F5EE;
+    --amber: #B8860B;
+    --amber-l: #FFF5E0;
+    --red: #B0413E;
+    --red-l: #FBE9E8;
+    --bg: #F5F6FA;
+    --card: #FFFFFF;
+    --text: #1F2937;
+    --text-soft: #6B7280;
+    --border: #E5E7EB;
   }
   * { box-sizing: border-box; }
-  body { margin:0; font-family:'Segoe UI', system-ui, -apple-system, sans-serif; background:var(--bg); color:var(--text); padding:24px; }
-  .wrap { max-width: 1200px; margin: 0 auto; }
-
-  .header-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:12px; }
-  .title-block h1 { font-size:22px; margin:0 0 4px; color:var(--navy); }
-  .title-block p { margin:0; color:var(--text-soft); font-size:13px; }
-  .header-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .select-ctl { padding:8px 14px; border-radius:8px; border:1px solid var(--border); font-size:13px; background:#fff; color:var(--text); font-family:inherit; }
-  .btn-link { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; border:1px solid var(--border); background:var(--navy); color:#fff; font-size:13px; font-weight:600; text-decoration:none; white-space:nowrap; cursor:pointer; font-family:inherit; }
-  .btn-link:hover { background:var(--navy-l); }
-  .btn-link.secondary { background:#fff; color:var(--navy); border-color:var(--navy); }
-  .btn-link.secondary:hover { background:var(--navy); color:#fff; }
-
-  .report-meta { font-size:12px; color:var(--text-soft); margin: 0 0 20px; padding-bottom:14px; border-bottom:1px solid var(--border); }
-
-  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
-  .kpi-card { background:var(--card); border-radius:12px; padding:16px 18px; box-shadow:0 1px 3px rgba(0,0,0,0.06); border:1px solid var(--border); }
-  .kpi-label { font-size:11px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:6px; }
-  .kpi-value { font-size:26px; font-weight:700; color:var(--navy); }
-  .kpi-sub { font-size:11px; color:var(--text-soft); margin-top:4px; }
-  .kpi-value.alert-color { color:var(--red); }
-  .kpi-value.good-color { color:var(--green); }
-
-  .grid-2 { display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:20px; }
-  .card { background:var(--card); border-radius:12px; padding:18px 20px; box-shadow:0 1px 3px rgba(0,0,0,0.06); border:1px solid var(--border); margin-bottom:16px; }
-  .card h3 { font-size:14px; margin:0 0 4px; color:var(--navy); }
-  .card .card-note { font-size:11.5px; color:var(--text-soft); margin:0 0 14px; }
-
-  table { width:100%; border-collapse:collapse; font-size:12.5px; }
-  th { text-align:left; padding:8px 10px; color:var(--text-soft); font-weight:600; font-size:10.5px; text-transform:uppercase; letter-spacing:0.3px; border-bottom:2px solid var(--border); white-space:nowrap; }
-  td { padding:8px 10px; border-bottom:1px solid var(--border); white-space:nowrap; }
-  tr:hover td { background:#FAFBFC; }
-  .table-scroll { max-height:600px; overflow:auto; border:1px solid var(--border); border-radius:8px; }
-  .table-scroll table { margin:0; }
-  .table-scroll thead th { position:sticky; top:0; background:var(--card); z-index:2; box-shadow:0 1px 0 var(--border); }
-
-  .score-pill { display:inline-flex; align-items:center; justify-content:center; min-width:36px; padding:3px 8px; border-radius:6px; font-weight:700; font-size:12px; }
-  .score-high { background:var(--green-l); color:var(--green); }
-  .score-mid { background:var(--amber-l); color:var(--amber); }
-  .score-low { background:var(--red-l); color:var(--red); }
-  .score-na { background:#F0F0F0; color:var(--text-soft); }
-  .badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:600; }
-  .badge-risk { background:var(--red-l); color:var(--red); }
-
-  .alert-item { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); align-items:flex-start; }
-  .alert-item:last-child { border-bottom:none; }
-  .alert-dot { width:8px; height:8px; border-radius:50%; margin-top:5px; flex-shrink:0; }
-  .dot-red { background:var(--red); } .dot-amber { background:var(--amber); }
-  .alert-text { font-size:12.5px; }
-  .alert-name { font-weight:600; color:var(--text); }
-  .alert-detail { color:var(--text-soft); }
-
-  .dept-bar-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-  .dept-name { font-size:12.5px; width:150px; flex-shrink:0; color:var(--text); }
-  .dept-bar-track { flex:1; height:8px; background:#EEF0F4; border-radius:4px; overflow:hidden; }
-  .dept-bar-fill { height:100%; border-radius:4px; }
-  .dept-score { font-size:12.5px; font-weight:700; width:32px; text-align:right; color:var(--navy); }
-
-  .divergence-item { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--border); font-size:12.5px; }
-  .divergence-item:last-child { border-bottom:none; }
-  .divergence-name { font-weight:600; color:var(--text); }
-  .divergence-dept { color:var(--text-soft); font-size:11.5px; }
-  .divergence-gap { font-weight:700; padding:2px 9px; border-radius:6px; font-size:12px; }
-  .gap-pos { background:var(--red-l); color:var(--red); }
-  .gap-neg { background:var(--amber-l); color:var(--amber); }
-
-  .dimension-block { margin-bottom:14px; }
-  .dimension-block:last-child { margin-bottom:0; }
-  .dimension-dept-name { font-size:12.5px; font-weight:700; color:var(--navy); margin-bottom:4px; }
-  .dimension-weak { font-size:12px; color:var(--text); }
-  .dimension-weak .dim-score { font-weight:700; color:var(--red); }
-
-  .legend { display:flex; gap:16px; margin-top:10px; font-size:11px; color:var(--text-soft); }
-  .legend-item { display:flex; align-items:center; gap:5px; }
-  .legend-dot { width:8px; height:8px; border-radius:50%; }
-
-  .pie-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
-  .pie-item { text-align:center; }
-  .pie-title { font-size:12.5px; font-weight:700; color:var(--navy); margin-bottom:10px; }
-  .pie-circle { width:100px; height:100px; border-radius:50%; margin:0 auto 12px; }
-  .pie-legend { font-size:11px; color:var(--text-soft); text-align:left; display:inline-block; }
-  .pie-legend-row { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
-  .pie-legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-
-  .priority-pill { display:inline-flex; align-items:center; justify-content:center; padding:3px 10px; border-radius:6px; font-weight:700; font-size:11.5px; white-space:nowrap; }
-  .priority-high { background:var(--red-l); color:var(--red); }
-  .priority-watch { background:var(--amber-l); color:var(--amber); }
-  .priority-stable { background:var(--green-l); color:var(--green); }
-
-  .idea-item { padding:12px 0; border-bottom:1px solid var(--border); }
-  .idea-item:last-child { border-bottom:none; }
-  .idea-text { font-size:13px; color:var(--text); font-style:italic; margin-bottom:4px; }
-  .idea-meta { font-size:11px; color:var(--text-soft); }
-  .tone-pill { display:inline-flex; align-items:center; justify-content:center; padding:2px 9px; border-radius:6px; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:0.3px; margin-right:8px; }
-  .tone-critical { background:var(--red-l); color:var(--red); }
-  .tone-good { background:var(--green-l); color:var(--green); }
-  .tone-neutral { background:#F0F0F0; color:var(--text-soft); }
-
-  .empty-state { text-align:center; padding:30px; color:var(--text-soft); font-size:13px; }
-  .section-count { font-size:11px; color:var(--text-soft); font-weight:600; }
-
-  @media (max-width: 900px) {
-    .kpi-row { grid-template-columns:repeat(2,1fr); }
-    .grid-2 { grid-template-columns:1fr; }
-    .pie-grid { grid-template-columns:repeat(2,1fr); }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
   }
-  @media print {
-    body { background:#fff; padding:0; }
-    .header-controls, .no-print { display:none !important; }
-    .card { box-shadow:none; border:1px solid #ddd; break-inside:avoid; }
-    .table-scroll { max-height:none; overflow:visible; }
+  .wrap { max-width: 1600px; margin: 0 auto; }
+
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
   }
+  .title-block h1 { font-size: 22px; margin: 0 0 4px; color: var(--navy); }
+  .title-block p { margin: 0; color: var(--text-soft); font-size: 13px; }
+
+  .btn-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--navy);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn-link:hover { background: var(--bg); }
+
+  .controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .month-select {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+  }
+
+  .note-banner {
+    background: var(--amber-l);
+    color: var(--amber);
+    border: 1px solid #F0DFA8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    margin-bottom: 16px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+  }
+
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .filter-search {
+    position: relative;
+    flex: 1 1 220px;
+    min-width: 180px;
+  }
+  .filter-search svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-soft);
+    pointer-events: none;
+  }
+  .filter-search input {
+    width: 100%;
+    padding: 8px 10px 8px 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .filter-search input:focus { outline: none; border-color: var(--purple-l); }
+  .filter-select {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--text);
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .filter-chip input { accent-color: var(--purple); cursor: pointer; }
+  .filter-clear {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 12.5px;
+    color: var(--text-soft);
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .filter-clear:hover { color: var(--red); border-color: var(--red-l); }
+
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 900px; }
+  th {
+    text-align: left;
+    padding: 9px 10px;
+    color: #fff;
+    background: var(--navy);
+    font-weight: 600;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  th.subjective-col { background: var(--purple); }
+  td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  td.subjective-cell {
+    max-width: 260px;
+    white-space: normal;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+  tr:hover td { background: #FAFBFC; }
+  tr:nth-child(even) td { background: #FBFCFE; }
+  tr:nth-child(even):hover td { background: #F5F7FA; }
+
+  .score-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 11.5px;
+  }
+  .score-high { background: var(--green-l); color: var(--green); }
+  .score-mid { background: var(--amber-l); color: var(--amber); }
+  .score-low { background: var(--red-l); color: var(--red); }
+  .score-na { background: #F0F0F0; color: var(--text-soft); }
+
+  .empty-state { text-align: center; padding: 30px; color: var(--text-soft); font-size: 13px; }
+  .result-count { font-size: 11.5px; color: var(--text-soft); margin-bottom: 10px; }
 </style>
 </head>
 <body>
@@ -131,479 +219,322 @@
 
   <div class="header-row">
     <div class="title-block">
-      <h1>Full Report</h1>
-      <p>Happiness & Satisfaction Pulse · complete detail for a single month</p>
+      <h1>Full Report — Happiness & Satisfaction</h1>
+      <p>Every employee, every objective rating, and any open-text answers for the selected month</p>
     </div>
-    <div class="header-controls no-print">
-      <select class="select-ctl" id="monthSelect"></select>
-      <a class="btn-link secondary" href="monthly-comparison.html">Monthly Comparison</a>
-      <a class="btn-link secondary" href="dashboard.html">← Back to Dashboard</a>
-      <button class="btn-link" id="printBtn">Print / Save PDF</button>
+    <div class="controls-row" style="margin-bottom:0;">
+      <select class="month-select" id="monthSelect"></select>
+      <a class="btn-link" id="backLink" href="happiness-tracker.html">← Back to Dashboard</a>
     </div>
   </div>
-  <div class="report-meta" id="reportMeta"></div>
 
-  <div class="kpi-row" id="kpiRow"></div>
+  <div id="subjectiveNote"></div>
 
-  <div class="grid-2">
-    <div class="card">
-      <h3>Department Pulse</h3>
-      <div id="deptBars"></div>
-      <div class="legend">
-        <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> 7.5+ Healthy</div>
-        <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span> 5–7.4 Watch</div>
-        <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span> &lt;5 At Risk</div>
+  <div class="card">
+    <div class="filter-bar">
+      <div class="filter-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="searchInput" placeholder="Search name or department…" autocomplete="off">
       </div>
+      <select class="filter-select" id="filterDept">
+        <option value="">All Departments</option>
+      </select>
+      <select class="filter-select" id="filterScoreField">
+        <option value="combinedScore">Combined Score</option>
+        <option value="selfAvg">Self-Report</option>
+        <option value="managerScore">Manager View</option>
+      </select>
+      <select class="filter-select" id="filterScoreBand">
+        <option value="">Any Score</option>
+        <option value="high">7.5+ Healthy</option>
+        <option value="mid">5–7.4 Watch</option>
+        <option value="low">&lt;5 At Risk</option>
+        <option value="na">No Data</option>
+      </select>
+      <label class="filter-chip">
+        <input type="checkbox" id="filterRiskOnly">
+        At Risk flag only
+      </label>
+      <label class="filter-chip">
+        <input type="checkbox" id="filterMissingOnly">
+        Not Filled (Self or Manager)
+      </label>
+      <button class="filter-clear" id="filterClearBtn">Clear filters</button>
     </div>
-    <div class="card">
-      <h3>All Alerts <span class="section-count" id="alertsCount"></span></h3>
-      <div id="alertsList"></div>
-    </div>
-  </div>
 
-  <div class="grid-2">
-    <div class="card">
-      <h3>Perception Gaps — Manager vs. Self <span class="section-count" id="divergenceCount"></span></h3>
-      <p class="card-note">Every employee with both a self-report and a manager input this month. Positive = employee feels worse than manager thinks; negative = manager underestimates them.</p>
-      <div id="divergenceList"></div>
-    </div>
-    <div class="card">
-      <h3>Weakest Dimension by Department</h3>
-      <div id="dimensionList"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>Question-wise Focus Areas</h3>
-    <p class="card-note">Every rated question this month — % of respondents in each band, and an auto-flagged priority for where to focus first.</p>
-    <div id="focusTable"></div>
-  </div>
-
-  <div class="card">
-    <h3>Question-wise Rating Distribution</h3>
-    <div id="dimensionPies"></div>
-  </div>
-
-  <div class="card">
-    <h3>Full Employee Detail <span class="section-count" id="empCount"></span></h3>
-    <p class="card-note">Every active employee this month — self-report, manager perception, and flags, uncut.</p>
+    <div class="result-count" id="resultCount"></div>
     <div class="table-scroll">
       <table>
         <thead>
-          <tr>
-            <th>#</th><th>Name</th><th>Department</th><th>Designation</th><th>Manager</th>
-            <th>Workload</th><th>Mgr Support</th><th>Growth</th><th>Recognition</th><th>Work Env</th><th>Comp Fair</th>
-            <th>eNPS</th><th>Retention Intent</th><th>Wellbeing Trend</th>
-            <th>Self Avg</th><th>Manager View</th><th>Retention Conf</th><th>Combined</th><th>Gap</th><th>Flags</th>
-          </tr>
+          <tr id="tableHeadRow"></tr>
         </thead>
-        <tbody id="empTableBody"></tbody>
+        <tbody id="fullTableBody"></tbody>
       </table>
     </div>
-  </div>
-
-  <div class="card">
-    <h3>All Innovation Ideas <span class="section-count" id="ideasCount"></span></h3>
-    <div id="innovationIdeas"></div>
-  </div>
-
-  <div class="card">
-    <h3>All Team Remarks <span class="section-count" id="remarksCount"></span></h3>
-    <div id="teamRemarks"></div>
   </div>
 
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
-// CONFIG — same backend as dashboard.html / monthly-comparison.html
-// ═══════════════════════════════════════════════════════════════
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
 var ACCESS_TOKEN = 'e6a7c4f500c089c9fc85f33f1657b49bf20f58ba054ffd53';
 
-var EMPTY_DATA = { orgAvgScore:null, totalEmployees:0, reportedCount:0, employees:[], departmentSummary:[], alerts:[] };
-
 var DIMENSION_LABELS = {
-  Workload_Score: 'Workload', Manager_Support_Score: 'Manager Support', Growth_Score: 'Growth',
-  Recognition_Score: 'Recognition', Work_Environment_Score: 'Work Environment', Compensation_Fairness_Score: 'Compensation Fairness'
+  Workload_Score: 'Workload',
+  Manager_Support_Score: 'Manager Support',
+  Growth_Score: 'Growth',
+  Recognition_Score: 'Recognition',
+  Work_Environment_Score: 'Work Environment',
+  Compensation_Fairness_Score: 'Compensation Fairness'
 };
 
-function pad2(n){ return n<10?'0'+n:''+n; }
+var META_KEY_PATTERNS = [
+  /^timestamp$/i,
+  /^e[-_ ]?mail$/i,
+  /^name$/i,
+  /^department$/i,
+  /^employee[_ ]?id$/i,
+  /^employee[_ ]?name$/i,
+  /^entry[_ ]?id$/i,
+  /^\s*id\s*$/i,
+  /^ml[_ ]?id$/i,
+  /^month$/i,
+  /^submitted[_ ]?on$/i,
+  /^submission[_ ]?date$/i,
+  /^legacy[_ ]?unmapped[_ ]?\d*$/i
+];
+
+function isMetaKey(key) {
+  return META_KEY_PATTERNS.some(function(re) { return re.test(key); });
+}
+
+var currentEmployees = [];
+var subjectiveKeys = [];
+
+function scoreClass(score) {
+  if (score === null || score === undefined || score === '' || isNaN(Number(score))) return 'score-na';
+  var v = Number(score);
+  if (v >= 7.5) return 'score-high';
+  if (v >= 5) return 'score-mid';
+  return 'score-low';
+}
+
+function scoreBand(score) {
+  if (score === null || score === undefined || score === '' || isNaN(Number(score))) return 'na';
+  var v = Number(score);
+  if (v >= 7.5) return 'high';
+  if (v >= 5) return 'mid';
+  return 'low';
+}
+
+function getMonthFromQuery() {
+  var params = new URLSearchParams(window.location.search);
+  return params.get('month');
+}
 
 function populateMonthSelect(monthsBack) {
   var sel = document.getElementById('monthSelect');
-  var params = new URLSearchParams(window.location.search);
-  var qMonth = params.get('month');
   var now = new Date();
   var opts = [];
+  var queryMonth = getMonthFromQuery();
   for (var i = 0; i < monthsBack; i++) {
     var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    var key = d.getFullYear() + '-' + pad2(d.getMonth() + 1);
+    var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
     var label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
     opts.push('<option value="' + key + '">' + label + '</option>');
   }
   sel.innerHTML = opts.join('');
-  if (qMonth) sel.value = qMonth;
+  if (queryMonth) sel.value = queryMonth;
 }
 
-function scoreClass(score) {
-  if (score === null || score === undefined || isNaN(score)) return 'score-na';
-  if (score >= 7.5) return 'score-high';
-  if (score >= 5) return 'score-mid';
-  return 'score-low';
-}
-function scoreBand(score) {
-  if (score === null || score === undefined || isNaN(score)) return 'na';
-  if (score >= 7.5) return 'high';
-  if (score >= 5) return 'mid';
-  return 'low';
-}
-function barColor(score) {
-  if (score === null || score === undefined) return '#D0D3D9';
-  if (score >= 7.5) return 'var(--green)';
-  if (score >= 5) return 'var(--amber)';
-  return 'var(--red)';
-}
 function selfReportAvg(selfRow) {
   if (!selfRow) return null;
-  var dims = [Number(selfRow.Workload_Score), Number(selfRow.Manager_Support_Score), Number(selfRow.Growth_Score),
-    Number(selfRow.Recognition_Score), Number(selfRow.Work_Environment_Score), Number(selfRow.Compensation_Fairness_Score)];
-  var avg = dims.reduce(function(a,b){return a+b;},0) / dims.length;
+  var dims = Object.keys(DIMENSION_LABELS).map(function(k) { return Number(selfRow[k]); });
+  var avg = dims.reduce(function(a, b) { return a + b; }, 0) / dims.length;
   return Math.round(avg * 10) / 10;
 }
 
-function fetchReport(month) {
-  document.getElementById('kpiRow').innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Loading…</div>';
-  fetch(APPS_SCRIPT_URL + '?action=dashboard&month=' + encodeURIComponent(month) + '&token=' + encodeURIComponent(ACCESS_TOKEN))
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      if (data.error) {
-        document.getElementById('kpiRow').innerHTML = '<div class="empty-state" style="grid-column:1/-1;">' + data.error + '</div>';
-        renderAll(EMPTY_DATA, month);
-        return;
-      }
-      renderAll(data, month);
-    })
-    .catch(function(){
-      document.getElementById('kpiRow').innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Could not reach the tracker backend.</div>';
-      renderAll(EMPTY_DATA, month);
-    });
-}
-
-function renderMeta(month, data) {
-  var d = new Date(Number(month.split('-')[0]), Number(month.split('-')[1]) - 1, 1);
-  var label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-  var now = new Date();
-  document.getElementById('reportMeta').textContent =
-    'Mangalam Landmarks · Happiness & Satisfaction Pulse — Full Report for ' + label +
-    ' · Generated ' + now.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) +
-    ' · ' + data.totalEmployees + ' employees, ' + data.reportedCount + ' reported';
-}
-
-function renderKpis(data) {
-  var pct = data.totalEmployees ? Math.round((data.reportedCount / data.totalEmployees) * 100) : 0;
-  var atRisk = data.alerts.filter(function(a){ return a.type === 'ATTRITION_RISK'; }).length;
-  var orgColorClass = (data.orgAvgScore !== null && data.orgAvgScore !== undefined) ? (data.orgAvgScore < 6 ? 'alert-color' : 'good-color') : '';
-  var html = '';
-  html += '<div class="kpi-card"><div class="kpi-label">Org Happiness Score</div><div class="kpi-value ' + orgColorClass + '">' + (data.orgAvgScore ?? '—') + '</div><div class="kpi-sub">out of 10, blended</div></div>';
-  html += '<div class="kpi-card"><div class="kpi-label">Response Rate</div><div class="kpi-value">' + pct + '%</div><div class="kpi-sub">' + data.reportedCount + ' of ' + data.totalEmployees + ' reported</div></div>';
-  html += '<div class="kpi-card"><div class="kpi-label">Attrition Risk Flags</div><div class="kpi-value ' + (atRisk > 0 ? 'alert-color' : '') + '">' + atRisk + '</div><div class="kpi-sub">flagged by managers this month</div></div>';
-  html += '<div class="kpi-card"><div class="kpi-label">Active Alerts</div><div class="kpi-value">' + data.alerts.length + '</div><div class="kpi-sub">low score, divergence, or risk</div></div>';
-  document.getElementById('kpiRow').innerHTML = html;
-}
-
-function renderDeptBars(data) {
-  var html = '';
-  data.departmentSummary.forEach(function(d) {
-    var pct = d.avgScore !== null ? (d.avgScore / 10 * 100) : 0;
-    html += '<div class="dept-bar-row"><div class="dept-name">' + d.department + '</div>';
-    html += '<div class="dept-bar-track"><div class="dept-bar-fill" style="width:' + pct + '%; background:' + barColor(d.avgScore) + '"></div></div>';
-    html += '<div class="dept-score">' + (d.avgScore ?? '—') + '</div></div>';
-  });
-  document.getElementById('deptBars').innerHTML = html || '<div class="empty-state">No department data.</div>';
-}
-
-function renderAlerts(data) {
-  document.getElementById('alertsCount').textContent = '(' + data.alerts.length + ')';
-  if (!data.alerts.length) { document.getElementById('alertsList').innerHTML = '<div class="empty-state">No alerts this month.</div>'; return; }
-  var html = '';
-  data.alerts.forEach(function(a) {
-    var dotClass = (a.type === 'ATTRITION_RISK' || a.type === 'LOW_SCORE') ? 'dot-red' : 'dot-amber';
-    html += '<div class="alert-item"><div class="alert-dot ' + dotClass + '"></div>';
-    html += '<div class="alert-text"><span class="alert-name">' + a.name + '</span> · ' + a.department + '<br><span class="alert-detail">' + a.detail + '</span></div></div>';
-  });
-  document.getElementById('alertsList').innerHTML = html;
-}
-
-function renderDivergence(data) {
-  var withGap = data.employees.filter(function(e) { return e.divergence !== null && e.divergence !== 0; });
-  withGap.sort(function(a, b) { return Math.abs(b.divergence) - Math.abs(a.divergence); });
-  document.getElementById('divergenceCount').textContent = '(' + withGap.length + ')';
-  if (!withGap.length) { document.getElementById('divergenceList').innerHTML = '<div class="empty-state">No overlapping self-report + manager data yet this month.</div>'; return; }
-  var html = '';
-  withGap.forEach(function(e) {
-    var gapClass = e.divergence > 0 ? 'gap-pos' : 'gap-neg';
-    var sign = e.divergence > 0 ? '+' : '';
-    html += '<div class="divergence-item"><div><span class="divergence-name">' + e.name + '</span><br><span class="divergence-dept">' + e.department + '</span></div>';
-    html += '<span class="divergence-gap ' + gapClass + '">' + sign + e.divergence + '</span></div>';
-  });
-  document.getElementById('divergenceList').innerHTML = html;
-}
-
-function renderDimensions(data) {
-  var deptDims = {};
-  data.employees.forEach(function(e) {
-    if (!e.selfReport) return;
-    if (!deptDims[e.department]) deptDims[e.department] = {};
-    Object.keys(DIMENSION_LABELS).forEach(function(dim) {
-      if (!deptDims[e.department][dim]) deptDims[e.department][dim] = [];
-      var v = Number(e.selfReport[dim]);
-      if (!isNaN(v)) deptDims[e.department][dim].push(v);
-    });
-  });
-  var depts = Object.keys(deptDims);
-  if (!depts.length) { document.getElementById('dimensionList').innerHTML = '<div class="empty-state">No self-reports yet this month.</div>'; return; }
-  var html = '';
-  depts.forEach(function(dept) {
-    var dims = deptDims[dept];
-    var avgs = Object.keys(dims).map(function(dim) {
-      var arr = dims[dim];
-      var avg = arr.reduce(function(a,b){return a+b;},0) / arr.length;
-      return { dim: dim, avg: Math.round(avg * 10) / 10 };
-    });
-    avgs.sort(function(a, b) { return a.avg - b.avg; });
-    var weakest = avgs[0];
-    if (!weakest) return;
-    html += '<div class="dimension-block"><div class="dimension-dept-name">' + dept + '</div>';
-    html += '<div class="dimension-weak">Weakest: ' + DIMENSION_LABELS[weakest.dim] + ' — <span class="dim-score">' + weakest.avg + '</span> / 10</div></div>';
-  });
-  document.getElementById('dimensionList').innerHTML = html;
-}
-
-function computeBandTally(values) {
-  var t = { high:0, mid:0, low:0, total:0 };
-  values.forEach(function(v) {
-    if (v === null || v === undefined || isNaN(v)) return;
-    var band = scoreBand(v);
-    if (band === 'high') t.high++; else if (band === 'mid') t.mid++; else if (band === 'low') t.low++;
-    t.total++;
-  });
-  t.highPct = t.total ? Math.round((t.high/t.total)*1000)/10 : null;
-  t.midPct = t.total ? Math.round((t.mid/t.total)*1000)/10 : null;
-  t.lowPct = t.total ? Math.round((t.low/t.total)*1000)/10 : null;
-  return t;
-}
-function priorityFromTally(t) {
-  if (!t.total) return { cls:'priority-stable', label:'No Data' };
-  if (t.lowPct > 15) return { cls:'priority-high', label:'Needs Attention' };
-  if ((t.midPct + t.lowPct) > 40) return { cls:'priority-watch', label:'Monitor' };
-  return { cls:'priority-stable', label:'Stable' };
-}
-
-function renderFocusTable(data) {
-  var rows = [];
-  Object.keys(DIMENSION_LABELS).forEach(function(dim) {
-    var values = data.employees.filter(function(e){ return e.selfReport; }).map(function(e){ return Number(e.selfReport[dim]); });
-    rows.push({ label: DIMENSION_LABELS[dim], tally: computeBandTally(values) });
-  });
-  var mgrValues = data.employees.filter(function(e){ return e.managerInput; }).map(function(e){ return Number(e.managerInput.Perceived_Satisfaction_Score); });
-  rows.push({ label: 'Manager Perceived Satisfaction', tally: computeBandTally(mgrValues) });
-  var combinedValues = data.employees.filter(function(e){ return e.combinedScore !== null && e.combinedScore !== undefined; }).map(function(e){ return Number(e.combinedScore); });
-  rows.push({ label: 'Combined Score (Blended)', tally: computeBandTally(combinedValues) });
-
-  var html = '<table><thead><tr><th>Question / Metric</th><th>Respondents</th><th>Healthy (7.5+)</th><th>Watch (5–7.4)</th><th>At Risk (&lt;5)</th><th>Priority</th></tr></thead><tbody>';
-  rows.forEach(function(r) {
-    var t = r.tally; var pr = priorityFromTally(t);
-    html += '<tr><td>' + r.label + '</td><td>' + t.total + '</td>';
-    html += '<td>' + (t.total ? t.highPct + '% (' + t.high + ')' : '—') + '</td>';
-    html += '<td>' + (t.total ? t.midPct + '% (' + t.mid + ')' : '—') + '</td>';
-    html += '<td>' + (t.total ? t.lowPct + '% (' + t.low + ')' : '—') + '</td>';
-    html += '<td><span class="priority-pill ' + pr.cls + '">' + pr.label + '</span></td></tr>';
-  });
-  html += '</tbody></table>';
-  document.getElementById('focusTable').innerHTML = html;
-}
-
-function renderDimensionPies(data) {
-  var container = document.getElementById('dimensionPies');
-  var tally = {};
-  Object.keys(DIMENSION_LABELS).forEach(function(dim) { tally[dim] = { high:0, mid:0, low:0, total:0 }; });
-  data.employees.forEach(function(e) {
-    if (!e.selfReport) return;
-    Object.keys(DIMENSION_LABELS).forEach(function(dim) {
-      var v = Number(e.selfReport[dim]);
-      if (isNaN(v)) return;
-      var band = scoreBand(v);
-      if (band === 'high') tally[dim].high++; else if (band === 'mid') tally[dim].mid++; else if (band === 'low') tally[dim].low++;
-      tally[dim].total++;
-    });
-  });
-  var html = '<div class="pie-grid">';
-  Object.keys(DIMENSION_LABELS).forEach(function(dim) {
-    var t = tally[dim]; var label = DIMENSION_LABELS[dim];
-    if (!t.total) { html += '<div class="pie-item"><div class="pie-title">' + label + '</div><div class="empty-state" style="padding:14px;">No data</div></div>'; return; }
-    var highPct = Math.round((t.high/t.total)*1000)/10, midPct = Math.round((t.mid/t.total)*1000)/10, lowPct = Math.round((t.low/t.total)*1000)/10;
-    var seg1 = highPct, seg2 = highPct + midPct;
-    var gradient = 'conic-gradient(var(--green) 0% ' + seg1 + '%, var(--amber) ' + seg1 + '% ' + seg2 + '%, var(--red) ' + seg2 + '% 100%)';
-    html += '<div class="pie-item"><div class="pie-title">' + label + '</div><div class="pie-circle" style="background:' + gradient + '"></div>';
-    html += '<div class="pie-legend">';
-    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--green)"></span>Healthy: ' + highPct + '% (' + t.high + ')</div>';
-    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--amber)"></span>Watch: ' + midPct + '% (' + t.mid + ')</div>';
-    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--red)"></span>At Risk: ' + lowPct + '% (' + t.low + ')</div>';
-    html += '</div></div>';
-  });
-  html += '</div>';
-  container.innerHTML = html;
-}
-
-function renderEmployeeTable(data) {
-  document.getElementById('empCount').textContent = '(' + data.employees.length + ')';
-  var rows = data.employees.slice().sort(function(a,b){ return a.name.localeCompare(b.name); });
-  var html = '';
-  rows.forEach(function(e, idx) {
-    var sr = e.selfReport, mi = e.managerInput;
-    var selfAvg = selfReportAvg(sr);
-    var mgrScore = mi ? Number(mi.Perceived_Satisfaction_Score) : null;
-    function cell(v) { return (v === null || v === undefined || isNaN(v)) ? '—' : v; }
-    var flags = [];
-    if (mi) {
-      if (mi.Attrition_Risk_Flag === 'Yes') flags.push('<span class="badge badge-risk">At Risk</span>');
-      if (mi.Overload_Flag === 'Yes') flags.push('<span class="badge" style="background:var(--amber-l);color:var(--amber);">Overload</span>');
-      if (mi.Needs_Recognition_Flag === 'Yes') flags.push('<span class="badge" style="background:var(--green-l);color:var(--green);">Needs Recognition</span>');
-      if (mi.Personal_Reasons_Flag === 'Yes') flags.push('<span class="badge" style="background:#F0F0F0;color:var(--text-soft);">Personal</span>');
-    }
-    html += '<tr>';
-    html += '<td>' + (idx+1) + '</td><td>' + e.name + '</td><td>' + e.department + '</td><td>' + (e.designation||'—') + '</td><td>' + (e.manager||'—') + '</td>';
-    html += '<td>' + (sr ? cell(Number(sr.Workload_Score)) : '—') + '</td>';
-    html += '<td>' + (sr ? cell(Number(sr.Manager_Support_Score)) : '—') + '</td>';
-    html += '<td>' + (sr ? cell(Number(sr.Growth_Score)) : '—') + '</td>';
-    html += '<td>' + (sr ? cell(Number(sr.Recognition_Score)) : '—') + '</td>';
-    html += '<td>' + (sr ? cell(Number(sr.Work_Environment_Score)) : '—') + '</td>';
-    html += '<td>' + (sr ? cell(Number(sr.Compensation_Fairness_Score)) : '—') + '</td>';
-    html += '<td>' + (sr ? cell(Number(sr.eNPS_Score)) : '—') + '</td>';
-    html += '<td>' + (sr ? cell(Number(sr.Retention_Intent_Score)) : '—') + '</td>';
-    html += '<td>' + (sr ? cell(Number(sr.Wellbeing_Trend_Score)) : '—') + '</td>';
-    html += '<td>' + (selfAvg !== null ? '<span class="score-pill ' + scoreClass(selfAvg) + '">' + selfAvg + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
-    html += '<td>' + (mgrScore !== null && !isNaN(mgrScore) ? '<span class="score-pill ' + scoreClass(mgrScore) + '">' + mgrScore + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
-    html += '<td>' + (mi ? cell(Number(mi.Retention_Confidence_Score)) : '—') + '</td>';
-    html += '<td><span class="score-pill ' + scoreClass(e.combinedScore) + '">' + (e.combinedScore ?? '—') + '</span></td>';
-    html += '<td>' + (e.divergence !== null ? (e.divergence > 0 ? '+' : '') + e.divergence : '—') + '</td>';
-    html += '<td>' + (flags.join(' ') || '—') + '</td>';
-    html += '</tr>';
-  });
-  document.getElementById('empTableBody').innerHTML = html || '<tr><td colspan="19" class="empty-state">No employees found.</td></tr>';
-}
-
-var JUNK_ANSWERS = ['nothing','none','na','n a','nil','no','not applicable','no comment','no comments','no idea','no ideas','no remarks','no remark','no feedback','nan','null','undefined','nothing much','nothing for now','nothing as of now','-','--','...','.', 'ok','okay','fine'];
-function isJunkAnswer(text) {
-  if (!text) return true;
-  var clean = text.trim().toLowerCase().replace(/[.\-!]+$/g, '').trim();
-  if (clean.length < 3) return true;
-  return JUNK_ANSWERS.indexOf(clean) !== -1;
-}
-var META_KEY_PATTERNS = [/^timestamp$/i, /^e[-_ ]?mail$/i, /^name$/i, /^department$/i, /^employee[_ ]?id$/i, /^employee[_ ]?name$/i, /^entry[_ ]?id$/i, /^\s*id\s*$/i, /^ml[_ ]?id$/i, /^month$/i, /^submitted[_ ]?on$/i, /^submission[_ ]?date$/i, /^legacy[_ ]?unmapped[_ ]?\d*$/i];
-function isMetaKey(key) { return META_KEY_PATTERNS.some(function(re){ return re.test(key); }); }
-var INNOVATION_REASONING_PATTERN = /reason|rational|why|justif/i;
-function isInnovationIdeaKey(key) { return /innovation/i.test(key) && !INNOVATION_REASONING_PATTERN.test(key); }
-
-function renderInnovationIdeas(data) {
-  var container = document.getElementById('innovationIdeas');
-  var ideas = [];
-  data.employees.forEach(function(e) {
+function detectSubjectiveKeys(employees) {
+  var found = {};
+  employees.forEach(function(e) {
     [e.selfReport, e.managerInput].forEach(function(obj) {
       if (!obj) return;
       Object.keys(obj).forEach(function(k) {
-        if (!isInnovationIdeaKey(k)) return;
-        var val = obj[k];
-        if (typeof val === 'string' && !isJunkAnswer(val)) ideas.push({ name: e.name, department: e.department, text: val.trim() });
-      });
-    });
-  });
-  document.getElementById('ideasCount').textContent = '(' + ideas.length + ')';
-  if (!ideas.length) { container.innerHTML = '<div class="empty-state">No usable innovation ideas found this month.</div>'; return; }
-  ideas.sort(function(a,b){ return b.text.length - a.text.length; });
-  var html = '';
-  ideas.forEach(function(idea) {
-    html += '<div class="idea-item"><div class="idea-text">"' + idea.text + '"</div><div class="idea-meta">— ' + idea.name + ', ' + idea.department + '</div></div>';
-  });
-  container.innerHTML = html;
-}
-
-var MANAGER_NAME_KEY_PATTERNS = [/manager[_ ]?name/i, /reviewed[_ ]?by/i, /evaluator/i, /appraiser/i, /assessed[_ ]?by/i];
-function isManagerNameKey(key) { return MANAGER_NAME_KEY_PATTERNS.some(function(re){ return re.test(key); }); }
-function findManagerName(managerInputObj) {
-  if (!managerInputObj) return null;
-  var found = null;
-  Object.keys(managerInputObj).forEach(function(k) {
-    if (found) return;
-    if (isManagerNameKey(k) && typeof managerInputObj[k] === 'string' && managerInputObj[k].trim() !== '') found = managerInputObj[k].trim();
-  });
-  return found;
-}
-var TONE_POSITIVE_WORDS = ['great','good','love','happy','appreciate','excellent','amazing','supportive','positive','helpful','enjoy','proud','fantastic','wonderful','satisfied','thank','grateful','motivat'];
-var TONE_NEGATIVE_WORDS = ['bad','poor','unhappy','frustrat','issue','problem','concern','disappoint','lack','unfair','stress','overwhelm','toxic','worried','worse','negative','delay','ignored','burnout','micromanag','complain','unclear','confus'];
-function classifyTone(text) {
-  var t = text.toLowerCase();
-  var pos = TONE_POSITIVE_WORDS.reduce(function(n,w){ return n + (t.indexOf(w)!==-1?1:0); }, 0);
-  var neg = TONE_NEGATIVE_WORDS.reduce(function(n,w){ return n + (t.indexOf(w)!==-1?1:0); }, 0);
-  if (neg > pos) return { cls:'tone-critical', label:'Critical' };
-  if (pos > neg) return { cls:'tone-good', label:'Positive' };
-  return { cls:'tone-neutral', label:'Neutral' };
-}
-
-function renderTeamRemarks(data) {
-  var container = document.getElementById('teamRemarks');
-  var remarks = [];
-  data.employees.forEach(function(e) {
-    var managerName = findManagerName(e.managerInput);
-    [{ obj: e.selfReport, source: 'self' }, { obj: e.managerInput, source: 'manager' }].forEach(function(entry) {
-      if (!entry.obj) return;
-      Object.keys(entry.obj).forEach(function(k) {
         if (DIMENSION_LABELS.hasOwnProperty(k)) return;
-        if (k === 'Perceived_Satisfaction_Score') return;
         if (isMetaKey(k)) return;
-        if (isManagerNameKey(k)) return;
-        if (/innovation/i.test(k)) return;
-        var val = entry.obj[k];
-        if (typeof val === 'string' && !isJunkAnswer(val)) {
-          remarks.push({ name: e.name, department: e.department, text: val.trim(), source: entry.source, authorName: entry.source === 'manager' ? managerName : null });
-        }
+        if (k === 'Perceived_Satisfaction_Score') return;
+        found[k] = true;
       });
     });
   });
-  document.getElementById('remarksCount').textContent = '(' + remarks.length + ')';
-  if (!remarks.length) { container.innerHTML = '<div class="empty-state">No usable open-text remarks found this month.</div>'; return; }
-  remarks.sort(function(a,b){ return b.text.length - a.text.length; });
-  var html = '';
-  remarks.forEach(function(r) {
-    var tone = classifyTone(r.text);
-    var givenBy = r.source === 'self' ? (r.name + ' (self-report)') : (r.authorName ? (r.authorName + ' (manager)') : 'Manager');
-    html += '<div class="idea-item"><div class="idea-text"><span class="tone-pill ' + tone.cls + '">' + tone.label + '</span>"' + r.text + '"</div>';
-    html += '<div class="idea-meta">Given by ' + givenBy + ' — About ' + r.name + ', ' + r.department + '</div></div>';
+  return Object.keys(found);
+}
+
+function prettyKey(k) {
+  return k.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+}
+
+function buildHeader() {
+  var headRow = document.getElementById('tableHeadRow');
+  var html = '<th>#</th><th>Name</th><th>Department</th>';
+  Object.keys(DIMENSION_LABELS).forEach(function(k) {
+    html += '<th>' + DIMENSION_LABELS[k] + '</th>';
   });
-  container.innerHTML = html;
+  html += '<th>Manager Perceived Score</th>';
+  subjectiveKeys.forEach(function(k) {
+    html += '<th class="subjective-col">' + prettyKey(k) + '</th>';
+  });
+  headRow.innerHTML = html;
 }
 
-function renderAll(data, month) {
-  renderMeta(month, data);
-  renderKpis(data);
-  renderDeptBars(data);
-  renderAlerts(data);
-  renderDivergence(data);
-  renderDimensions(data);
-  renderFocusTable(data);
-  renderDimensionPies(data);
-  renderEmployeeTable(data);
-  renderInnovationIdeas(data);
-  renderTeamRemarks(data);
+function findSubjectiveValue(e, key) {
+  if (e.selfReport && e.selfReport[key] !== undefined && e.selfReport[key] !== '') return e.selfReport[key];
+  if (e.managerInput && e.managerInput[key] !== undefined && e.managerInput[key] !== '') return e.managerInput[key];
+  return null;
 }
 
-populateMonthSelect(24);
-document.getElementById('printBtn').addEventListener('click', function(){ window.print(); });
-fetchReport(document.getElementById('monthSelect').value);
+function renderTable(employees) {
+  var body = document.getElementById('fullTableBody');
+  if (!employees.length) {
+    var colCount = 3 + Object.keys(DIMENSION_LABELS).length + 1 + subjectiveKeys.length;
+    body.innerHTML = '<tr><td colspan="' + colCount + '" class="empty-state">No employees match the current search, or no data for this month yet.</td></tr>';
+    return;
+  }
+  var html = '';
+  employees.forEach(function(e, idx) {
+    html += '<tr>';
+    html += '<td>' + (idx + 1) + '</td>';
+    html += '<td>' + e.name + '</td>';
+    html += '<td>' + e.department + '</td>';
+    Object.keys(DIMENSION_LABELS).forEach(function(k) {
+      var v = e.selfReport ? e.selfReport[k] : null;
+      html += '<td>' + (v !== null && v !== undefined && v !== '' ? '<span class="score-pill ' + scoreClass(v) + '">' + v + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+    });
+    var mgrScore = e.managerInput ? e.managerInput.Perceived_Satisfaction_Score : null;
+    html += '<td>' + (mgrScore !== null && mgrScore !== undefined && mgrScore !== '' ? '<span class="score-pill ' + scoreClass(mgrScore) + '">' + mgrScore + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+    subjectiveKeys.forEach(function(k) {
+      var val = findSubjectiveValue(e, k);
+      html += '<td class="subjective-cell">' + (val ? val : '<span style="color:var(--text-soft); font-style:normal;">No response</span>') + '</td>';
+    });
+    html += '</tr>';
+  });
+  body.innerHTML = html;
+}
+
+function populateDeptFilter(employees) {
+  var sel = document.getElementById('filterDept');
+  var current = sel.value;
+  var depts = Array.from(new Set(employees.map(function(e) { return e.department; }))).sort();
+  var opts = ['<option value="">All Departments</option>'];
+  depts.forEach(function(d) { opts.push('<option value="' + d + '">' + d + '</option>'); });
+  sel.innerHTML = opts.join('');
+  if (depts.indexOf(current) !== -1) sel.value = current;
+}
+
+function getFilters() {
+  return {
+    name: document.getElementById('searchInput').value.trim().toLowerCase(),
+    dept: document.getElementById('filterDept').value,
+    scoreField: document.getElementById('filterScoreField').value,
+    scoreBand: document.getElementById('filterScoreBand').value,
+    riskOnly: document.getElementById('filterRiskOnly').checked,
+    missingOnly: document.getElementById('filterMissingOnly').checked
+  };
+}
+
+function applyFilters() {
+  var f = getFilters();
+  var filtered = currentEmployees.filter(function(e) {
+    if (f.name) {
+      var haystack = (e.name + ' ' + e.department).toLowerCase();
+      if (haystack.indexOf(f.name) === -1) return false;
+    }
+    if (f.dept && e.department !== f.dept) return false;
+    if (f.scoreBand) {
+      var val = e[f.scoreField];
+      if (scoreBand(val) !== f.scoreBand) return false;
+    }
+    if (f.riskOnly && !e.attritionRisk) return false;
+    if (f.missingOnly && !(!e.selfReport || !e.managerInput)) return false;
+    return true;
+  });
+
+  renderTable(filtered);
+
+  var countEl = document.getElementById('resultCount');
+  countEl.textContent = filtered.length === currentEmployees.length
+    ? currentEmployees.length + ' employee' + (currentEmployees.length === 1 ? '' : 's')
+    : 'Showing ' + filtered.length + ' of ' + currentEmployees.length + ' employees';
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filterDept').value = '';
+  document.getElementById('filterScoreField').value = 'combinedScore';
+  document.getElementById('filterScoreBand').value = '';
+  document.getElementById('filterRiskOnly').checked = false;
+  document.getElementById('filterMissingOnly').checked = false;
+  applyFilters();
+}
+
+function renderSubjectiveNote() {
+  var el = document.getElementById('subjectiveNote');
+  if (!subjectiveKeys.length) {
+    el.innerHTML = '<div class="note-banner">No open-text / subjective answer fields were found in the data returned for this month — only rating fields are shown below. If the backend later returns additional text fields (comments, retention reason, etc.), they will appear here automatically.</div>';
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+function fetchFullReport(month) {
+  document.getElementById('resultCount').textContent = 'Loading…';
+  document.getElementById('fullTableBody').innerHTML = '';
+
+  if (APPS_SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
+    document.getElementById('resultCount').textContent = '';
+    document.getElementById('fullTableBody').innerHTML = '<tr><td class="empty-state">APPS_SCRIPT_URL is not set yet.</td></tr>';
+    return;
+  }
+
+  fetch(APPS_SCRIPT_URL + '?action=dashboard&month=' + month + '&token=' + encodeURIComponent(ACCESS_TOKEN))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) {
+        document.getElementById('resultCount').textContent = '';
+        document.getElementById('fullTableBody').innerHTML = '<tr><td class="empty-state">' + data.error + '</td></tr>';
+        return;
+      }
+      currentEmployees = (data.employees || []).map(function(e) {
+        var mgrScore = e.managerInput ? Number(e.managerInput.Perceived_Satisfaction_Score) : null;
+        return Object.assign({}, e, {
+          selfAvg: selfReportAvg(e.selfReport),
+          managerScore: (mgrScore !== null && !isNaN(mgrScore)) ? mgrScore : null
+        });
+      });
+      subjectiveKeys = detectSubjectiveKeys(currentEmployees);
+      renderSubjectiveNote();
+      buildHeader();
+      populateDeptFilter(currentEmployees);
+      applyFilters();
+    })
+    .catch(function() {
+      document.getElementById('resultCount').textContent = '';
+      document.getElementById('fullTableBody').innerHTML = '<tr><td class="empty-state">Could not reach the tracker backend. Check your network and the Apps Script deployment.</td></tr>';
+    });
+}
+
+populateMonthSelect(6);
+fetchFullReport(document.getElementById('monthSelect').value);
+
 document.getElementById('monthSelect').addEventListener('change', function() {
-  fetchReport(this.value);
+  fetchFullReport(this.value);
 });
+['searchInput', 'filterDept', 'filterScoreField', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
+  var el = document.getElementById(id);
+  var evt = (id === 'searchInput') ? 'input' : 'change';
+  el.addEventListener(evt, applyFilters);
+});
+document.getElementById('filterClearBtn').addEventListener('click', clearFilters);
 </script>
 </body>
 </html>
