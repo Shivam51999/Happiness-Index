@@ -212,6 +212,19 @@
 
   .empty-state { text-align: center; padding: 30px; color: var(--text-soft); font-size: 13px; }
   .result-count { font-size: 11.5px; color: var(--text-soft); margin-bottom: 10px; }
+
+  .compare-card { margin-bottom: 20px; }
+  .compare-title { font-size: 15px; font-weight: 700; color: var(--navy); margin: 0 0 4px; }
+  .compare-sub { font-size: 12.5px; color: var(--text-soft); margin: 0 0 14px; }
+  .month-checklist { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 16px; }
+  .month-chip { display: flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 8px; border: 1px solid var(--border); font-size: 12.5px; color: var(--text); background: #fff; cursor: pointer; user-select: none; white-space: nowrap; }
+  .month-chip input { accent-color: var(--purple); cursor: pointer; }
+  .month-chip.disabled { opacity: 0.5; }
+  .compare-employee-meta { font-size: 12.5px; color: var(--text-soft); margin: 4px 0 12px; }
+  .compare-table th { background: var(--purple); }
+  .compare-table th:first-child { background: var(--navy); }
+  .compare-table td.metric-label { font-weight: 600; color: var(--text); white-space: nowrap; background: #FAFBFC; }
+  .compare-table td.subjective-cell { max-width: 240px; }
 </style>
 </head>
 <body>
@@ -224,11 +237,24 @@
     </div>
     <div class="controls-row" style="margin-bottom:0;">
       <select class="month-select" id="monthSelect"></select>
-      <a class="btn-link" id="backLink" href="happiness-tracker.html">← Back to Dashboard</a>
+      <a class="btn-link" id="backLink" href="dashboard.html">← Back to Dashboard</a>
     </div>
   </div>
 
   <div id="subjectiveNote"></div>
+
+  <div class="card compare-card">
+    <div class="compare-title">Compare an Employee Across Months</div>
+    <p class="compare-sub">Pick an employee, then choose which months to line up side by side — every score, plus any comments, ideas, or manager notes they've been given.</p>
+    <div class="filter-bar" style="margin-bottom:0;">
+      <select class="filter-select" id="compareEmployeeSelect" style="min-width:240px;">
+        <option value="">Select an employee…</option>
+      </select>
+    </div>
+    <div class="compare-employee-meta" id="compareEmployeeMeta"></div>
+    <div class="month-checklist" id="compareMonthChecklist"></div>
+    <div id="compareResultWrap"></div>
+  </div>
 
   <div class="card">
     <div class="filter-bar">
@@ -522,6 +548,178 @@ function fetchFullReport(month) {
       document.getElementById('fullTableBody').innerHTML = '<tr><td class="empty-state">Could not reach the tracker backend. Check your network and the Apps Script deployment.</td></tr>';
     });
 }
+
+// ── Employee-across-months comparison ───────────────────────────
+var compareTrendData = [];       // full trend history for the selected employee, ascending by month
+var compareCheckedMonths = {};   // month key -> boolean
+var compareEmployeeInfo = null;  // { ID, Name, Designation, Department, Manager }
+
+function monthLabel(m) {
+  var parts = m.split('-');
+  var d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+  return d.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+}
+
+function populateCompareEmployeeSelect() {
+  var sel = document.getElementById('compareEmployeeSelect');
+  fetch(APPS_SCRIPT_URL + '?action=roster&token=' + encodeURIComponent(ACCESS_TOKEN))
+    .then(function(r) { return r.json(); })
+    .then(function(roster) {
+      if (!Array.isArray(roster)) return;
+      var active = roster.filter(function(r) { return r.Status === 'Active'; })
+        .sort(function(a, b) { return String(a.Name).localeCompare(String(b.Name)); });
+      var opts = ['<option value="">Select an employee…</option>'];
+      active.forEach(function(r) {
+        opts.push('<option value="' + r.ID + '">' + r.Name + ' — ' + (r.Department || '') + '</option>');
+      });
+      sel.innerHTML = opts.join('');
+    })
+    .catch(function() {
+      sel.innerHTML = '<option value="">Could not load roster</option>';
+    });
+}
+
+function onCompareEmployeeChange() {
+  var sel = document.getElementById('compareEmployeeSelect');
+  var employeeId = sel.value;
+  var metaEl = document.getElementById('compareEmployeeMeta');
+  var checklistEl = document.getElementById('compareMonthChecklist');
+  var resultEl = document.getElementById('compareResultWrap');
+
+  if (!employeeId) {
+    compareTrendData = [];
+    metaEl.textContent = '';
+    checklistEl.innerHTML = '';
+    resultEl.innerHTML = '';
+    return;
+  }
+
+  metaEl.textContent = 'Loading history…';
+  checklistEl.innerHTML = '';
+  resultEl.innerHTML = '';
+
+  fetch(APPS_SCRIPT_URL + '?action=trend&employeeId=' + encodeURIComponent(employeeId) + '&token=' + encodeURIComponent(ACCESS_TOKEN))
+    .then(function(r) { return r.json(); })
+    .then(function(trend) {
+      if (!Array.isArray(trend) || !trend.length) {
+        metaEl.textContent = 'No self-report or manager input found for this employee yet, in any month.';
+        return;
+      }
+      compareTrendData = trend;
+      var opt = sel.options[sel.selectedIndex];
+      var name = opt.textContent.split(' — ')[0];
+      var dept = opt.textContent.split(' — ')[1] || '';
+      compareEmployeeInfo = { Name: name, Department: dept };
+      metaEl.textContent = name + ' · ' + dept + ' · ' + trend.length + ' month' + (trend.length === 1 ? '' : 's') + ' of history available';
+
+      // Default: check the most recent 3 months (or all, if fewer than 3)
+      compareCheckedMonths = {};
+      trend.forEach(function(t, i) {
+        compareCheckedMonths[t.month] = (i >= trend.length - 3);
+      });
+
+      renderCompareMonthChecklist();
+      renderCompareTable();
+    })
+    .catch(function() {
+      metaEl.textContent = 'Could not reach the tracker backend.';
+    });
+}
+
+function renderCompareMonthChecklist() {
+  var el = document.getElementById('compareMonthChecklist');
+  var html = '';
+  compareTrendData.forEach(function(t) {
+    var checked = compareCheckedMonths[t.month] ? 'checked' : '';
+    html += '<label class="month-chip"><input type="checkbox" data-month="' + t.month + '" ' + checked + '>' + monthLabel(t.month) + '</label>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('input[type=checkbox]').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      compareCheckedMonths[cb.getAttribute('data-month')] = cb.checked;
+      renderCompareTable();
+    });
+  });
+}
+
+// Same subjective-field detection as the main table, scoped to this employee's selected months
+function detectCompareSubjectiveKeys(entries) {
+  var found = {};
+  entries.forEach(function(e) {
+    [e.selfReport, e.managerInput].forEach(function(obj) {
+      if (!obj) return;
+      Object.keys(obj).forEach(function(k) {
+        if (DIMENSION_LABELS.hasOwnProperty(k)) return;
+        if (isMetaKey(k)) return;
+        if (k === 'Perceived_Satisfaction_Score') return;
+        found[k] = true;
+      });
+    });
+  });
+  return Object.keys(found);
+}
+
+function renderCompareTable() {
+  var resultEl = document.getElementById('compareResultWrap');
+  var selected = compareTrendData.filter(function(t) { return compareCheckedMonths[t.month]; });
+
+  if (!selected.length) {
+    resultEl.innerHTML = '<div class="empty-state">Select at least one month above to compare.</div>';
+    return;
+  }
+
+  var subjKeys = detectCompareSubjectiveKeys(selected);
+
+  var html = '<div class="table-scroll"><table class="compare-table"><thead><tr><th>Metric</th>';
+  selected.forEach(function(t) { html += '<th>' + monthLabel(t.month) + '</th>'; });
+  html += '</tr></thead><tbody>';
+
+  function scoreRow(label, getter) {
+    html += '<tr><td class="metric-label">' + label + '</td>';
+    selected.forEach(function(t) {
+      var v = getter(t);
+      html += '<td>' + (v !== null && v !== undefined && v !== '' ? '<span class="score-pill ' + scoreClass(v) + '">' + v + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+    });
+    html += '</tr>';
+  }
+
+  Object.keys(DIMENSION_LABELS).forEach(function(k) {
+    scoreRow(DIMENSION_LABELS[k], function(t) { return t.selfReport ? t.selfReport[k] : null; });
+  });
+  scoreRow('Self-Report Avg', function(t) { return selfReportAvg(t.selfReport); });
+  scoreRow('Manager Perceived Score', function(t) { return t.managerInput ? t.managerInput.Perceived_Satisfaction_Score : null; });
+  scoreRow('Retention Confidence', function(t) { return t.managerInput ? t.managerInput.Retention_Confidence_Score : null; });
+  scoreRow('Combined Score', function(t) { return t.combinedScore; });
+
+  html += '<tr><td class="metric-label">Manager Flags</td>';
+  selected.forEach(function(t) {
+    var mi = t.managerInput;
+    if (!mi) { html += '<td><span class="score-pill score-na">—</span></td>'; return; }
+    var flags = [];
+    if (mi.Attrition_Risk_Flag === 'Yes') flags.push('At Risk');
+    if (mi.Overload_Flag === 'Yes') flags.push('Overload');
+    if (mi.Needs_Recognition_Flag === 'Yes') flags.push('Needs Recognition');
+    if (mi.Personal_Reasons_Flag === 'Yes') flags.push('Personal');
+    html += '<td class="subjective-cell">' + (flags.length ? flags.join(', ') : '<span style="color:var(--text-soft); font-style:normal;">None</span>') + '</td>';
+  });
+  html += '</tr>';
+
+  subjKeys.forEach(function(k) {
+    html += '<tr><td class="metric-label">' + prettyKey(k) + '</td>';
+    selected.forEach(function(t) {
+      var val = (t.selfReport && t.selfReport[k] !== undefined && t.selfReport[k] !== '') ? t.selfReport[k]
+        : (t.managerInput && t.managerInput[k] !== undefined && t.managerInput[k] !== '') ? t.managerInput[k] : null;
+      html += '<td class="subjective-cell">' + (val ? val : '<span style="color:var(--text-soft); font-style:normal;">No response</span>') + '</td>';
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  resultEl.innerHTML = html;
+}
+
+document.getElementById('compareEmployeeSelect').addEventListener('change', onCompareEmployeeChange);
+populateCompareEmployeeSelect();
 
 populateMonthSelect(6);
 fetchFullReport(document.getElementById('monthSelect').value);
