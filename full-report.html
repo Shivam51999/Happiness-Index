@@ -265,6 +265,9 @@
       <select class="filter-select" id="filterDept">
         <option value="">All Departments</option>
       </select>
+      <select class="filter-select" id="filterManager">
+        <option value="">All Managers</option>
+      </select>
       <select class="filter-select" id="filterScoreField">
         <option value="combinedScore">Combined Score</option>
         <option value="selfAvg">Self-Report</option>
@@ -457,10 +460,21 @@ function populateDeptFilter(employees) {
   if (depts.indexOf(current) !== -1) sel.value = current;
 }
 
+function populateManagerFilter(employees) {
+  var sel = document.getElementById('filterManager');
+  var current = sel.value;
+  var managers = Array.from(new Set(employees.map(function(e) { return e.manager; }).filter(function(m) { return m; }))).sort();
+  var opts = ['<option value="">All Managers</option>'];
+  managers.forEach(function(m) { opts.push('<option value="' + m + '">' + m + '</option>'); });
+  sel.innerHTML = opts.join('');
+  if (managers.indexOf(current) !== -1) sel.value = current;
+}
+
 function getFilters() {
   return {
     name: document.getElementById('searchInput').value.trim().toLowerCase(),
     dept: document.getElementById('filterDept').value,
+    manager: document.getElementById('filterManager').value,
     scoreField: document.getElementById('filterScoreField').value,
     scoreBand: document.getElementById('filterScoreBand').value,
     riskOnly: document.getElementById('filterRiskOnly').checked,
@@ -472,10 +486,11 @@ function applyFilters() {
   var f = getFilters();
   var filtered = currentEmployees.filter(function(e) {
     if (f.name) {
-      var haystack = (e.name + ' ' + e.department).toLowerCase();
+      var haystack = (e.name + ' ' + e.department + ' ' + (e.manager || '')).toLowerCase();
       if (haystack.indexOf(f.name) === -1) return false;
     }
     if (f.dept && e.department !== f.dept) return false;
+    if (f.manager && e.manager !== f.manager) return false;
     if (f.scoreBand) {
       var val = e[f.scoreField];
       if (scoreBand(val) !== f.scoreBand) return false;
@@ -496,6 +511,7 @@ function applyFilters() {
 function clearFilters() {
   document.getElementById('searchInput').value = '';
   document.getElementById('filterDept').value = '';
+  document.getElementById('filterManager').value = '';
   document.getElementById('filterScoreField').value = 'combinedScore';
   document.getElementById('filterScoreBand').value = '';
   document.getElementById('filterRiskOnly').checked = false;
@@ -541,6 +557,7 @@ function fetchFullReport(month) {
       renderSubjectiveNote();
       buildHeader();
       populateDeptFilter(currentEmployees);
+      populateManagerFilter(currentEmployees);
       applyFilters();
     })
     .catch(function() {
@@ -727,7 +744,7 @@ fetchFullReport(document.getElementById('monthSelect').value);
 document.getElementById('monthSelect').addEventListener('change', function() {
   fetchFullReport(this.value);
 });
-['searchInput', 'filterDept', 'filterScoreField', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
+['searchInput', 'filterDept', 'filterManager', 'filterScoreField', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
   var el = document.getElementById(id);
   var evt = (id === 'searchInput') ? 'input' : 'change';
   el.addEventListener(evt, applyFilters);
