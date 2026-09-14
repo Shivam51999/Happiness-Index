@@ -19,6 +19,7 @@
   .header-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
   .title-block h1 { font-size:22px; margin:0 0 4px; color:var(--navy); }
   .title-block p { margin:0; color:var(--text-soft); font-size:13px; }
+  .header-logo { height: 32px; width: auto; display: block; }
   .header-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .select-ctl { padding:8px 14px; border-radius:8px; border:1px solid var(--border); font-size:13px; background:#fff; color:var(--text); font-family:inherit; }
   .btn-link { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; border:1px solid var(--border); background:var(--navy); color:#fff; font-size:13px; font-weight:600; text-decoration:none; white-space:nowrap; }
@@ -103,9 +104,12 @@
 <div class="wrap">
 
   <div class="header-row">
-    <div class="title-block">
-      <h1>Monthly Comparison</h1>
-      <p>Happiness & Satisfaction Pulse · trends across months, org-wide and by department</p>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img src="mangalam-logo.png" alt="Mangalam Landmarks" class="header-logo">
+      <div class="title-block">
+        <h1>Monthly Comparison</h1>
+        <p>Happiness & Satisfaction Pulse · trends across months, org-wide and by department</p>
+      </div>
     </div>
     <div class="header-controls">
       <select class="select-ctl" id="rangeSelect">

@@ -6,6 +6,7 @@
 <title>Executive Briefing — Happiness & Satisfaction · Mangalam HQ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
     --ink: #14213D;
@@ -40,7 +41,8 @@
     padding: 14px 0;
   }
   .topbar-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-  .topbar-left { display: flex; align-items: baseline; gap: 10px; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-logo { height: 30px; width: auto; display: block; }
   .topbar-title { font-size: 15px; font-weight: 700; color: var(--ink); }
   .topbar-tag { font-size: 11px; color: var(--amber); background: var(--amber-l); padding: 2px 8px; border-radius: 4px; font-weight: 600; }
   .topbar-nav { display: flex; align-items: center; gap: 16px; font-size: 13px; }
@@ -121,6 +123,19 @@
   td { padding: 9px 10px; border-bottom: 1px solid var(--line); }
   tr.clickable-row { cursor: pointer; }
   tr.clickable-row:hover td { background: #FAF7F0; }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: var(--ink); }
+  th.sortable .sort-arrow { font-size: 9px; margin-left: 3px; opacity: 0.45; }
+  th.sortable.sort-active .sort-arrow { opacity: 1; color: var(--amber); }
+
+  /* ── Interpretation callouts ── */
+  .insight { background: #FBF9F3; border: 1px solid var(--line); border-left: 3px solid var(--amber); border-radius: 6px; padding: 11px 14px; margin-top: 14px; font-size: 12.5px; line-height: 1.55; color: var(--text); }
+  .insight-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--amber); font-weight: 700; margin-bottom: 4px; }
+
+  /* ── Download button ── */
+  .dl-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 6px; border: 1px solid var(--line); background: #fff; color: var(--ink); font-size: 11.5px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .dl-btn:hover { border-color: var(--amber); color: var(--amber); }
+  .card-head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 
   .score-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 12px; }
   .score-high { background: var(--green-l); color: var(--green); }
@@ -176,6 +191,7 @@
 <div class="topbar">
   <div class="wrap topbar-inner">
     <div class="topbar-left">
+      <img src="mangalam-logo.png" alt="Mangalam Landmarks" class="topbar-logo">
       <span class="topbar-title">Mangalam HQ · Happiness &amp; Satisfaction</span>
       <span class="topbar-tag">Preview build</span>
     </div>
@@ -206,26 +222,11 @@
 
   <div class="kpi-row" id="kpiRow"></div>
 
-  <div class="filter-bar">
-    <input type="text" id="filterName" placeholder="Search employee, department, remark, or idea…" autocomplete="off">
-    <select class="filter-select" id="filterDept"><option value="">All Departments</option></select>
-    <select class="filter-select" id="filterScoreBand">
-      <option value="">Any Score</option>
-      <option value="high">7.5+ Healthy</option>
-      <option value="mid">5–7.4 Watch</option>
-      <option value="low">&lt;5 At Risk</option>
-      <option value="na">No Data</option>
-    </select>
-    <label class="filter-check"><input type="checkbox" id="filterRiskOnly"> At Risk flag only</label>
-    <label class="filter-check"><input type="checkbox" id="filterMissingOnly"> Not Filled</label>
-    <button class="filter-clear" id="filterClearBtn">Clear filters</button>
-    <div class="filter-count" id="filterCount"></div>
-  </div>
-
   <div class="card">
     <h3>Department Pulse</h3>
     <p class="card-sub">Click a department to filter the Employee Detail table below.</p>
     <div id="deptBars"></div>
+    <div class="insight" id="insightDeptPulse"></div>
   </div>
 
   <div class="grid-2">
@@ -233,12 +234,14 @@
       <h3>Perception Gaps — Manager vs. Self</h3>
       <p class="card-sub">Positive = employee feels worse than manager thinks. Negative = manager underestimates them.</p>
       <div id="divergenceList"></div>
+      <div class="insight" id="insightGaps"></div>
     </div>
     <div class="card">
       <h3>Manager Calibration</h3>
       <p class="card-sub">Average gap between what each manager perceives and what their team self-reports — a check on whether a manager's read of their team is accurate, not just whether the team is happy.</p>
       <div id="calibrationTable"></div>
       <div class="empty-state" id="calibrationCaveat" style="display:none; padding-top:10px; border-top:1px solid var(--line); margin-top:10px;"></div>
+      <div class="insight" id="insightCalibration"></div>
     </div>
   </div>
 
@@ -246,12 +249,14 @@
     <h3>Flight Risk — Composite Ranking</h3>
     <p class="card-sub">A transparent 0–100 score blending low self-reported score, an existing manager attrition flag, and cases where a manager may be underestimating a struggling employee. This is a triage aid, not a verdict — read the factor tags before acting.</p>
     <div id="flightRiskList"></div>
+    <div class="insight" id="insightFlightRisk"></div>
   </div>
 
   <div class="card">
     <h3>Weakest Dimension by Department</h3>
     <p class="card-sub">Average self-report score per dimension; lowest-scoring dimension highlighted per department.</p>
     <div id="dimensionList"></div>
+    <div class="insight" id="insightWeakestDim"></div>
   </div>
 
   <div class="card">
@@ -268,11 +273,36 @@
 
   <div class="card">
     <h3>Employee Detail</h3>
-    <p class="card-sub">Click a row to open that person's multi-month trend in the Full Report.</p>
+    <p class="card-sub">Click a row to open that person's multi-month trend in the Full Report. Click a column heading to sort by it.</p>
+
+    <div class="filter-bar">
+      <input type="text" id="filterName" placeholder="Search employee, department, or manager…" autocomplete="off">
+      <select class="filter-select" id="filterDept"><option value="">All Departments</option></select>
+      <select class="filter-select" id="filterScoreBand">
+        <option value="">Any Score</option>
+        <option value="high">7.5+ Healthy</option>
+        <option value="mid">5–7.4 Watch</option>
+        <option value="low">&lt;5 At Risk</option>
+        <option value="na">No Data</option>
+      </select>
+      <label class="filter-check"><input type="checkbox" id="filterRiskOnly"> At Risk flag only</label>
+      <label class="filter-check"><input type="checkbox" id="filterMissingOnly"> Not Filled</label>
+      <button class="filter-clear" id="filterClearBtn">Clear filters</button>
+      <div class="filter-count" id="filterCount"></div>
+    </div>
+
     <table>
       <thead>
         <tr>
-          <th>#</th><th>Name</th><th>Department</th><th>Manager</th><th>Self-Report</th><th>Manager View</th><th>Combined</th><th>Gap</th><th>Flags</th>
+          <th>#</th>
+          <th class="sortable" data-sort="name">Name <span class="sort-arrow">▲▼</span></th>
+          <th class="sortable" data-sort="department">Department <span class="sort-arrow">▲▼</span></th>
+          <th class="sortable" data-sort="manager">Manager <span class="sort-arrow">▲▼</span></th>
+          <th class="sortable" data-sort="selfAvg">Self-Report <span class="sort-arrow">▲▼</span></th>
+          <th class="sortable" data-sort="managerScore">Manager View <span class="sort-arrow">▲▼</span></th>
+          <th class="sortable" data-sort="combinedScore">Combined <span class="sort-arrow">▲▼</span></th>
+          <th class="sortable" data-sort="divergence">Gap <span class="sort-arrow">▲▼</span></th>
+          <th>Flags</th>
         </tr>
       </thead>
       <tbody id="empTableBody"></tbody>
@@ -281,13 +311,13 @@
 
   <div class="grid-2">
     <div class="card">
-      <h3>Innovation Ideas From the Team</h3>
-      <p class="card-sub">Top 10 most substantive ideas this month; blank or placeholder answers filtered out.</p>
+      <div class="card-head-row"><h3>Innovation Ideas From the Team</h3><button class="dl-btn" id="dlIdeasBtn">⬇ Download Excel</button></div>
+      <p class="card-sub">Top 10 shown here; the download includes every usable idea this month.</p>
       <div id="innovationIdeas" class="scroll-box"></div>
     </div>
     <div class="card">
-      <h3>Top Team Remarks</h3>
-      <p class="card-sub">Top 10 open-text remarks this month, auto-tagged by tone.</p>
+      <div class="card-head-row"><h3>Top Team Remarks</h3><button class="dl-btn" id="dlRemarksBtn">⬇ Download Excel</button></div>
+      <p class="card-sub">Top 10 shown here; the download includes every usable remark this month.</p>
       <div id="teamRemarks" class="scroll-box"></div>
     </div>
   </div>
@@ -405,6 +435,9 @@ var prevData = null;
 var rosterById = {};
 var rosterByName = {};
 var currentEmployees = [];
+var sortState = { field: null, dir: 1 };
+var allIdeas = [];
+var allRemarks = [];
 
 function pad2(n) { return n < 10 ? '0' + n : '' + n; }
 function shiftMonth(monthKey, delta) {
@@ -818,7 +851,7 @@ function renderTeamRemarks(data) {
       });
     });
   });
-  if (!remarks.length) { container.innerHTML = '<div class="empty-state">No usable remarks found this month.</div>'; return; }
+  if (!remarks.length) { container.innerHTML = '<div class="empty-state">No usable remarks found this month.</div>'; return remarks; }
   remarks.sort(function(a, b) { return b.text.length - a.text.length; });
   var top = remarks.slice(0, 10);
   var html = '';
@@ -828,6 +861,7 @@ function renderTeamRemarks(data) {
     html += '<div class="idea-item"><div class="idea-text"><span class="tone-pill ' + tone.cls + '">' + tone.label + '</span>"' + r.text + '"</div><div class="idea-meta">Given by ' + givenBy + ' — About ' + r.name + ', ' + r.department + '</div></div>';
   });
   container.innerHTML = html;
+  return remarks;
 }
 
 // ── Filters ──
@@ -847,6 +881,33 @@ function getFilters() {
     missingOnly: document.getElementById('filterMissingOnly').checked
   };
 }
+function sortEmployees(list, field, dir) {
+  var copy = list.slice();
+  copy.sort(function(a, b) {
+    var av = a[field], bv = b[field];
+    var aNull = av === null || av === undefined;
+    var bNull = bv === null || bv === undefined;
+    if (aNull && bNull) return 0;
+    if (aNull) return 1;
+    if (bNull) return -1;
+    if (typeof av === 'string') return av.localeCompare(bv) * dir;
+    return (av - bv) * dir;
+  });
+  return copy;
+}
+function setupSortHeaders() {
+  document.querySelectorAll('th.sortable').forEach(function(th) {
+    th.addEventListener('click', function() {
+      var field = th.getAttribute('data-sort');
+      if (sortState.field === field) { sortState.dir *= -1; }
+      else { sortState.field = field; sortState.dir = 1; }
+      document.querySelectorAll('th.sortable').forEach(function(h) { h.classList.remove('sort-active'); });
+      th.classList.add('sort-active');
+      applyFilters();
+    });
+  });
+}
+
 function applyFilters() {
   var f = getFilters();
   var filtered = currentEmployees.filter(function(e) {
@@ -860,6 +921,7 @@ function applyFilters() {
     if (f.missingOnly && e.selfAvg !== null && e.managerScore !== null) return false;
     return true;
   });
+  if (sortState.field) filtered = sortEmployees(filtered, sortState.field, sortState.dir);
   document.getElementById('filterCount').textContent = filtered.length + ' of ' + currentEmployees.length + ' employees';
   renderTable(filtered, document.getElementById('monthSelect').value);
 }
@@ -873,6 +935,117 @@ function clearFilters() {
 }
 
 // ── Master load ──
+// Some Apps Script deployments return raw selfReport/managerInput objects
+// but not pre-aggregated selfAvg/managerScore fields — when that happens
+// e.selfAvg is JS `undefined`, and `undefined !== null` is true, so the old
+// check silently rendered the literal word "undefined". These derive the
+// aggregate client-side whenever the backend hasn't already supplied it.
+function deriveSelfAvg(e) {
+  if (typeof e.selfAvg === 'number' && !isNaN(e.selfAvg)) return e.selfAvg;
+  if (!e.selfReport) return null;
+  var dims = Object.keys(DIMENSION_LABELS).map(function(k) { return Number(e.selfReport[k]); }).filter(function(v) { return !isNaN(v); });
+  if (!dims.length) return null;
+  return Math.round((dims.reduce(function(a, b) { return a + b; }, 0) / dims.length) * 10) / 10;
+}
+function deriveManagerScore(e) {
+  if (typeof e.managerScore === 'number' && !isNaN(e.managerScore)) return e.managerScore;
+  if (!e.managerInput) return null;
+  var v = Number(e.managerInput.Perceived_Satisfaction_Score);
+  return isNaN(v) ? null : v;
+}
+
+// ── CHRO interpretation panels ── rule-based, transparent, no black box.
+function renderInsightDeptPulse(data) {
+  var el = document.getElementById('insightDeptPulse');
+  var depts = (data.departmentSummary || []).filter(function(d) { return d.avgScore !== null; });
+  if (depts.length < 2) { el.innerHTML = ''; return; }
+  var sorted = depts.slice().sort(function(a, b) { return a.avgScore - b.avgScore; });
+  var weakest = sorted[0], strongest = sorted[sorted.length - 1];
+  var spread = Math.round((strongest.avgScore - weakest.avgScore) * 10) / 10;
+  var text = '<div class="insight-label">CHRO read</div>';
+  if (spread >= 2) {
+    text += weakest.department + ' is trailing ' + strongest.department + ' by ' + spread + ' points — worth a targeted pulse conversation with ' + weakest.department + ' leadership before the gap widens.';
+  } else {
+    text += 'Departments are fairly close together this month (spread of ' + spread + ' points) — no single department needs isolated urgent attention.';
+  }
+  el.innerHTML = text;
+}
+function renderInsightGaps(employees) {
+  var el = document.getElementById('insightGaps');
+  var withGap = employees.filter(function(e) { return e.divergence !== null && e.divergence !== undefined; });
+  if (!withGap.length) { el.innerHTML = ''; return; }
+  var under = withGap.filter(function(e) { return e.divergence < -1; }).length;
+  var over = withGap.filter(function(e) { return e.divergence > 1; }).length;
+  var text = '<div class="insight-label">CHRO read</div>';
+  if (under > over && under >= 3) {
+    text += under + ' employees feel notably worse than their manager perceives — more underestimation than overestimation this month, which usually means managers need help reading early distress signals rather than just visible performance.';
+  } else if (over > under && over >= 3) {
+    text += over + ' employees are rated by their manager as less happy than they actually report — worth checking managers aren&rsquo;t projecting their own read onto the team.';
+  } else {
+    text += 'Perception gaps are small and roughly balanced this month — self-report and manager view are reasonably aligned org-wide.';
+  }
+  el.innerHTML = text;
+}
+function renderInsightCalibration(calibration) {
+  var el = document.getElementById('insightCalibration');
+  if (!calibration.rows.length) { el.innerHTML = ''; return; }
+  var over = calibration.rows.filter(function(r) { return r.verdict.label === 'Tends to overestimate'; }).length;
+  var under = calibration.rows.filter(function(r) { return r.verdict.label === 'Tends to underestimate'; }).length;
+  var text = '<div class="insight-label">CHRO read</div>';
+  if (over > 0) {
+    text += over + ' manager(s) consistently rate their team happier than the team rates itself — a possible blind spot. Pair this with skip-level check-ins rather than relying on manager sentiment alone.';
+  } else if (under > 0) {
+    text += under + ' manager(s) consistently rate their team lower than the team rates itself — not automatically a problem, but worth a quick conversation on what they&rsquo;re seeing that self-reports aren&rsquo;t capturing.';
+  } else {
+    text += 'Manager perception is reasonably well-calibrated against self-reports across the board this month.';
+  }
+  el.innerHTML = text;
+}
+function renderInsightFlightRisk(employees) {
+  var el = document.getElementById('insightFlightRisk');
+  var high = employees.map(function(e) { return computeFlightRisk(e); }).filter(function(r) { return r.score >= 50; });
+  var text = '<div class="insight-label">CHRO read</div>';
+  if (!high.length) {
+    text += 'No one crossed the high-risk threshold (50+) this month.';
+  } else {
+    text += high.length + ' employee(s) scored 50 or above on the flight-risk composite — treat this as a prioritized shortlist for proactive stay conversations, not a final verdict on who will leave.';
+  }
+  el.innerHTML = text;
+}
+function renderInsightWeakestDim(data) {
+  var el = document.getElementById('insightWeakestDim');
+  var deptDims = {};
+  (data.employees || []).forEach(function(e) {
+    if (!e.selfReport) return;
+    if (!deptDims[e.department]) deptDims[e.department] = {};
+    Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+      if (!deptDims[e.department][dim]) deptDims[e.department][dim] = [];
+      var v = Number(e.selfReport[dim]);
+      if (!isNaN(v)) deptDims[e.department][dim].push(v);
+    });
+  });
+  var tally = {};
+  Object.keys(deptDims).forEach(function(dept) {
+    var weakest = null;
+    Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+      var vals = deptDims[dept][dim] || [];
+      if (!vals.length) return;
+      var avg = vals.reduce(function(a, b) { return a + b; }, 0) / vals.length;
+      if (!weakest || avg < weakest.avg) weakest = { dim: dim, avg: avg };
+    });
+    if (weakest) tally[weakest.dim] = (tally[weakest.dim] || 0) + 1;
+  });
+  var topDim = null;
+  Object.keys(tally).forEach(function(k) { if (!topDim || tally[k] > tally[topDim]) topDim = k; });
+  var text = '<div class="insight-label">CHRO read</div>';
+  if (topDim && tally[topDim] > 0) {
+    text += '"' + DIMENSION_LABELS[topDim] + '" is the most common weak point, showing up as the lowest-scoring dimension in ' + tally[topDim] + ' department(s) — a stronger candidate for an org-wide initiative than a department-by-department fix.';
+  } else {
+    text += 'No single dimension repeats as a weak point across departments this month.';
+  }
+  el.innerHTML = text;
+}
+
 function renderAll(data, prev, roster) {
   rosterById = {}; rosterByName = {};
   (roster || []).forEach(function(r) {
@@ -882,7 +1055,7 @@ function renderAll(data, prev, roster) {
 
   currentEmployees = (data.employees || []).map(function(e) {
     var manager = (e.id && rosterById[e.id]) || rosterByName[String(e.name || '').trim().toLowerCase()] || null;
-    return Object.assign({}, e, { manager: manager });
+    return Object.assign({}, e, { manager: manager, selfAvg: deriveSelfAvg(e), managerScore: deriveManagerScore(e) });
   });
   var enrichedData = Object.assign({}, data, { employees: currentEmployees });
 
@@ -890,17 +1063,24 @@ function renderAll(data, prev, roster) {
 
   renderHero(enrichedData, prev);
   renderDeptBars(enrichedData);
+  renderInsightDeptPulse(enrichedData);
   renderDivergence(enrichedData);
+  renderInsightGaps(currentEmployees);
   renderCalibrationTable(calibration);
+  renderInsightCalibration(calibration);
   renderFlightRisk(currentEmployees);
+  renderInsightFlightRisk(currentEmployees);
   renderDimensions(enrichedData);
+  renderInsightWeakestDim(enrichedData);
   renderFocusTable(enrichedData);
   renderDimensionPies(enrichedData);
   populateDeptFilter(currentEmployees);
+  sortState = { field: null, dir: 1 };
+  document.querySelectorAll('th.sortable').forEach(function(h) { h.classList.remove('sort-active'); });
   applyFilters();
-  var ideas = renderInnovationIdeas(enrichedData);
-  renderTeamRemarks(enrichedData);
-  renderKpis(enrichedData, calibration, ideas.length);
+  allIdeas = renderInnovationIdeas(enrichedData);
+  allRemarks = renderTeamRemarks(enrichedData);
+  renderKpis(enrichedData, calibration, allIdeas.length);
 }
 
 function loadAll(month) {
@@ -927,6 +1107,35 @@ document.getElementById('empTableBody').addEventListener('click', function(ev) {
   var row = ev.target.closest('tr.clickable-row');
   if (row && row.dataset.url) window.open(row.dataset.url, '_blank');
 });
+setupSortHeaders();
+
+// ── Excel export (SheetJS, loaded via CDN in <head>) ──
+function downloadIdeasExcel() {
+  if (!allIdeas.length) { alert('No innovation ideas to export this month.'); return; }
+  var rows = allIdeas.map(function(i) { return { Name: i.name, Department: i.department, Idea: i.text }; });
+  var ws = XLSX.utils.json_to_sheet(rows);
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Innovation Ideas');
+  XLSX.writeFile(wb, 'innovation-ideas-' + document.getElementById('monthSelect').value + '.xlsx');
+}
+function downloadRemarksExcel() {
+  if (!allRemarks.length) { alert('No remarks to export this month.'); return; }
+  var rows = allRemarks.map(function(r) {
+    return {
+      Name: r.name,
+      Department: r.department,
+      Source: r.source === 'self' ? 'Self-report' : 'Manager',
+      'Given By': r.source === 'self' ? r.name : (r.authorName || 'Manager'),
+      Remark: r.text
+    };
+  });
+  var ws = XLSX.utils.json_to_sheet(rows);
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Team Remarks');
+  XLSX.writeFile(wb, 'team-remarks-' + document.getElementById('monthSelect').value + '.xlsx');
+}
+document.getElementById('dlIdeasBtn').addEventListener('click', downloadIdeasExcel);
+document.getElementById('dlRemarksBtn').addEventListener('click', downloadRemarksExcel);
 </script>
 </body>
 </html>

@@ -42,6 +42,7 @@
   }
   .title-block h1 { font-size: 22px; margin: 0 0 4px; color: var(--navy); }
   .title-block p { margin: 0; color: var(--text-soft); font-size: 13px; }
+  .header-logo { height: 32px; width: auto; display: block; }
 
   .btn-link {
     display: inline-flex;
@@ -231,9 +232,12 @@
 <div class="wrap">
 
   <div class="header-row">
-    <div class="title-block">
-      <h1>Full Report — Happiness & Satisfaction</h1>
-      <p>Every employee, every objective rating, and any open-text answers for the selected month</p>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img src="mangalam-logo.png" alt="Mangalam Landmarks" class="header-logo">
+      <div class="title-block">
+        <h1>Full Report — Happiness & Satisfaction</h1>
+        <p>Every employee, every objective rating, and any open-text answers for the selected month</p>
+      </div>
     </div>
     <div class="controls-row" style="margin-bottom:0;">
       <select class="month-select" id="monthSelect"></select>
@@ -359,6 +363,11 @@ function scoreBand(score) {
 function getMonthFromQuery() {
   var params = new URLSearchParams(window.location.search);
   return params.get('month');
+}
+
+function getEmployeeIdFromQuery() {
+  var params = new URLSearchParams(window.location.search);
+  return params.get('employeeId');
 }
 
 function populateMonthSelect(monthsBack) {
@@ -590,6 +599,19 @@ function populateCompareEmployeeSelect() {
         opts.push('<option value="' + r.ID + '">' + r.Name + ' — ' + (r.Department || '') + '</option>');
       });
       sel.innerHTML = opts.join('');
+
+      // Deep-link support: if arriving via ?employeeId=EMP_0042 (e.g. from a
+      // dashboard row click), auto-select that person and load their trend
+      // without the user having to pick them from the dropdown again.
+      var wantedId = getEmployeeIdFromQuery();
+      if (wantedId) {
+        sel.value = wantedId;
+        if (sel.value === wantedId) {
+          onCompareEmployeeChange();
+          var compareCard = sel.closest('.card');
+          if (compareCard) compareCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
     })
     .catch(function() {
       sel.innerHTML = '<option value="">Could not load roster</option>';

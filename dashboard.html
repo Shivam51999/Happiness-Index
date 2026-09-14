@@ -42,6 +42,7 @@
   }
   .title-block h1 { font-size: 22px; margin: 0 0 4px; color: var(--navy); }
   .title-block p { margin: 0; color: var(--text-soft); font-size: 13px; }
+  .header-logo { height: 32px; width: auto; display: block; }
 
   .month-select {
     padding: 8px 14px;
@@ -354,9 +355,12 @@
 <div class="wrap">
 
   <div class="header-row">
-    <div class="title-block">
-      <h1>Happiness & Satisfaction Pulse</h1>
-      <p>Self-report + manager perception, blended monthly · HR/CEO/Manager view only</p>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img src="mangalam-logo.png" alt="Mangalam Landmarks" class="header-logo">
+      <div class="title-block">
+        <h1>Happiness & Satisfaction Pulse</h1>
+        <p>Self-report + manager perception, blended monthly · HR/CEO/Manager view only</p>
+      </div>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
       <select class="month-select" id="monthSelect"></select>
@@ -414,7 +418,7 @@
     <div id="dimensionPies"></div>
   </div>
 
-  <div class="card">
+  <div class="card" id="employeeDetailCard">
     <h3>Employee Detail</h3>
 
     <div class="filter-bar">
@@ -583,13 +587,26 @@ function renderDeptBars(data) {
   var html = '';
   data.departmentSummary.forEach(function(d) {
     var pct = d.avgScore !== null ? (d.avgScore / 10 * 100) : 0;
-    html += '<div class="dept-bar-row">';
+    html += '<div class="dept-bar-row" style="cursor:pointer" title="Click to filter Employee Detail to ' + d.department + '" onclick="drillIntoDept(\'' + d.department.replace(/'/g, "\\'") + '\')">';
     html += '<div class="dept-name">' + d.department + '</div>';
     html += '<div class="dept-bar-track"><div class="dept-bar-fill" style="width:' + pct + '%; background:' + barColor(d.avgScore) + '"></div></div>';
     html += '<div class="dept-score">' + (d.avgScore ?? '—') + '</div>';
     html += '</div>';
   });
   document.getElementById('deptBars').innerHTML = html;
+}
+
+// Drill-down: clicking a department bar filters the Employee Detail table
+// to that department and scrolls it into view, instead of making the
+// person re-select it manually from the dropdown below.
+function drillIntoDept(deptName) {
+  var sel = document.getElementById('filterDept');
+  if (sel) {
+    sel.value = deptName;
+    applyFilters();
+  }
+  var card = document.getElementById('employeeDetailCard');
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function renderAlerts(data) {
@@ -716,8 +733,17 @@ function clearFilters() {
 
 function renderTable(employees) {
   var html = '';
+  var month = document.getElementById('monthSelect').value;
   employees.forEach(function(e, idx) {
-    html += '<tr>';
+    // Row click drills into that employee's multi-month trend on the Full
+    // Report page. Assumes the dashboard payload carries an `id` (roster ID,
+    // e.g. EMP_0042) per employee — confirm that key name in the Apps Script
+    // `action=dashboard` response before relying on this; if it's absent or
+    // named differently (e.g. `ID`), update `e.id` below to match.
+    var trendUrl = e.id
+      ? 'full-report.html?employeeId=' + encodeURIComponent(e.id) + '&month=' + encodeURIComponent(month)
+      : null;
+    html += '<tr' + (trendUrl ? ' style="cursor:pointer" title="Open ' + e.name + '\'s trend" onclick="window.open(\'' + trendUrl + '\', \'_blank\')"' : '') + '>';
     html += '<td>' + (idx + 1) + '</td>';
     html += '<td>' + e.name + '</td>';
     html += '<td>' + e.department + '</td>';
