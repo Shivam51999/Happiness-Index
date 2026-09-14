@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full Report v2 — Happiness & Satisfaction · Mangalam HQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #14213D;
+    --navy-l: #1D2D4E;
+    --purple: #6B4FA0;
+    --purple-l: #8B6FC0;
+    --green: #2E7D5B;
+    --green-l: #E8F5EE;
+    --amber: #B8860B;
+    --amber-l: #FFF5E0;
+    --red: #B0413E;
+    --red-l: #FBE9E8;
+    --bg: #F7F4EC;
+    --card: #FFFFFF;
+    --text: #1F2937;
+    --text-soft: #6B7280;
+    --border: #E7E1D2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  h1, h2, h3, .serif { font-family: 'Source Serif 4', Georgia, serif; }
+  .wrap { max-width: 1600px; margin: 0 auto; }
+
+  .topbar { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .topbar-left { display: flex; align-items: baseline; gap: 10px; }
+  .topbar-title { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .topbar-tag { font-size: 11px; color: var(--amber); background: var(--amber-l); padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+  .topbar-nav { display: flex; align-items: center; gap: 16px; font-size: 13px; }
+  .topbar-nav a { color: var(--text-soft); text-decoration: none; }
+  .topbar-nav a:hover { color: var(--navy); text-decoration: underline; }
+  .topbar-nav a.current { color: var(--navy); font-weight: 600; }
+
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .title-block h1 { font-size: 22px; margin: 0 0 4px; color: var(--navy); }
+  .title-block p { margin: 0; color: var(--text-soft); font-size: 13px; }
+
+  .btn-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--navy);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn-link:hover { background: var(--bg); }
+
+  .controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .month-select {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+  }
+
+  .note-banner {
+    background: var(--amber-l);
+    color: var(--amber);
+    border: 1px solid #F0DFA8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    margin-bottom: 16px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+  }
+
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .filter-search {
+    position: relative;
+    flex: 1 1 220px;
+    min-width: 180px;
+  }
+  .filter-search svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-soft);
+    pointer-events: none;
+  }
+  .filter-search input {
+    width: 100%;
+    padding: 8px 10px 8px 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .filter-search input:focus { outline: none; border-color: var(--purple-l); }
+  .filter-select {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--text);
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .filter-chip input { accent-color: var(--purple); cursor: pointer; }
+  .filter-clear {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 12.5px;
+    color: var(--text-soft);
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .filter-clear:hover { color: var(--red); border-color: var(--red-l); }
+
+  .table-scroll { overflow-x: auto; overflow-y: auto; max-height: 70vh; border: 1px solid var(--border); border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 900px; }
+  th {
+    text-align: left;
+    padding: 9px 10px;
+    color: #fff;
+    background: var(--navy);
+    font-weight: 600;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  th.subjective-col { background: var(--purple); }
+  td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  td.subjective-cell {
+    max-width: 260px;
+    white-space: normal;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+  tr:hover td { background: #FAFBFC; }
+  tr:nth-child(even) td { background: #FBFCFE; }
+  tr:nth-child(even):hover td { background: #F5F7FA; }
+
+  .score-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 11.5px;
+  }
+  .score-high { background: var(--green-l); color: var(--green); }
+  .score-mid { background: var(--amber-l); color: var(--amber); }
+  .score-low { background: var(--red-l); color: var(--red); }
+  .score-na { background: #F0F0F0; color: var(--text-soft); }
+
+  .empty-state { text-align: center; padding: 30px; color: var(--text-soft); font-size: 13px; }
+  .result-count { font-size: 11.5px; color: var(--text-soft); margin-bottom: 10px; }
+
+  .compare-card { margin-bottom: 20px; }
+  .compare-title { font-size: 15px; font-weight: 700; color: var(--navy); margin: 0 0 4px; }
+  .compare-sub { font-size: 12.5px; color: var(--text-soft); margin: 0 0 14px; }
+  .month-checklist { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 16px; }
+  .month-chip { display: flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 8px; border: 1px solid var(--border); font-size: 12.5px; color: var(--text); background: #fff; cursor: pointer; user-select: none; white-space: nowrap; }
+  .month-chip input { accent-color: var(--purple); cursor: pointer; }
+  .month-chip.disabled { opacity: 0.5; }
+  .compare-employee-meta { font-size: 12.5px; color: var(--text-soft); margin: 4px 0 12px; }
+  .compare-table th { background: var(--purple); }
+  .compare-table th:first-child { background: var(--navy); }
+  .compare-table td.metric-label { font-weight: 600; color: var(--text); white-space: nowrap; background: #FAFBFC; }
+  .compare-table td.subjective-cell { max-width: 240px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title">Mangalam HQ · Happiness &amp; Satisfaction</span>
+      <span class="topbar-tag">Preview build</span>
+    </div>
+    <div class="topbar-nav">
+      <a href="full-report.html">Legacy full report</a>
+      <a href="dashboard-v2.html">Executive Briefing</a>
+      <a href="full-report-v2.html" class="current">Full Report v2</a>
+    </div>
+  </div>
+
+  <div class="header-row">
+    <div class="title-block">
+      <h1>Full Report — Happiness &amp; Satisfaction</h1>
+      <p>Every employee, every objective rating, and any open-text answers for the selected month. Click a row in the Executive Briefing to land here already filtered to that person.</p>
+    </div>
+    <div class="controls-row" style="margin-bottom:0;">
+      <select class="month-select" id="monthSelect"></select>
+      <a class="btn-link" id="backLink" href="dashboard-v2.html">← Back to Executive Briefing</a>
+    </div>
+  </div>
+
+  <div id="subjectiveNote"></div>
+
+  <div class="card compare-card">
+    <div class="compare-title">Compare an Employee Across Months</div>
+    <p class="compare-sub">Pick an employee, then choose which months to line up side by side — every score, plus any comments, ideas, or manager notes they've been given.</p>
+    <div class="filter-bar" style="margin-bottom:0;">
+      <select class="filter-select" id="compareEmployeeSelect" style="min-width:240px;">
+        <option value="">Select an employee…</option>
+      </select>
+    </div>
+    <div class="compare-employee-meta" id="compareEmployeeMeta"></div>
+    <div class="month-checklist" id="compareMonthChecklist"></div>
+    <div id="compareResultWrap"></div>
+  </div>
+
+  <div class="card">
+    <div class="filter-bar">
+      <div class="filter-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="searchInput" placeholder="Search name or department…" autocomplete="off">
+      </div>
+      <select class="filter-select" id="filterDept">
+        <option value="">All Departments</option>
+      </select>
+      <select class="filter-select" id="filterManager">
+        <option value="">All Managers</option>
+      </select>
+      <select class="filter-select" id="filterScoreField">
+        <option value="combinedScore">Combined Score</option>
+        <option value="selfAvg">Self-Report</option>
+        <option value="managerScore">Manager View</option>
+      </select>
+      <select class="filter-select" id="filterScoreBand">
+        <option value="">Any Score</option>
+        <option value="high">7.5+ Healthy</option>
+        <option value="mid">5–7.4 Watch</option>
+        <option value="low">&lt;5 At Risk</option>
+        <option value="na">No Data</option>
+      </select>
+      <label class="filter-chip">
+        <input type="checkbox" id="filterRiskOnly">
+        At Risk flag only
+      </label>
+      <label class="filter-chip">
+        <input type="checkbox" id="filterMissingOnly">
+        Not Filled (Self or Manager)
+      </label>
+      <button class="filter-clear" id="filterClearBtn">Clear filters</button>
+    </div>
+
+    <div class="result-count" id="resultCount"></div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr id="tableHeadRow"></tr>
+        </thead>
+        <tbody id="fullTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
+var ACCESS_TOKEN = 'e6a7c4f500c089c9fc85f33f1657b49bf20f58ba054ffd53';
+
+var DIMENSION_LABELS = {
+  Workload_Score: 'Workload',
+  Manager_Support_Score: 'Manager Support',
+  Growth_Score: 'Growth',
+  Recognition_Score: 'Recognition',
+  Work_Environment_Score: 'Work Environment',
+  Compensation_Fairness_Score: 'Compensation Fairness'
+};
+
+var META_KEY_PATTERNS = [
+  /^timestamp$/i,
+  /^e[-_ ]?mail$/i,
+  /^name$/i,
+  /^department$/i,
+  /^employee[_ ]?id$/i,
+  /^employee[_ ]?name$/i,
+  /^entry[_ ]?id$/i,
+  /^\s*id\s*$/i,
+  /^ml[_ ]?id$/i,
+  /^month$/i,
+  /^submitted[_ ]?on$/i,
+  /^submission[_ ]?date$/i,
+  /^legacy[_ ]?unmapped[_ ]?\d*$/i
+];
+
+function isMetaKey(key) {
+  return META_KEY_PATTERNS.some(function(re) { return re.test(key); });
+}
+
+var currentEmployees = [];
+var subjectiveKeys = [];
+
+function scoreClass(score) {
+  if (score === null || score === undefined || score === '' || isNaN(Number(score))) return 'score-na';
+  var v = Number(score);
+  if (v >= 7.5) return 'score-high';
+  if (v >= 5) return 'score-mid';
+  return 'score-low';
+}
+
+function scoreBand(score) {
+  if (score === null || score === undefined || score === '' || isNaN(Number(score))) return 'na';
+  var v = Number(score);
+  if (v >= 7.5) return 'high';
+  if (v >= 5) return 'mid';
+  return 'low';
+}
+
+function getMonthFromQuery() {
+  var params = new URLSearchParams(window.location.search);
+  return params.get('month');
+}
+
+function getEmployeeIdFromQuery() {
+  var params = new URLSearchParams(window.location.search);
+  return params.get('employeeId');
+}
+
+function populateMonthSelect(monthsBack) {
+  var sel = document.getElementById('monthSelect');
+  var now = new Date();
+  var opts = [];
+  var queryMonth = getMonthFromQuery();
+  for (var i = 0; i < monthsBack; i++) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    var label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    opts.push('<option value="' + key + '">' + label + '</option>');
+  }
+  sel.innerHTML = opts.join('');
+  if (queryMonth) sel.value = queryMonth;
+}
+
+function selfReportAvg(selfRow) {
+  if (!selfRow) return null;
+  var dims = Object.keys(DIMENSION_LABELS).map(function(k) { return Number(selfRow[k]); });
+  var avg = dims.reduce(function(a, b) { return a + b; }, 0) / dims.length;
+  return Math.round(avg * 10) / 10;
+}
+
+function detectSubjectiveKeys(employees) {
+  var found = {};
+  employees.forEach(function(e) {
+    [e.selfReport, e.managerInput].forEach(function(obj) {
+      if (!obj) return;
+      Object.keys(obj).forEach(function(k) {
+        if (DIMENSION_LABELS.hasOwnProperty(k)) return;
+        if (isMetaKey(k)) return;
+        if (k === 'Perceived_Satisfaction_Score') return;
+        found[k] = true;
+      });
+    });
+  });
+  return Object.keys(found);
+}
+
+function prettyKey(k) {
+  return k.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+}
+
+function buildHeader() {
+  var headRow = document.getElementById('tableHeadRow');
+  var html = '<th>#</th><th>Name</th><th>Department</th>';
+  Object.keys(DIMENSION_LABELS).forEach(function(k) {
+    html += '<th>' + DIMENSION_LABELS[k] + '</th>';
+  });
+  html += '<th>Manager Perceived Score</th>';
+  subjectiveKeys.forEach(function(k) {
+    html += '<th class="subjective-col">' + prettyKey(k) + '</th>';
+  });
+  headRow.innerHTML = html;
+}
+
+function findSubjectiveValue(e, key) {
+  if (e.selfReport && e.selfReport[key] !== undefined && e.selfReport[key] !== '') return e.selfReport[key];
+  if (e.managerInput && e.managerInput[key] !== undefined && e.managerInput[key] !== '') return e.managerInput[key];
+  return null;
+}
+
+function renderTable(employees) {
+  var body = document.getElementById('fullTableBody');
+  if (!employees.length) {
+    var colCount = 3 + Object.keys(DIMENSION_LABELS).length + 1 + subjectiveKeys.length;
+    body.innerHTML = '<tr><td colspan="' + colCount + '" class="empty-state">No employees match the current search, or no data for this month yet.</td></tr>';
+    return;
+  }
+  var html = '';
+  employees.forEach(function(e, idx) {
+    html += '<tr>';
+    html += '<td>' + (idx + 1) + '</td>';
+    html += '<td>' + e.name + '</td>';
+    html += '<td>' + e.department + '</td>';
+    Object.keys(DIMENSION_LABELS).forEach(function(k) {
+      var v = e.selfReport ? e.selfReport[k] : null;
+      html += '<td>' + (v !== null && v !== undefined && v !== '' ? '<span class="score-pill ' + scoreClass(v) + '">' + v + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+    });
+    var mgrScore = e.managerInput ? e.managerInput.Perceived_Satisfaction_Score : null;
+    html += '<td>' + (mgrScore !== null && mgrScore !== undefined && mgrScore !== '' ? '<span class="score-pill ' + scoreClass(mgrScore) + '">' + mgrScore + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+    subjectiveKeys.forEach(function(k) {
+      var val = findSubjectiveValue(e, k);
+      html += '<td class="subjective-cell">' + (val ? val : '<span style="color:var(--text-soft); font-style:normal;">No response</span>') + '</td>';
+    });
+    html += '</tr>';
+  });
+  body.innerHTML = html;
+}
+
+function populateDeptFilter(employees) {
+  var sel = document.getElementById('filterDept');
+  var current = sel.value;
+  var depts = Array.from(new Set(employees.map(function(e) { return e.department; }))).sort();
+  var opts = ['<option value="">All Departments</option>'];
+  depts.forEach(function(d) { opts.push('<option value="' + d + '">' + d + '</option>'); });
+  sel.innerHTML = opts.join('');
+  if (depts.indexOf(current) !== -1) sel.value = current;
+}
+
+function populateManagerFilter(employees) {
+  var sel = document.getElementById('filterManager');
+  var current = sel.value;
+  var managers = Array.from(new Set(employees.map(function(e) { return e.manager; }).filter(function(m) { return m; }))).sort();
+  var opts = ['<option value="">All Managers</option>'];
+  managers.forEach(function(m) { opts.push('<option value="' + m + '">' + m + '</option>'); });
+  sel.innerHTML = opts.join('');
+  if (managers.indexOf(current) !== -1) sel.value = current;
+}
+
+function getFilters() {
+  return {
+    name: document.getElementById('searchInput').value.trim().toLowerCase(),
+    dept: document.getElementById('filterDept').value,
+    manager: document.getElementById('filterManager').value,
+    scoreField: document.getElementById('filterScoreField').value,
+    scoreBand: document.getElementById('filterScoreBand').value,
+    riskOnly: document.getElementById('filterRiskOnly').checked,
+    missingOnly: document.getElementById('filterMissingOnly').checked
+  };
+}
+
+function applyFilters() {
+  var f = getFilters();
+  var filtered = currentEmployees.filter(function(e) {
+    if (f.name) {
+      var haystack = (e.name + ' ' + e.department + ' ' + (e.manager || '')).toLowerCase();
+      if (haystack.indexOf(f.name) === -1) return false;
+    }
+    if (f.dept && e.department !== f.dept) return false;
+    if (f.manager && e.manager !== f.manager) return false;
+    if (f.scoreBand) {
+      var val = e[f.scoreField];
+      if (scoreBand(val) !== f.scoreBand) return false;
+    }
+    if (f.riskOnly && !e.attritionRisk) return false;
+    if (f.missingOnly && !(!e.selfReport || !e.managerInput)) return false;
+    return true;
+  });
+
+  renderTable(filtered);
+
+  var countEl = document.getElementById('resultCount');
+  countEl.textContent = filtered.length === currentEmployees.length
+    ? currentEmployees.length + ' employee' + (currentEmployees.length === 1 ? '' : 's')
+    : 'Showing ' + filtered.length + ' of ' + currentEmployees.length + ' employees';
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filterDept').value = '';
+  document.getElementById('filterManager').value = '';
+  document.getElementById('filterScoreField').value = 'combinedScore';
+  document.getElementById('filterScoreBand').value = '';
+  document.getElementById('filterRiskOnly').checked = false;
+  document.getElementById('filterMissingOnly').checked = false;
+  applyFilters();
+}
+
+function renderSubjectiveNote() {
+  var el = document.getElementById('subjectiveNote');
+  if (!subjectiveKeys.length) {
+    el.innerHTML = '<div class="note-banner">No open-text / subjective answer fields were found in the data returned for this month — only rating fields are shown below. If the backend later returns additional text fields (comments, retention reason, etc.), they will appear here automatically.</div>';
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+function fetchFullReport(month) {
+  document.getElementById('resultCount').textContent = 'Loading…';
+  document.getElementById('fullTableBody').innerHTML = '';
+
+  if (APPS_SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
+    document.getElementById('resultCount').textContent = '';
+    document.getElementById('fullTableBody').innerHTML = '<tr><td class="empty-state">APPS_SCRIPT_URL is not set yet.</td></tr>';
+    return;
+  }
+
+  fetch(APPS_SCRIPT_URL + '?action=dashboard&month=' + month + '&token=' + encodeURIComponent(ACCESS_TOKEN))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) {
+        document.getElementById('resultCount').textContent = '';
+        document.getElementById('fullTableBody').innerHTML = '<tr><td class="empty-state">' + data.error + '</td></tr>';
+        return;
+      }
+      currentEmployees = (data.employees || []).map(function(e) {
+        var mgrScore = e.managerInput ? Number(e.managerInput.Perceived_Satisfaction_Score) : null;
+        return Object.assign({}, e, {
+          selfAvg: selfReportAvg(e.selfReport),
+          managerScore: (mgrScore !== null && !isNaN(mgrScore)) ? mgrScore : null
+        });
+      });
+      subjectiveKeys = detectSubjectiveKeys(currentEmployees);
+      renderSubjectiveNote();
+      buildHeader();
+      populateDeptFilter(currentEmployees);
+      populateManagerFilter(currentEmployees);
+      applyFilters();
+    })
+    .catch(function() {
+      document.getElementById('resultCount').textContent = '';
+      document.getElementById('fullTableBody').innerHTML = '<tr><td class="empty-state">Could not reach the tracker backend. Check your network and the Apps Script deployment.</td></tr>';
+    });
+}
+
+// ── Employee-across-months comparison ───────────────────────────
+var compareTrendData = [];       // full trend history for the selected employee, ascending by month
+var compareCheckedMonths = {};   // month key -> boolean
+var compareEmployeeInfo = null;  // { ID, Name, Designation, Department, Manager }
+
+function monthLabel(m) {
+  var parts = m.split('-');
+  var d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+  return d.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+}
+
+function populateCompareEmployeeSelect() {
+  var sel = document.getElementById('compareEmployeeSelect');
+  fetch(APPS_SCRIPT_URL + '?action=roster&token=' + encodeURIComponent(ACCESS_TOKEN))
+    .then(function(r) { return r.json(); })
+    .then(function(roster) {
+      if (!Array.isArray(roster)) return;
+      var active = roster.filter(function(r) { return r.Status === 'Active'; })
+        .sort(function(a, b) { return String(a.Name).localeCompare(String(b.Name)); });
+      var opts = ['<option value="">Select an employee…</option>'];
+      active.forEach(function(r) {
+        opts.push('<option value="' + r.ID + '">' + r.Name + ' — ' + (r.Department || '') + '</option>');
+      });
+      sel.innerHTML = opts.join('');
+
+      // Deep-link support: if arriving via ?employeeId=EMP_0042 (e.g. from a
+      // dashboard row click), auto-select that person and load their trend
+      // without the user having to pick them from the dropdown again.
+      var wantedId = getEmployeeIdFromQuery();
+      if (wantedId) {
+        sel.value = wantedId;
+        if (sel.value === wantedId) {
+          onCompareEmployeeChange();
+          var compareCard = sel.closest('.card');
+          if (compareCard) compareCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    })
+    .catch(function() {
+      sel.innerHTML = '<option value="">Could not load roster</option>';
+    });
+}
+
+function onCompareEmployeeChange() {
+  var sel = document.getElementById('compareEmployeeSelect');
+  var employeeId = sel.value;
+  var metaEl = document.getElementById('compareEmployeeMeta');
+  var checklistEl = document.getElementById('compareMonthChecklist');
+  var resultEl = document.getElementById('compareResultWrap');
+
+  if (!employeeId) {
+    compareTrendData = [];
+    metaEl.textContent = '';
+    checklistEl.innerHTML = '';
+    resultEl.innerHTML = '';
+    return;
+  }
+
+  metaEl.textContent = 'Loading history…';
+  checklistEl.innerHTML = '';
+  resultEl.innerHTML = '';
+
+  fetch(APPS_SCRIPT_URL + '?action=trend&employeeId=' + encodeURIComponent(employeeId) + '&token=' + encodeURIComponent(ACCESS_TOKEN))
+    .then(function(r) { return r.json(); })
+    .then(function(trend) {
+      if (!Array.isArray(trend) || !trend.length) {
+        metaEl.textContent = 'No self-report or manager input found for this employee yet, in any month.';
+        return;
+      }
+      compareTrendData = trend;
+      var opt = sel.options[sel.selectedIndex];
+      var name = opt.textContent.split(' — ')[0];
+      var dept = opt.textContent.split(' — ')[1] || '';
+      compareEmployeeInfo = { Name: name, Department: dept };
+      metaEl.textContent = name + ' · ' + dept + ' · ' + trend.length + ' month' + (trend.length === 1 ? '' : 's') + ' of history available';
+
+      // Default: check the most recent 3 months (or all, if fewer than 3)
+      compareCheckedMonths = {};
+      trend.forEach(function(t, i) {
+        compareCheckedMonths[t.month] = (i >= trend.length - 3);
+      });
+
+      renderCompareMonthChecklist();
+      renderCompareTable();
+    })
+    .catch(function() {
+      metaEl.textContent = 'Could not reach the tracker backend.';
+    });
+}
+
+function renderCompareMonthChecklist() {
+  var el = document.getElementById('compareMonthChecklist');
+  var html = '';
+  compareTrendData.forEach(function(t) {
+    var checked = compareCheckedMonths[t.month] ? 'checked' : '';
+    html += '<label class="month-chip"><input type="checkbox" data-month="' + t.month + '" ' + checked + '>' + monthLabel(t.month) + '</label>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('input[type=checkbox]').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      compareCheckedMonths[cb.getAttribute('data-month')] = cb.checked;
+      renderCompareTable();
+    });
+  });
+}
+
+// Same subjective-field detection as the main table, scoped to this employee's selected months
+function detectCompareSubjectiveKeys(entries) {
+  var found = {};
+  entries.forEach(function(e) {
+    [e.selfReport, e.managerInput].forEach(function(obj) {
+      if (!obj) return;
+      Object.keys(obj).forEach(function(k) {
+        if (DIMENSION_LABELS.hasOwnProperty(k)) return;
+        if (isMetaKey(k)) return;
+        if (k === 'Perceived_Satisfaction_Score') return;
+        found[k] = true;
+      });
+    });
+  });
+  return Object.keys(found);
+}
+
+function renderCompareTable() {
+  var resultEl = document.getElementById('compareResultWrap');
+  var selected = compareTrendData.filter(function(t) { return compareCheckedMonths[t.month]; });
+
+  if (!selected.length) {
+    resultEl.innerHTML = '<div class="empty-state">Select at least one month above to compare.</div>';
+    return;
+  }
+
+  var subjKeys = detectCompareSubjectiveKeys(selected);
+
+  var html = '<div class="table-scroll"><table class="compare-table"><thead><tr><th>Metric</th>';
+  selected.forEach(function(t) { html += '<th>' + monthLabel(t.month) + '</th>'; });
+  html += '</tr></thead><tbody>';
+
+  function scoreRow(label, getter) {
+    html += '<tr><td class="metric-label">' + label + '</td>';
+    selected.forEach(function(t) {
+      var v = getter(t);
+      html += '<td>' + (v !== null && v !== undefined && v !== '' ? '<span class="score-pill ' + scoreClass(v) + '">' + v + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+    });
+    html += '</tr>';
+  }
+
+  Object.keys(DIMENSION_LABELS).forEach(function(k) {
+    scoreRow(DIMENSION_LABELS[k], function(t) { return t.selfReport ? t.selfReport[k] : null; });
+  });
+  scoreRow('Self-Report Avg', function(t) { return selfReportAvg(t.selfReport); });
+  scoreRow('Manager Perceived Score', function(t) { return t.managerInput ? t.managerInput.Perceived_Satisfaction_Score : null; });
+  scoreRow('Retention Confidence', function(t) { return t.managerInput ? t.managerInput.Retention_Confidence_Score : null; });
+  scoreRow('Combined Score', function(t) { return t.combinedScore; });
+
+  html += '<tr><td class="metric-label">Manager Flags</td>';
+  selected.forEach(function(t) {
+    var mi = t.managerInput;
+    if (!mi) { html += '<td><span class="score-pill score-na">—</span></td>'; return; }
+    var flags = [];
+    if (mi.Attrition_Risk_Flag === 'Yes') flags.push('At Risk');
+    if (mi.Overload_Flag === 'Yes') flags.push('Overload');
+    if (mi.Needs_Recognition_Flag === 'Yes') flags.push('Needs Recognition');
+    if (mi.Personal_Reasons_Flag === 'Yes') flags.push('Personal');
+    html += '<td class="subjective-cell">' + (flags.length ? flags.join(', ') : '<span style="color:var(--text-soft); font-style:normal;">None</span>') + '</td>';
+  });
+  html += '</tr>';
+
+  subjKeys.forEach(function(k) {
+    html += '<tr><td class="metric-label">' + prettyKey(k) + '</td>';
+    selected.forEach(function(t) {
+      var val = (t.selfReport && t.selfReport[k] !== undefined && t.selfReport[k] !== '') ? t.selfReport[k]
+        : (t.managerInput && t.managerInput[k] !== undefined && t.managerInput[k] !== '') ? t.managerInput[k] : null;
+      html += '<td class="subjective-cell">' + (val ? val : '<span style="color:var(--text-soft); font-style:normal;">No response</span>') + '</td>';
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  resultEl.innerHTML = html;
+}
+
+document.getElementById('compareEmployeeSelect').addEventListener('change', onCompareEmployeeChange);
+populateCompareEmployeeSelect();
+
+populateMonthSelect(6);
+fetchFullReport(document.getElementById('monthSelect').value);
+
+document.getElementById('monthSelect').addEventListener('change', function() {
+  fetchFullReport(this.value);
+});
+['searchInput', 'filterDept', 'filterManager', 'filterScoreField', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
+  var el = document.getElementById(id);
+  var evt = (id === 'searchInput') ? 'input' : 'change';
+  el.addEventListener(evt, applyFilters);
+});
+document.getElementById('filterClearBtn').addEventListener('click', clearFilters);
+</script>
+</body>
+</html>

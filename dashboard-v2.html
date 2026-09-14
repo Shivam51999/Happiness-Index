@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Executive Briefing — Happiness & Satisfaction · Mangalam HQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #14213D;
+    --ink-2: #1D2D4E;
+    --paper: #F7F4EC;
+    --card: #FFFFFF;
+    --green: #2E7D5B;
+    --green-l: #E8F5EE;
+    --amber: #B8860B;
+    --amber-l: #FFF5E0;
+    --red: #B0413E;
+    --red-l: #FBE9E8;
+    --text: #1F2937;
+    --text-soft: #6B7280;
+    --line: #E7E1D2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--paper);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .serif { font-family: 'Source Serif 4', Georgia, serif; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 28px; }
+
+  /* ── Top bar ── */
+  .topbar {
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .topbar-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .topbar-left { display: flex; align-items: baseline; gap: 10px; }
+  .topbar-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+  .topbar-tag { font-size: 11px; color: var(--amber); background: var(--amber-l); padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+  .topbar-nav { display: flex; align-items: center; gap: 16px; font-size: 13px; }
+  .topbar-nav a { color: var(--text-soft); text-decoration: none; }
+  .topbar-nav a:hover { color: var(--ink); text-decoration: underline; }
+  .topbar-nav a.current { color: var(--ink); font-weight: 600; }
+  .month-select {
+    padding: 7px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+  }
+
+  /* ── Hero briefing ── */
+  .hero { background: var(--ink); color: #EDEFF4; padding: 40px 0 34px; }
+  .hero-inner { display: grid; grid-template-columns: 220px 1fr; gap: 40px; align-items: start; }
+  .hero-score-block { border-right: 1px solid rgba(255,255,255,0.14); padding-right: 40px; }
+  .hero-score { font-size: 64px; font-weight: 700; line-height: 1; }
+  .hero-score-label { font-size: 12px; color: #B9C2D6; margin-top: 8px; }
+  .hero-delta { font-size: 14px; margin-top: 10px; display: inline-flex; align-items: center; gap: 5px; }
+  .hero-delta.up { color: #7FD8A8; }
+  .hero-delta.down { color: #F0A6A2; }
+  .hero-delta.flat { color: #B9C2D6; }
+  .hero-narrative { font-size: 17px; line-height: 1.65; color: #EDEFF4; max-width: 76ch; font-weight: 400; }
+  .hero-narrative em { font-style: italic; color: #C9D2E4; }
+  .hero-chips { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+  .chip { background: rgba(255,255,255,0.06); border-left: 3px solid; border-radius: 4px; padding: 10px 14px; font-size: 12.5px; max-width: 300px; }
+  .chip-risk { border-color: #F0A6A2; }
+  .chip-gap { border-color: #E8C97A; }
+  .chip-bright { border-color: #7FD8A8; }
+  .chip-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: #9AA5BD; margin-bottom: 3px; }
+  .chip-text { color: #EDEFF4; }
+
+  /* ── KPI strip ── */
+  .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin: 24px 0; }
+  .kpi-card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+  .kpi-label { font-size: 10.5px; color: var(--text-soft); margin-bottom: 6px; }
+  .kpi-value { font-size: 22px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .kpi-sub { font-size: 10.5px; color: var(--text-soft); margin-top: 3px; }
+  .kpi-value.alert-color { color: var(--red); }
+  .kpi-value.good-color { color: var(--green); }
+
+  /* ── Filter / search bar ── */
+  .filter-bar {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  }
+  .filter-bar input[type="text"], .filter-bar select {
+    padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); font-size: 13px; font-family: inherit; background: #fff;
+  }
+  .filter-bar input[type="text"] { flex: 1; min-width: 220px; }
+  .filter-check { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--text-soft); }
+  .filter-clear { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; font-size: 12.5px; cursor: pointer; color: var(--text-soft); }
+  .filter-clear:hover { border-color: var(--text-soft); color: var(--text); }
+  .filter-count { font-size: 12px; color: var(--text-soft); white-space: nowrap; }
+
+  /* ── Cards / grid ── */
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 20px 22px; margin-bottom: 20px; }
+  .card h3 { font-size: 16px; margin: 0 0 4px; color: var(--ink); font-weight: 600; }
+  .card-sub { font-size: 12px; color: var(--text-soft); margin: 0 0 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } .kpi-row { grid-template-columns: repeat(2,1fr); } .hero-inner { grid-template-columns: 1fr; } .hero-score-block { border-right: none; padding-right: 0; border-bottom: 1px solid rgba(255,255,255,0.14); padding-bottom: 20px; } }
+
+  /* ── Dept bars ── */
+  .dept-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer; }
+  .dept-bar-row:hover .dept-name { color: var(--ink); text-decoration: underline; }
+  .dept-name { width: 160px; font-size: 13px; color: var(--text); flex-shrink: 0; }
+  .dept-bar-track { flex: 1; height: 8px; background: #EFEAE0; border-radius: 4px; overflow: hidden; }
+  .dept-bar-fill { height: 100%; border-radius: 4px; }
+  .dept-score { width: 36px; text-align: right; font-weight: 700; font-size: 13px; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  /* ── Tables ── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; color: var(--text-soft); font-weight: 600; font-size: 11px; border-bottom: 2px solid var(--line); }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--line); }
+  tr.clickable-row { cursor: pointer; }
+  tr.clickable-row:hover td { background: #FAF7F0; }
+
+  .score-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 12px; }
+  .score-high { background: var(--green-l); color: var(--green); }
+  .score-mid { background: var(--amber-l); color: var(--amber); }
+  .score-low { background: var(--red-l); color: var(--red); }
+  .score-na { background: #F0EEE6; color: var(--text-soft); }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10.5px; font-weight: 700; }
+  .badge-risk { background: var(--red-l); color: var(--red); }
+  .badge-calibrated { background: var(--green-l); color: var(--green); }
+  .badge-over { background: var(--amber-l); color: var(--amber); }
+  .badge-under { background: #E9EEFB; color: #3B4E8C; }
+  .badge-nodata { background: #F0EEE6; color: var(--text-soft); }
+
+  /* ── Flight risk list ── */
+  .fr-item { display: flex; align-items: center; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+  .fr-item:last-child { border-bottom: none; }
+  .fr-rank { width: 22px; font-size: 13px; color: var(--text-soft); font-weight: 700; text-align: center; flex-shrink: 0; }
+  .fr-name { font-size: 13.5px; font-weight: 600; color: var(--text); }
+  .fr-dept { font-size: 11.5px; color: var(--text-soft); }
+  .fr-bar-track { flex: 1; height: 6px; background: #EFEAE0; border-radius: 3px; overflow: hidden; min-width: 60px; }
+  .fr-bar-fill { height: 100%; background: var(--red); border-radius: 3px; }
+  .fr-score { width: 34px; text-align: right; font-weight: 700; font-size: 13px; color: var(--red); flex-shrink: 0; }
+  .fr-factors { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+  .fr-factor { font-size: 10px; background: #F0EEE6; color: var(--text-soft); padding: 1px 6px; border-radius: 8px; }
+
+  .idea-item { padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .idea-item:last-child { border-bottom: none; }
+  .idea-text { color: var(--text); line-height: 1.5; }
+  .idea-meta { font-size: 11.5px; color: var(--text-soft); margin-top: 4px; }
+  .tone-pill { font-size: 10px; padding: 1px 6px; border-radius: 8px; margin-right: 6px; font-weight: 700; }
+  .tone-good { background: var(--green-l); color: var(--green); }
+  .tone-critical { background: var(--red-l); color: var(--red); }
+  .tone-neutral { background: #F0EEE6; color: var(--text-soft); }
+  .scroll-box { max-height: 420px; overflow-y: auto; }
+
+  .pie-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 18px; }
+  .pie-item { text-align: center; }
+  .pie-title { font-size: 12px; color: var(--text-soft); margin-bottom: 8px; }
+  .pie-circle { width: 88px; height: 88px; border-radius: 50%; margin: 0 auto 10px; }
+  .pie-legend { text-align: left; font-size: 11px; }
+  .pie-legend-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; color: var(--text-soft); }
+  .pie-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .empty-state { color: var(--text-soft); font-size: 13px; padding: 12px 0; }
+
+  .footer-note { max-width: 1240px; margin: 30px auto 60px; padding: 0 28px; font-size: 12px; color: var(--text-soft); line-height: 1.6; }
+  .footer-note a { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="topbar-left">
+      <span class="topbar-title">Mangalam HQ · Happiness &amp; Satisfaction</span>
+      <span class="topbar-tag">Preview build</span>
+    </div>
+    <div class="topbar-nav">
+      <a href="dashboard.html">Legacy dashboard</a>
+      <a href="dashboard-v2.html" class="current">Executive Briefing</a>
+      <a href="full-report-v2.html">Full Report v2</a>
+      <select class="month-select" id="monthSelect"></select>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="wrap hero-inner">
+    <div class="hero-score-block">
+      <div class="hero-score" id="heroScore">—</div>
+      <div class="hero-score-label">Org happiness score, out of 10, blended</div>
+      <div class="hero-delta flat" id="heroDelta">vs last month: —</div>
+    </div>
+    <div>
+      <div class="hero-narrative" id="heroNarrative">Loading this month's data…</div>
+      <div class="hero-chips" id="heroChips"></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" style="margin-top:24px;">
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="filter-bar">
+    <input type="text" id="filterName" placeholder="Search employee, department, remark, or idea…" autocomplete="off">
+    <select class="filter-select" id="filterDept"><option value="">All Departments</option></select>
+    <select class="filter-select" id="filterScoreBand">
+      <option value="">Any Score</option>
+      <option value="high">7.5+ Healthy</option>
+      <option value="mid">5–7.4 Watch</option>
+      <option value="low">&lt;5 At Risk</option>
+      <option value="na">No Data</option>
+    </select>
+    <label class="filter-check"><input type="checkbox" id="filterRiskOnly"> At Risk flag only</label>
+    <label class="filter-check"><input type="checkbox" id="filterMissingOnly"> Not Filled</label>
+    <button class="filter-clear" id="filterClearBtn">Clear filters</button>
+    <div class="filter-count" id="filterCount"></div>
+  </div>
+
+  <div class="card">
+    <h3>Department Pulse</h3>
+    <p class="card-sub">Click a department to filter the Employee Detail table below.</p>
+    <div id="deptBars"></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Perception Gaps — Manager vs. Self</h3>
+      <p class="card-sub">Positive = employee feels worse than manager thinks. Negative = manager underestimates them.</p>
+      <div id="divergenceList"></div>
+    </div>
+    <div class="card">
+      <h3>Manager Calibration</h3>
+      <p class="card-sub">Average gap between what each manager perceives and what their team self-reports — a check on whether a manager's read of their team is accurate, not just whether the team is happy.</p>
+      <div id="calibrationTable"></div>
+      <div class="empty-state" id="calibrationCaveat" style="display:none; padding-top:10px; border-top:1px solid var(--line); margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Flight Risk — Composite Ranking</h3>
+    <p class="card-sub">A transparent 0–100 score blending low self-reported score, an existing manager attrition flag, and cases where a manager may be underestimating a struggling employee. This is a triage aid, not a verdict — read the factor tags before acting.</p>
+    <div id="flightRiskList"></div>
+  </div>
+
+  <div class="card">
+    <h3>Weakest Dimension by Department</h3>
+    <p class="card-sub">Average self-report score per dimension; lowest-scoring dimension highlighted per department.</p>
+    <div id="dimensionList"></div>
+  </div>
+
+  <div class="card">
+    <h3>Question-wise Focus Areas</h3>
+    <p class="card-sub">Every rated question this month — % of respondents in each band, and an auto-flagged priority.</p>
+    <div id="focusTable"></div>
+  </div>
+
+  <div class="card">
+    <h3>Question-wise Rating Distribution</h3>
+    <p class="card-sub">Self-report ratings for every objective question, grouped into Healthy / Watch / At Risk bands.</p>
+    <div id="dimensionPies"></div>
+  </div>
+
+  <div class="card">
+    <h3>Employee Detail</h3>
+    <p class="card-sub">Click a row to open that person's multi-month trend in the Full Report.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Name</th><th>Department</th><th>Manager</th><th>Self-Report</th><th>Manager View</th><th>Combined</th><th>Gap</th><th>Flags</th>
+        </tr>
+      </thead>
+      <tbody id="empTableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Innovation Ideas From the Team</h3>
+      <p class="card-sub">Top 10 most substantive ideas this month; blank or placeholder answers filtered out.</p>
+      <div id="innovationIdeas" class="scroll-box"></div>
+    </div>
+    <div class="card">
+      <h3>Top Team Remarks</h3>
+      <p class="card-sub">Top 10 open-text remarks this month, auto-tagged by tone.</p>
+      <div id="teamRemarks" class="scroll-box"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer-note">
+  This is a parallel, experimental view of the same live Happiness &amp; Satisfaction data (read-only — it does not write anywhere). It exists alongside the <a href="dashboard.html">original dashboard</a> without replacing it, so it can be safely deleted if something here doesn't work as expected. Manager attribution is joined from the live roster by name/ID match; if that match is incomplete for some employees, a note will appear under Manager Calibration above.
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG — same backend as the production dashboard, read-only
+// ═══════════════════════════════════════════════════════════════
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBdAUB51RSVveZfAwRN0UMuHYKWtOurQrx0HptQe-KftLh0jcikCaeM5He1-GEomhw/exec';
+var ACCESS_TOKEN = 'e6a7c4f500c089c9fc85f33f1657b49bf20f58ba054ffd53';
+
+var DIMENSION_LABELS = {
+  Workload_Score: 'Workload',
+  Manager_Support_Score: 'Manager Support',
+  Growth_Score: 'Growth',
+  Recognition_Score: 'Recognition',
+  Work_Environment_Score: 'Work Environment',
+  Compensation_Fairness_Score: 'Compensation Fairness'
+};
+
+var JUNK_ANSWERS = [
+  'nothing', 'none', 'na', 'n a', 'nil', 'no', 'not applicable', 'no comment',
+  'no comments', 'no idea', 'no ideas', 'no remarks', 'no remark', 'no feedback',
+  'nan', 'null', 'undefined', 'nothing much', 'nothing for now', 'nothing as of now',
+  '-', '--', '...', '.', 'ok', 'okay', 'fine'
+];
+function isJunkAnswer(text) {
+  if (!text) return true;
+  var clean = text.trim().toLowerCase().replace(/[.\-!]+$/g, '').trim();
+  if (clean.length < 3) return true;
+  return JUNK_ANSWERS.indexOf(clean) !== -1;
+}
+
+var META_KEY_PATTERNS = [
+  /^timestamp$/i, /^e[-_ ]?mail$/i, /^name$/i, /^department$/i,
+  /^employee[_ ]?id$/i, /^employee[_ ]?name$/i, /^entry[_ ]?id$/i,
+  /^\s*id\s*$/i, /^ml[_ ]?id$/i, /^month$/i, /^submitted[_ ]?on$/i,
+  /^submission[_ ]?date$/i, /^legacy[_ ]?unmapped[_ ]?\d*$/i
+];
+function isMetaKey(key) { return META_KEY_PATTERNS.some(function(re) { return re.test(key); }); }
+
+var TONE_POSITIVE_WORDS = ['great', 'good', 'love', 'happy', 'appreciate', 'excellent', 'amazing', 'supportive', 'positive', 'helpful', 'enjoy', 'proud', 'fantastic', 'wonderful', 'satisfied', 'thank', 'grateful', 'motivat'];
+var TONE_NEGATIVE_WORDS = ['bad', 'poor', 'unhappy', 'frustrat', 'issue', 'problem', 'concern', 'disappoint', 'lack', 'unfair', 'stress', 'overwhelm', 'toxic', 'worried', 'worse', 'negative', 'delay', 'ignored', 'burnout', 'micromanag', 'complain', 'unclear', 'confus'];
+function classifyTone(text) {
+  var t = text.toLowerCase();
+  var pos = TONE_POSITIVE_WORDS.reduce(function(n, w) { return n + (t.indexOf(w) !== -1 ? 1 : 0); }, 0);
+  var neg = TONE_NEGATIVE_WORDS.reduce(function(n, w) { return n + (t.indexOf(w) !== -1 ? 1 : 0); }, 0);
+  if (neg > pos) return { cls: 'tone-critical', label: 'Critical' };
+  if (pos > neg) return { cls: 'tone-good', label: 'Positive' };
+  return { cls: 'tone-neutral', label: 'Neutral' };
+}
+
+var MANAGER_NAME_KEY_PATTERNS = [/manager[_ ]?name/i, /reviewed[_ ]?by/i, /evaluator/i, /appraiser/i, /assessed[_ ]?by/i];
+function isManagerNameKey(key) { return MANAGER_NAME_KEY_PATTERNS.some(function(re) { return re.test(key); }); }
+function findManagerName(managerInputObj) {
+  if (!managerInputObj) return null;
+  var found = null;
+  Object.keys(managerInputObj).forEach(function(k) {
+    if (found) return;
+    if (isManagerNameKey(k) && typeof managerInputObj[k] === 'string' && managerInputObj[k].trim() !== '') found = managerInputObj[k].trim();
+  });
+  return found;
+}
+
+var INNOVATION_REASONING_PATTERN = /reason|rational|why|justif/i;
+function isInnovationIdeaKey(key) { return /innovation/i.test(key) && !INNOVATION_REASONING_PATTERN.test(key); }
+
+function scoreClass(score) {
+  if (score === null || score === undefined) return 'score-na';
+  if (score >= 7.5) return 'score-high';
+  if (score >= 5) return 'score-mid';
+  return 'score-low';
+}
+function scoreBand(score) {
+  if (score === null || score === undefined) return 'na';
+  if (score >= 7.5) return 'high';
+  if (score >= 5) return 'mid';
+  return 'low';
+}
+function barColor(score) {
+  if (score === null || score === undefined) return '#D8D2C2';
+  if (score >= 7.5) return 'var(--green)';
+  if (score >= 5) return 'var(--amber)';
+  return 'var(--red)';
+}
+function computeBandTally(values) {
+  var t = { high: 0, mid: 0, low: 0, total: 0 };
+  values.forEach(function(v) {
+    if (v === null || v === undefined || isNaN(v)) return;
+    var band = scoreBand(v);
+    if (band === 'high') t.high++; else if (band === 'mid') t.mid++; else if (band === 'low') t.low++;
+    t.total++;
+  });
+  t.highPct = t.total ? Math.round((t.high / t.total) * 1000) / 10 : null;
+  t.midPct = t.total ? Math.round((t.mid / t.total) * 1000) / 10 : null;
+  t.lowPct = t.total ? Math.round((t.low / t.total) * 1000) / 10 : null;
+  return t;
+}
+function priorityFromTally(t) {
+  if (!t.total) return { cls: 'priority-stable', label: 'No Data' };
+  if (t.lowPct > 15) return { cls: 'priority-high', label: 'Needs Attention' };
+  if ((t.midPct + t.lowPct) > 40) return { cls: 'priority-watch', label: 'Monitor' };
+  return { cls: 'priority-stable', label: 'Stable' };
+}
+
+// ── State ──
+var currentData = null;
+var prevData = null;
+var rosterById = {};
+var rosterByName = {};
+var currentEmployees = [];
+
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+function shiftMonth(monthKey, delta) {
+  var parts = monthKey.split('-');
+  var d = new Date(Number(parts[0]), Number(parts[1]) - 1 + delta, 1);
+  return d.getFullYear() + '-' + pad2(d.getMonth() + 1);
+}
+function monthLabel(m) {
+  var parts = m.split('-');
+  var d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+  return d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+}
+
+function populateMonthSelect(monthsBack) {
+  var sel = document.getElementById('monthSelect');
+  var now = new Date();
+  var opts = [];
+  for (var i = 0; i < monthsBack; i++) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    var key = d.getFullYear() + '-' + pad2(d.getMonth() + 1);
+    opts.push('<option value="' + key + '">' + d.toLocaleString('en-US', { month: 'long', year: 'numeric' }) + '</option>');
+  }
+  sel.innerHTML = opts.join('');
+}
+
+function fetchMonth(month) {
+  return fetch(APPS_SCRIPT_URL + '?action=dashboard&month=' + encodeURIComponent(month) + '&token=' + encodeURIComponent(ACCESS_TOKEN))
+    .then(function(r) { return r.json(); })
+    .catch(function() { return null; });
+}
+function fetchRoster() {
+  return fetch(APPS_SCRIPT_URL + '?action=roster&token=' + encodeURIComponent(ACCESS_TOKEN))
+    .then(function(r) { return r.json(); })
+    .catch(function() { return []; });
+}
+
+// ── Derived analytics ──
+
+// Flight Risk composite (0-100), documented and capped, not a black box:
+//   up to 60 pts  — how low the blended combined score is
+//   +25 pts       — manager has already flagged Attrition_Risk_Flag = Yes
+//   +15 pts       — divergence < -1.5 (manager may be underestimating someone who is actually struggling)
+function computeFlightRisk(e) {
+  var score = 0;
+  var factors = [];
+  if (e.combinedScore !== null && e.combinedScore !== undefined) {
+    var lowComponent = Math.max(0, Math.min(60, (10 - e.combinedScore) * 6));
+    score += lowComponent;
+    if (lowComponent >= 24) factors.push('Low combined score');
+  }
+  if (e.attritionRisk) { score += 25; factors.push('Manager-flagged risk'); }
+  if (e.divergence !== null && e.divergence !== undefined && e.divergence < -1.5) {
+    score += 15; factors.push('Manager may be underestimating');
+  }
+  if (e.managerInput && e.managerInput.Overload_Flag === 'Yes') factors.push('Overload flag');
+  score = Math.round(Math.min(100, score));
+  return { score: score, factors: factors };
+}
+
+function computeManagerCalibration(employees) {
+  var byMgr = {};
+  var unmatched = 0;
+  employees.forEach(function(e) {
+    if (!e.manager) { unmatched++; return; }
+    if (e.divergence === null || e.divergence === undefined) return;
+    if (!byMgr[e.manager]) byMgr[e.manager] = { name: e.manager, gaps: [] };
+    byMgr[e.manager].gaps.push(e.divergence);
+  });
+  var rows = Object.keys(byMgr).map(function(name) {
+    var g = byMgr[name].gaps;
+    var avgSigned = g.reduce(function(a, b) { return a + b; }, 0) / g.length;
+    var avgAbs = g.reduce(function(a, b) { return a + Math.abs(b); }, 0) / g.length;
+    var verdict;
+    if (avgAbs < 1) verdict = { cls: 'badge-calibrated', label: 'Well-calibrated' };
+    else if (avgSigned > 1.5) verdict = { cls: 'badge-over', label: 'Tends to overestimate' };
+    else if (avgSigned < -1.5) verdict = { cls: 'badge-under', label: 'Tends to underestimate' };
+    else verdict = { cls: 'badge-nodata', label: 'Mixed' };
+    return { name: name, teamSize: g.length, avgSigned: Math.round(avgSigned * 10) / 10, avgAbs: Math.round(avgAbs * 10) / 10, verdict: verdict };
+  });
+  rows.sort(function(a, b) { return b.avgAbs - a.avgAbs; });
+  return { rows: rows, unmatched: unmatched };
+}
+
+// ── Rendering ──
+
+function renderHero(data, prev) {
+  var scoreEl = document.getElementById('heroScore');
+  var deltaEl = document.getElementById('heroDelta');
+  var narrEl = document.getElementById('heroNarrative');
+  var chipsEl = document.getElementById('heroChips');
+
+  scoreEl.textContent = (data.orgAvgScore !== null && data.orgAvgScore !== undefined) ? data.orgAvgScore : '—';
+
+  if (prev && prev.orgAvgScore !== null && prev.orgAvgScore !== undefined && data.orgAvgScore !== null && data.orgAvgScore !== undefined) {
+    var delta = Math.round((data.orgAvgScore - prev.orgAvgScore) * 10) / 10;
+    if (delta > 0) { deltaEl.className = 'hero-delta up'; deltaEl.textContent = '▲ +' + delta + ' vs last month'; }
+    else if (delta < 0) { deltaEl.className = 'hero-delta down'; deltaEl.textContent = '▼ ' + delta + ' vs last month'; }
+    else { deltaEl.className = 'hero-delta flat'; deltaEl.textContent = '— unchanged vs last month'; }
+  } else {
+    deltaEl.className = 'hero-delta flat';
+    deltaEl.textContent = 'No prior month to compare';
+  }
+
+  if (!data.employees || !data.employees.length) {
+    narrEl.innerHTML = 'No responses recorded for this month yet.';
+    chipsEl.innerHTML = '';
+    return;
+  }
+
+  var pct = data.totalEmployees ? Math.round((data.reportedCount / data.totalEmployees) * 100) : 0;
+  var bandWord = data.orgAvgScore >= 7.5 ? 'a healthy' : (data.orgAvgScore >= 5 ? 'a watch-level' : 'an at-risk');
+
+  var weakestDept = null;
+  (data.departmentSummary || []).forEach(function(d) {
+    if (d.avgScore === null || d.avgScore === undefined) return;
+    if (!weakestDept || d.avgScore < weakestDept.avgScore) weakestDept = d;
+  });
+
+  var biggestGap = null;
+  data.employees.forEach(function(e) {
+    if (e.divergence === null || e.divergence === undefined) return;
+    if (!biggestGap || Math.abs(e.divergence) > Math.abs(biggestGap.divergence)) biggestGap = e;
+  });
+
+  var attritionCount = (data.alerts || []).filter(function(a) { return a.type === 'ATTRITION_RISK'; }).length;
+
+  var strongestDept = null;
+  (data.departmentSummary || []).forEach(function(d) {
+    if (d.avgScore === null || d.avgScore === undefined) return;
+    if (!strongestDept || d.avgScore > strongestDept.avgScore) strongestDept = d;
+  });
+
+  var narrative = 'The org score this month is <strong>' + (data.orgAvgScore ?? '—') + ' / 10</strong>, ' + bandWord + ' level, on a <strong>' + pct + '%</strong> response rate (' + data.reportedCount + ' of ' + data.totalEmployees + ').';
+  if (weakestDept) {
+    narrative += ' <em>' + weakestDept.department + '</em> is the department to watch this month, at <strong>' + weakestDept.avgScore + '</strong>.';
+  }
+  if (attritionCount > 0) {
+    narrative += ' Managers have raised <strong>' + attritionCount + '</strong> attrition-risk flag' + (attritionCount === 1 ? '' : 's') + ' this month.';
+  }
+  narrEl.innerHTML = narrative;
+
+  var chips = '';
+  if (weakestDept) {
+    chips += '<div class="chip chip-risk"><div class="chip-label">Top risk</div><div class="chip-text">' + weakestDept.department + ' is the lowest-scoring department at ' + weakestDept.avgScore + '/10.</div></div>';
+  }
+  if (biggestGap) {
+    chips += '<div class="chip chip-gap"><div class="chip-label">Widest perception gap</div><div class="chip-text">' + biggestGap.name + ' (' + biggestGap.department + '), gap of ' + (biggestGap.divergence > 0 ? '+' : '') + biggestGap.divergence + '.</div></div>';
+  }
+  if (strongestDept) {
+    chips += '<div class="chip chip-bright"><div class="chip-label">Bright spot</div><div class="chip-text">' + strongestDept.department + ' leads at ' + strongestDept.avgScore + '/10.</div></div>';
+  }
+  chipsEl.innerHTML = chips;
+}
+
+function renderKpis(data, calibration, ideasCount) {
+  var pct = data.totalEmployees ? Math.round((data.reportedCount / data.totalEmployees) * 100) : 0;
+  var atRisk = (data.alerts || []).filter(function(a) { return a.type === 'ATTRITION_RISK'; }).length;
+  var orgColorClass = (data.orgAvgScore !== null && data.orgAvgScore !== undefined) ? (data.orgAvgScore < 6 ? 'alert-color' : 'good-color') : '';
+
+  var allGaps = calibration.rows.reduce(function(acc, r) { return acc.concat(new Array(r.teamSize).fill(r.avgAbs)); }, []);
+  var orgCalibIndex = allGaps.length ? Math.round((allGaps.reduce(function(a,b){return a+b;},0) / allGaps.length) * 10) / 10 : null;
+
+  var innovationRate = data.reportedCount ? Math.round((ideasCount / data.reportedCount) * 1000) / 10 : 0;
+
+  var html = '';
+  html += '<div class="kpi-card"><div class="kpi-label">Org Happiness Score</div><div class="kpi-value ' + orgColorClass + '">' + (data.orgAvgScore ?? '—') + '</div><div class="kpi-sub">out of 10, blended</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-label">Response Rate</div><div class="kpi-value">' + pct + '%</div><div class="kpi-sub">' + data.reportedCount + ' of ' + data.totalEmployees + '</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-label">Attrition Risk Flags</div><div class="kpi-value ' + (atRisk > 0 ? 'alert-color' : '') + '">' + atRisk + '</div><div class="kpi-sub">flagged by managers</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-label">Active Alerts</div><div class="kpi-value">' + (data.alerts || []).length + '</div><div class="kpi-sub">low score, divergence, risk</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-label">Manager Calibration</div><div class="kpi-value">' + (orgCalibIndex ?? '—') + '</div><div class="kpi-sub">avg |gap|, lower is better</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-label">Innovation Engagement</div><div class="kpi-value">' + innovationRate + '%</div><div class="kpi-sub">of respondents shared an idea</div></div>';
+  document.getElementById('kpiRow').innerHTML = html;
+}
+
+function renderDeptBars(data) {
+  var html = '';
+  (data.departmentSummary || []).forEach(function(d) {
+    var pct = d.avgScore !== null ? (d.avgScore / 10 * 100) : 0;
+    html += '<div class="dept-bar-row" data-dept="' + d.department + '" title="Click to filter Employee Detail to ' + d.department + '">';
+    html += '<div class="dept-name">' + d.department + '</div>';
+    html += '<div class="dept-bar-track"><div class="dept-bar-fill" style="width:' + pct + '%; background:' + barColor(d.avgScore) + '"></div></div>';
+    html += '<div class="dept-score">' + (d.avgScore ?? '—') + '</div>';
+    html += '</div>';
+  });
+  document.getElementById('deptBars').innerHTML = html || '<div class="empty-state">No department data yet.</div>';
+}
+function drillIntoDept(deptName) {
+  var sel = document.getElementById('filterDept');
+  if (sel) { sel.value = deptName; applyFilters(); }
+  document.querySelector('.filter-bar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+// Event delegation: one listener handles clicks on any department bar, even
+// after renderDeptBars() rebuilds the list on every month change.
+document.getElementById('deptBars').addEventListener('click', function(ev) {
+  var row = ev.target.closest('.dept-bar-row');
+  if (row && row.dataset.dept) drillIntoDept(row.dataset.dept);
+});
+
+function renderDivergence(data) {
+  var withGap = (data.employees || []).filter(function(e) { return e.divergence !== null && e.divergence !== 0; });
+  withGap.sort(function(a, b) { return Math.abs(b.divergence) - Math.abs(a.divergence); });
+  var top = withGap.slice(0, 8);
+  var el = document.getElementById('divergenceList');
+  if (!top.length) { el.innerHTML = '<div class="empty-state">No perception gap data this month.</div>'; return; }
+  var html = '';
+  top.forEach(function(e) {
+    var gapClass = e.divergence > 0 ? 'alert-color' : 'good-color';
+    var sign = e.divergence > 0 ? '+' : '';
+    html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--line); font-size:13px;">';
+    html += '<div><strong>' + e.name + '</strong><br><span style="color:var(--text-soft); font-size:11.5px;">' + e.department + '</span></div>';
+    html += '<span class="' + gapClass + '" style="font-weight:700;">' + sign + e.divergence + '</span>';
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderCalibrationTable(calibration) {
+  var el = document.getElementById('calibrationTable');
+  var caveatEl = document.getElementById('calibrationCaveat');
+  if (!calibration.rows.length) {
+    el.innerHTML = '<div class="empty-state">Not enough matched manager/self-report pairs yet this month.</div>';
+  } else {
+    var html = '<table><thead><tr><th>Manager</th><th>Team</th><th>Avg Gap</th><th>Read</th></tr></thead><tbody>';
+    calibration.rows.forEach(function(r) {
+      html += '<tr><td>' + r.name + '</td><td>' + r.teamSize + '</td><td>' + (r.avgSigned > 0 ? '+' : '') + r.avgSigned + '</td><td><span class="badge ' + r.verdict.cls + '">' + r.verdict.label + '</span></td></tr>';
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+  }
+  if (calibration.unmatched > 0) {
+    caveatEl.style.display = 'block';
+    caveatEl.textContent = 'Manager attribution could not be matched for ' + calibration.unmatched + ' employee(s) this month — check that Name/ID values in the roster line up with the dashboard employee records.';
+  } else {
+    caveatEl.style.display = 'none';
+  }
+}
+
+function renderFlightRisk(employees) {
+  var scored = employees.map(function(e) { return { e: e, risk: computeFlightRisk(e) }; })
+    .filter(function(x) { return x.risk.score > 0; });
+  scored.sort(function(a, b) { return b.risk.score - a.risk.score; });
+  var top = scored.slice(0, 10);
+  var el = document.getElementById('flightRiskList');
+  if (!top.length) { el.innerHTML = '<div class="empty-state">No elevated flight-risk signals this month.</div>'; return; }
+  var html = '';
+  top.forEach(function(x, i) {
+    html += '<div class="fr-item">';
+    html += '<div class="fr-rank">' + (i + 1) + '</div>';
+    html += '<div style="width:170px; flex-shrink:0;"><div class="fr-name">' + x.e.name + '</div><div class="fr-dept">' + x.e.department + '</div></div>';
+    html += '<div style="flex:1;"><div class="fr-bar-track"><div class="fr-bar-fill" style="width:' + x.risk.score + '%"></div></div><div class="fr-factors">' + x.risk.factors.map(function(f) { return '<span class="fr-factor">' + f + '</span>'; }).join('') + '</div></div>';
+    html += '<div class="fr-score">' + x.risk.score + '</div>';
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderDimensions(data) {
+  var deptDims = {};
+  (data.employees || []).forEach(function(e) {
+    if (!e.selfReport) return;
+    if (!deptDims[e.department]) deptDims[e.department] = {};
+    Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+      if (!deptDims[e.department][dim]) deptDims[e.department][dim] = [];
+      var v = Number(e.selfReport[dim]);
+      if (!isNaN(v)) deptDims[e.department][dim].push(v);
+    });
+  });
+  var depts = Object.keys(deptDims);
+  var el = document.getElementById('dimensionList');
+  if (!depts.length) { el.innerHTML = '<div class="empty-state">No self-reports yet this month.</div>'; return; }
+  var html = '<table><thead><tr><th>Department</th>';
+  Object.keys(DIMENSION_LABELS).forEach(function(dim) { html += '<th>' + DIMENSION_LABELS[dim] + '</th>'; });
+  html += '<th>Weakest</th></tr></thead><tbody>';
+  depts.forEach(function(dept) {
+    var avgs = {};
+    var weakest = null;
+    Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+      var vals = deptDims[dept][dim] || [];
+      var avg = vals.length ? Math.round((vals.reduce(function(a,b){return a+b;},0) / vals.length) * 10) / 10 : null;
+      avgs[dim] = avg;
+      if (avg !== null && (!weakest || avg < weakest.avg)) weakest = { dim: dim, avg: avg };
+    });
+    html += '<tr><td>' + dept + '</td>';
+    Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+      var isWeak = weakest && weakest.dim === dim;
+      html += '<td' + (isWeak ? ' style="background:var(--red-l); font-weight:700; color:var(--red);"' : '') + '>' + (avgs[dim] ?? '—') + '</td>';
+    });
+    html += '<td>' + (weakest ? DIMENSION_LABELS[weakest.dim] : '—') + '</td></tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function renderFocusTable(data) {
+  var el = document.getElementById('focusTable');
+  var rows = [];
+  Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+    var values = (data.employees || []).filter(function(e) { return e.selfReport; }).map(function(e) { return Number(e.selfReport[dim]); });
+    rows.push({ label: DIMENSION_LABELS[dim], tally: computeBandTally(values) });
+  });
+  var mgrValues = (data.employees || []).filter(function(e) { return e.managerInput; }).map(function(e) { return Number(e.managerInput.Perceived_Satisfaction_Score); });
+  rows.push({ label: 'Manager Perceived Satisfaction', tally: computeBandTally(mgrValues) });
+  var combinedValues = (data.employees || []).filter(function(e) { return e.combinedScore !== null && e.combinedScore !== undefined; }).map(function(e) { return Number(e.combinedScore); });
+  rows.push({ label: 'Combined Score (Blended)', tally: computeBandTally(combinedValues) });
+
+  var html = '<table><thead><tr><th>Question / Metric</th><th>Respondents</th><th>Healthy (7.5+)</th><th>Watch (5–7.4)</th><th>At Risk (&lt;5)</th><th>Priority</th></tr></thead><tbody>';
+  rows.forEach(function(r) {
+    var t = r.tally; var pr = priorityFromTally(t);
+    html += '<tr><td>' + r.label + '</td><td>' + t.total + '</td>';
+    html += '<td>' + (t.total ? t.highPct + '% (' + t.high + ')' : '—') + '</td>';
+    html += '<td>' + (t.total ? t.midPct + '% (' + t.mid + ')' : '—') + '</td>';
+    html += '<td>' + (t.total ? t.lowPct + '% (' + t.low + ')' : '—') + '</td>';
+    html += '<td><span class="badge ' + (pr.cls === 'priority-high' ? 'badge-risk' : pr.cls === 'priority-watch' ? 'badge-over' : 'badge-calibrated') + '">' + pr.label + '</span></td></tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function renderDimensionPies(data) {
+  var container = document.getElementById('dimensionPies');
+  var tally = {};
+  Object.keys(DIMENSION_LABELS).forEach(function(dim) { tally[dim] = { high: 0, mid: 0, low: 0, total: 0 }; });
+  (data.employees || []).forEach(function(e) {
+    if (!e.selfReport) return;
+    Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+      var v = Number(e.selfReport[dim]);
+      if (isNaN(v)) return;
+      var band = scoreBand(v);
+      if (band === 'high') tally[dim].high++; else if (band === 'mid') tally[dim].mid++; else if (band === 'low') tally[dim].low++;
+      tally[dim].total++;
+    });
+  });
+  var html = '<div class="pie-grid">';
+  Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+    var t = tally[dim]; var label = DIMENSION_LABELS[dim];
+    if (!t.total) { html += '<div class="pie-item"><div class="pie-title">' + label + '</div><div class="empty-state" style="padding:14px;">No data</div></div>'; return; }
+    var highPct = Math.round((t.high / t.total) * 1000) / 10;
+    var midPct = Math.round((t.mid / t.total) * 1000) / 10;
+    var lowPct = Math.round((t.low / t.total) * 1000) / 10;
+    var seg1 = highPct, seg2 = highPct + midPct;
+    var gradient = 'conic-gradient(var(--green) 0% ' + seg1 + '%, var(--amber) ' + seg1 + '% ' + seg2 + '%, var(--red) ' + seg2 + '% 100%)';
+    html += '<div class="pie-item"><div class="pie-title">' + label + '</div><div class="pie-circle" style="background:' + gradient + '"></div><div class="pie-legend">';
+    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--green)"></span>Healthy: ' + highPct + '% (' + t.high + ')</div>';
+    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--amber)"></span>Watch: ' + midPct + '% (' + t.mid + ')</div>';
+    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--red)"></span>At Risk: ' + lowPct + '% (' + t.low + ')</div></div></div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderTable(employees, month) {
+  var html = '';
+  employees.forEach(function(e, idx) {
+    var trendUrl = e.id ? 'full-report-v2.html?employeeId=' + encodeURIComponent(e.id) + '&month=' + encodeURIComponent(month) : null;
+    html += '<tr' + (trendUrl ? ' class="clickable-row" data-url="' + trendUrl + '" title="Open ' + e.name + '\'s trend"' : '') + '>';
+    html += '<td>' + (idx + 1) + '</td>';
+    html += '<td>' + e.name + '</td>';
+    html += '<td>' + e.department + '</td>';
+    html += '<td>' + (e.manager || '—') + '</td>';
+    html += '<td>' + (e.selfAvg !== null ? '<span class="score-pill ' + scoreClass(e.selfAvg) + '">' + e.selfAvg + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+    html += '<td>' + (e.managerScore !== null ? '<span class="score-pill ' + scoreClass(e.managerScore) + '">' + e.managerScore + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
+    html += '<td><span class="score-pill ' + scoreClass(e.combinedScore) + '">' + (e.combinedScore ?? '—') + '</span></td>';
+    html += '<td>' + (e.divergence !== null ? (e.divergence > 0 ? '+' : '') + e.divergence : '—') + '</td>';
+    html += '<td>' + (e.attritionRisk ? '<span class="badge badge-risk">At Risk</span>' : '') + '</td>';
+    html += '</tr>';
+  });
+  document.getElementById('empTableBody').innerHTML = html || '<tr><td colspan="9" class="empty-state">No employees match the current filters.</td></tr>';
+}
+
+function renderInnovationIdeas(data) {
+  var container = document.getElementById('innovationIdeas');
+  var ideas = [];
+  (data.employees || []).forEach(function(e) {
+    [e.selfReport, e.managerInput].forEach(function(obj) {
+      if (!obj) return;
+      Object.keys(obj).forEach(function(k) {
+        if (!isInnovationIdeaKey(k)) return;
+        var val = obj[k];
+        if (typeof val === 'string' && !isJunkAnswer(val)) ideas.push({ name: e.name, department: e.department, text: val.trim() });
+      });
+    });
+  });
+  if (!ideas.length) { container.innerHTML = '<div class="empty-state">No usable innovation ideas found this month.</div>'; return ideas; }
+  ideas.sort(function(a, b) { return b.text.length - a.text.length; });
+  var top = ideas.slice(0, 10);
+  var html = '';
+  top.forEach(function(idea) {
+    html += '<div class="idea-item"><div class="idea-text">"' + idea.text + '"</div><div class="idea-meta">— ' + idea.name + ', ' + idea.department + '</div></div>';
+  });
+  container.innerHTML = html;
+  return ideas;
+}
+
+function renderTeamRemarks(data) {
+  var container = document.getElementById('teamRemarks');
+  var remarks = [];
+  (data.employees || []).forEach(function(e) {
+    var managerName = findManagerName(e.managerInput);
+    [{ obj: e.selfReport, source: 'self' }, { obj: e.managerInput, source: 'manager' }].forEach(function(entry) {
+      if (!entry.obj) return;
+      Object.keys(entry.obj).forEach(function(k) {
+        if (DIMENSION_LABELS.hasOwnProperty(k)) return;
+        if (k === 'Perceived_Satisfaction_Score') return;
+        if (isMetaKey(k)) return;
+        if (isManagerNameKey(k)) return;
+        if (/innovation/i.test(k)) return;
+        var val = entry.obj[k];
+        if (typeof val === 'string' && !isJunkAnswer(val)) {
+          remarks.push({ name: e.name, department: e.department, text: val.trim(), source: entry.source, authorName: entry.source === 'manager' ? managerName : null });
+        }
+      });
+    });
+  });
+  if (!remarks.length) { container.innerHTML = '<div class="empty-state">No usable remarks found this month.</div>'; return; }
+  remarks.sort(function(a, b) { return b.text.length - a.text.length; });
+  var top = remarks.slice(0, 10);
+  var html = '';
+  top.forEach(function(r) {
+    var tone = classifyTone(r.text);
+    var givenBy = r.source === 'self' ? (r.name + ' (self-report)') : (r.authorName ? (r.authorName + ' (manager)') : 'Manager');
+    html += '<div class="idea-item"><div class="idea-text"><span class="tone-pill ' + tone.cls + '">' + tone.label + '</span>"' + r.text + '"</div><div class="idea-meta">Given by ' + givenBy + ' — About ' + r.name + ', ' + r.department + '</div></div>';
+  });
+  container.innerHTML = html;
+}
+
+// ── Filters ──
+function populateDeptFilter(employees) {
+  var sel = document.getElementById('filterDept');
+  var current = sel.value;
+  var depts = Array.from(new Set(employees.map(function(e) { return e.department; }))).sort();
+  sel.innerHTML = '<option value="">All Departments</option>' + depts.map(function(d) { return '<option value="' + d + '">' + d + '</option>'; }).join('');
+  sel.value = current;
+}
+function getFilters() {
+  return {
+    name: document.getElementById('filterName').value.trim().toLowerCase(),
+    dept: document.getElementById('filterDept').value,
+    band: document.getElementById('filterScoreBand').value,
+    riskOnly: document.getElementById('filterRiskOnly').checked,
+    missingOnly: document.getElementById('filterMissingOnly').checked
+  };
+}
+function applyFilters() {
+  var f = getFilters();
+  var filtered = currentEmployees.filter(function(e) {
+    if (f.name) {
+      var hay = (e.name + ' ' + e.department + ' ' + (e.manager || '')).toLowerCase();
+      if (hay.indexOf(f.name) === -1) return false;
+    }
+    if (f.dept && e.department !== f.dept) return false;
+    if (f.band && scoreBand(e.combinedScore) !== f.band) return false;
+    if (f.riskOnly && !e.attritionRisk) return false;
+    if (f.missingOnly && e.selfAvg !== null && e.managerScore !== null) return false;
+    return true;
+  });
+  document.getElementById('filterCount').textContent = filtered.length + ' of ' + currentEmployees.length + ' employees';
+  renderTable(filtered, document.getElementById('monthSelect').value);
+}
+function clearFilters() {
+  document.getElementById('filterName').value = '';
+  document.getElementById('filterDept').value = '';
+  document.getElementById('filterScoreBand').value = '';
+  document.getElementById('filterRiskOnly').checked = false;
+  document.getElementById('filterMissingOnly').checked = false;
+  applyFilters();
+}
+
+// ── Master load ──
+function renderAll(data, prev, roster) {
+  rosterById = {}; rosterByName = {};
+  (roster || []).forEach(function(r) {
+    if (r.ID) rosterById[r.ID] = r.Manager || null;
+    if (r.Name) rosterByName[String(r.Name).trim().toLowerCase()] = r.Manager || null;
+  });
+
+  currentEmployees = (data.employees || []).map(function(e) {
+    var manager = (e.id && rosterById[e.id]) || rosterByName[String(e.name || '').trim().toLowerCase()] || null;
+    return Object.assign({}, e, { manager: manager });
+  });
+  var enrichedData = Object.assign({}, data, { employees: currentEmployees });
+
+  var calibration = computeManagerCalibration(currentEmployees);
+
+  renderHero(enrichedData, prev);
+  renderDeptBars(enrichedData);
+  renderDivergence(enrichedData);
+  renderCalibrationTable(calibration);
+  renderFlightRisk(currentEmployees);
+  renderDimensions(enrichedData);
+  renderFocusTable(enrichedData);
+  renderDimensionPies(enrichedData);
+  populateDeptFilter(currentEmployees);
+  applyFilters();
+  var ideas = renderInnovationIdeas(enrichedData);
+  renderTeamRemarks(enrichedData);
+  renderKpis(enrichedData, calibration, ideas.length);
+}
+
+function loadAll(month) {
+  document.getElementById('heroNarrative').innerHTML = 'Loading this month\u2019s data…';
+  Promise.all([fetchMonth(month), fetchMonth(shiftMonth(month, -1)), fetchRoster()]).then(function(results) {
+    var data = results[0], prev = results[1], roster = results[2];
+    if (!data || data.error) {
+      document.getElementById('heroNarrative').innerHTML = data && data.error ? data.error : 'Could not reach the tracker backend.';
+      return;
+    }
+    renderAll(data, prev, Array.isArray(roster) ? roster : []);
+  });
+}
+
+populateMonthSelect(6);
+loadAll(document.getElementById('monthSelect').value);
+document.getElementById('monthSelect').addEventListener('change', function() { loadAll(this.value); });
+['filterName', 'filterDept', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
+  var el = document.getElementById(id);
+  el.addEventListener(id === 'filterName' ? 'input' : 'change', applyFilters);
+});
+document.getElementById('filterClearBtn').addEventListener('click', clearFilters);
+document.getElementById('empTableBody').addEventListener('click', function(ev) {
+  var row = ev.target.closest('tr.clickable-row');
+  if (row && row.dataset.url) window.open(row.dataset.url, '_blank');
+});
+</script>
+</body>
+</html>
