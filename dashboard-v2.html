@@ -60,24 +60,25 @@
   }
 
   /* ── Hero briefing ── */
-  .hero { background: var(--ink); color: #EDEFF4; padding: 40px 0 34px; }
+  .hero { background: linear-gradient(180deg, #FFFFFF 0%, var(--paper) 100%); border-bottom: 1px solid var(--line); padding: 36px 0 32px; }
   .hero-inner { display: grid; grid-template-columns: 220px 1fr; gap: 40px; align-items: start; }
-  .hero-score-block { border-right: 1px solid rgba(255,255,255,0.14); padding-right: 40px; }
-  .hero-score { font-size: 64px; font-weight: 700; line-height: 1; }
-  .hero-score-label { font-size: 12px; color: #B9C2D6; margin-top: 8px; }
+  .hero-logo { height: 42px; width: auto; display: block; margin-bottom: 16px; }
+  .hero-score-block { border-right: 1px solid var(--line); padding-right: 40px; }
+  .hero-score { font-size: 60px; font-weight: 700; line-height: 1; color: var(--ink); }
+  .hero-score-label { font-size: 12px; color: var(--text-soft); margin-top: 8px; }
   .hero-delta { font-size: 14px; margin-top: 10px; display: inline-flex; align-items: center; gap: 5px; }
-  .hero-delta.up { color: #7FD8A8; }
-  .hero-delta.down { color: #F0A6A2; }
-  .hero-delta.flat { color: #B9C2D6; }
-  .hero-narrative { font-size: 17px; line-height: 1.65; color: #EDEFF4; max-width: 76ch; font-weight: 400; }
-  .hero-narrative em { font-style: italic; color: #C9D2E4; }
+  .hero-delta.up { color: var(--green); }
+  .hero-delta.down { color: var(--red); }
+  .hero-delta.flat { color: var(--text-soft); }
+  .hero-narrative { font-size: 17px; line-height: 1.65; color: var(--text); max-width: 76ch; font-weight: 400; }
+  .hero-narrative em { font-style: italic; color: var(--ink); }
   .hero-chips { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
-  .chip { background: rgba(255,255,255,0.06); border-left: 3px solid; border-radius: 4px; padding: 10px 14px; font-size: 12.5px; max-width: 300px; }
-  .chip-risk { border-color: #F0A6A2; }
-  .chip-gap { border-color: #E8C97A; }
-  .chip-bright { border-color: #7FD8A8; }
-  .chip-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: #9AA5BD; margin-bottom: 3px; }
-  .chip-text { color: #EDEFF4; }
+  .chip { background: #FFFFFF; border: 1px solid var(--line); border-left: 3px solid; border-radius: 4px; padding: 10px 14px; font-size: 12.5px; max-width: 300px; }
+  .chip-risk { border-left-color: var(--red); }
+  .chip-gap { border-left-color: var(--amber); }
+  .chip-bright { border-left-color: var(--green); }
+  .chip-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-soft); margin-bottom: 3px; }
+  .chip-text { color: var(--text); }
 
   /* ── KPI strip ── */
   .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin: 24px 0; }
@@ -107,7 +108,7 @@
   .card h3 { font-size: 16px; margin: 0 0 4px; color: var(--ink); font-weight: 600; }
   .card-sub { font-size: 12px; color: var(--text-soft); margin: 0 0 16px; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } .kpi-row { grid-template-columns: repeat(2,1fr); } .hero-inner { grid-template-columns: 1fr; } .hero-score-block { border-right: none; padding-right: 0; border-bottom: 1px solid rgba(255,255,255,0.14); padding-bottom: 20px; } }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } .kpi-row { grid-template-columns: repeat(2,1fr); } .hero-inner { grid-template-columns: 1fr; } .hero-score-block { border-right: none; padding-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 20px; } }
 
   /* ── Dept bars ── */
   .dept-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer; }
@@ -167,6 +168,7 @@
   .idea-text { color: var(--text); line-height: 1.5; }
   .idea-meta { font-size: 11.5px; color: var(--text-soft); margin-top: 4px; }
   .tone-pill { font-size: 10px; padding: 1px 6px; border-radius: 8px; margin-right: 6px; font-weight: 700; }
+  .value-pill { font-size: 10px; padding: 1px 6px; border-radius: 8px; margin-right: 6px; font-weight: 700; cursor: help; }
   .tone-good { background: var(--green-l); color: var(--green); }
   .tone-critical { background: var(--red-l); color: var(--red); }
   .tone-neutral { background: #F0EEE6; color: var(--text-soft); }
@@ -207,6 +209,7 @@
 <div class="hero">
   <div class="wrap hero-inner">
     <div class="hero-score-block">
+      <img src="mangalam-logo.png" alt="Mangalam Landmarks" class="hero-logo">
       <div class="hero-score" id="heroScore">—</div>
       <div class="hero-score-label">Org happiness score, out of 10, blended</div>
       <div class="hero-delta flat" id="heroDelta">vs last month: —</div>
@@ -271,6 +274,19 @@
     <div id="dimensionPies"></div>
   </div>
 
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head-row"><h3>Innovation Ideas From the Team</h3><button class="dl-btn" id="dlIdeasBtn">⬇ Download Excel</button></div>
+      <p class="card-sub">Most recent 10 shown here, each tagged with a Value Score (1–5) — a keyword-based estimate of likely usefulness to company processes, not a verified judgment. Hover a score for why. The download includes every idea this month, sorted chronologically.</p>
+      <div id="innovationIdeas" class="scroll-box"></div>
+    </div>
+    <div class="card">
+      <div class="card-head-row"><h3>Top Team Remarks</h3><button class="dl-btn" id="dlRemarksBtn">⬇ Download Excel</button></div>
+      <p class="card-sub">Most recent 10 shown here, each tagged with a Value Score (1–5) — a keyword-based estimate of likely usefulness to company processes, not a verified judgment. Hover a score for why. The download includes every remark this month, sorted chronologically.</p>
+      <div id="teamRemarks" class="scroll-box"></div>
+    </div>
+  </div>
+
   <div class="card">
     <h3>Employee Detail</h3>
     <p class="card-sub">Click a row to open that person's multi-month trend in the Full Report. Click a column heading to sort by it.</p>
@@ -307,19 +323,6 @@
       </thead>
       <tbody id="empTableBody"></tbody>
     </table>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-head-row"><h3>Innovation Ideas From the Team</h3><button class="dl-btn" id="dlIdeasBtn">⬇ Download Excel</button></div>
-      <p class="card-sub">Top 10 shown here; the download includes every usable idea this month.</p>
-      <div id="innovationIdeas" class="scroll-box"></div>
-    </div>
-    <div class="card">
-      <div class="card-head-row"><h3>Top Team Remarks</h3><button class="dl-btn" id="dlRemarksBtn">⬇ Download Excel</button></div>
-      <p class="card-sub">Top 10 shown here; the download includes every usable remark this month.</p>
-      <div id="teamRemarks" class="scroll-box"></div>
-    </div>
   </div>
 
 </div>
@@ -390,6 +393,51 @@ function findManagerName(managerInputObj) {
 
 var INNOVATION_REASONING_PATTERN = /reason|rational|why|justif/i;
 function isInnovationIdeaKey(key) { return /innovation/i.test(key) && !INNOVATION_REASONING_PATTERN.test(key); }
+
+// Finds a raw submission timestamp on a selfReport/managerInput object, if
+// the backend sends one (Google Forms responses usually include one). Used
+// to sort ideas/remarks chronologically instead of guessing from row order.
+var TIMESTAMP_KEY_PATTERNS = [/^timestamp$/i, /^submitted[_ ]?on$/i, /^submission[_ ]?date$/i];
+function findTimestamp(obj) {
+  if (!obj) return null;
+  var found = null;
+  Object.keys(obj).forEach(function(k) {
+    if (found) return;
+    if (TIMESTAMP_KEY_PATTERNS.some(function(re) { return re.test(k); })) {
+      var d = new Date(obj[k]);
+      if (!isNaN(d.getTime())) found = d;
+    }
+  });
+  return found;
+}
+
+// Heuristic 1-5 "Value Score" estimating how useful an idea/remark is likely
+// to be for company processes — NOT true comprehension, just a transparent,
+// documented keyword + detail-level signal so a CHRO can triage a long list.
+// Every score is explained by its contributing factors in `reasons`, and the
+// method is disclosed wherever the score is shown (on-page note + Excel note).
+var VALUE_KEYWORDS = ['process', 'efficien', 'cost', 'automat', 'training', 'policy', 'safety', 'quality',
+  'client', 'customer', 'revenue', 'productiv', 'streamlin', 'reduce', 'improve', 'save', 'delay', 'waste',
+  'complian', 'retention', 'onboard', 'workflow', 'system', 'budget', 'turnaround', 'error', 'risk', 'scale', 'audit'];
+function computeValueScore(text) {
+  var t = text.toLowerCase();
+  var hits = VALUE_KEYWORDS.reduce(function(n, w) { return n + (t.indexOf(w) !== -1 ? 1 : 0); }, 0);
+  var words = text.trim().split(/\s+/).length;
+  var score = 1;
+  var reasons = [];
+  if (hits >= 1) { score += 1; reasons.push('mentions a process/business-relevant term'); }
+  if (hits >= 3) { score += 1; reasons.push('touches several relevant themes'); }
+  if (words >= 15) { score += 1; reasons.push('reasonably detailed (' + words + ' words)'); }
+  if (words >= 30 && hits >= 2) { score += 1; reasons.push('detailed and business-relevant'); }
+  score = Math.max(1, Math.min(5, score));
+  if (!reasons.length) reasons.push('brief, general statement');
+  return { score: score, reasons: reasons };
+}
+function valueScoreClass(score) {
+  if (score >= 4) return 'score-high';
+  if (score === 3) return 'score-mid';
+  return 'score-na';
+}
 
 function scoreClass(score) {
   if (score === null || score === undefined) return 'score-na';
@@ -816,16 +864,24 @@ function renderInnovationIdeas(data) {
       Object.keys(obj).forEach(function(k) {
         if (!isInnovationIdeaKey(k)) return;
         var val = obj[k];
-        if (typeof val === 'string' && !isJunkAnswer(val)) ideas.push({ name: e.name, department: e.department, text: val.trim() });
+        if (typeof val === 'string' && !isJunkAnswer(val)) {
+          var vs = computeValueScore(val);
+          ideas.push({ name: e.name, department: e.department, text: val.trim(), timestamp: findTimestamp(obj), valueScore: vs.score, valueReasons: vs.reasons });
+        }
       });
     });
   });
   if (!ideas.length) { container.innerHTML = '<div class="empty-state">No usable innovation ideas found this month.</div>'; return ideas; }
-  ideas.sort(function(a, b) { return b.text.length - a.text.length; });
+  ideas.sort(function(a, b) {
+    if (a.timestamp && b.timestamp) return b.timestamp - a.timestamp;
+    if (a.timestamp) return -1;
+    if (b.timestamp) return 1;
+    return b.text.length - a.text.length;
+  });
   var top = ideas.slice(0, 10);
   var html = '';
   top.forEach(function(idea) {
-    html += '<div class="idea-item"><div class="idea-text">"' + idea.text + '"</div><div class="idea-meta">— ' + idea.name + ', ' + idea.department + '</div></div>';
+    html += '<div class="idea-item"><div class="idea-text"><span class="value-pill ' + valueScoreClass(idea.valueScore) + '" title="' + idea.valueReasons.join('; ') + '">Value ' + idea.valueScore + '/5</span>"' + idea.text + '"</div><div class="idea-meta">— ' + idea.name + ', ' + idea.department + (idea.timestamp ? ' · ' + idea.timestamp.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '') + '</div></div>';
   });
   container.innerHTML = html;
   return ideas;
@@ -846,19 +902,25 @@ function renderTeamRemarks(data) {
         if (/innovation/i.test(k)) return;
         var val = entry.obj[k];
         if (typeof val === 'string' && !isJunkAnswer(val)) {
-          remarks.push({ name: e.name, department: e.department, text: val.trim(), source: entry.source, authorName: entry.source === 'manager' ? managerName : null });
+          var vs = computeValueScore(val);
+          remarks.push({ name: e.name, department: e.department, text: val.trim(), source: entry.source, authorName: entry.source === 'manager' ? managerName : null, timestamp: findTimestamp(entry.obj), valueScore: vs.score, valueReasons: vs.reasons });
         }
       });
     });
   });
   if (!remarks.length) { container.innerHTML = '<div class="empty-state">No usable remarks found this month.</div>'; return remarks; }
-  remarks.sort(function(a, b) { return b.text.length - a.text.length; });
+  remarks.sort(function(a, b) {
+    if (a.timestamp && b.timestamp) return b.timestamp - a.timestamp;
+    if (a.timestamp) return -1;
+    if (b.timestamp) return 1;
+    return b.text.length - a.text.length;
+  });
   var top = remarks.slice(0, 10);
   var html = '';
   top.forEach(function(r) {
     var tone = classifyTone(r.text);
     var givenBy = r.source === 'self' ? (r.name + ' (self-report)') : (r.authorName ? (r.authorName + ' (manager)') : 'Manager');
-    html += '<div class="idea-item"><div class="idea-text"><span class="tone-pill ' + tone.cls + '">' + tone.label + '</span>"' + r.text + '"</div><div class="idea-meta">Given by ' + givenBy + ' — About ' + r.name + ', ' + r.department + '</div></div>';
+    html += '<div class="idea-item"><div class="idea-text"><span class="value-pill ' + valueScoreClass(r.valueScore) + '" title="' + r.valueReasons.join('; ') + '">Value ' + r.valueScore + '/5</span><span class="tone-pill ' + tone.cls + '">' + tone.label + '</span>"' + r.text + '"</div><div class="idea-meta">Given by ' + givenBy + ' — About ' + r.name + ', ' + r.department + (r.timestamp ? ' · ' + r.timestamp.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '') + '</div></div>';
   });
   container.innerHTML = html;
   return remarks;
@@ -1110,26 +1172,54 @@ document.getElementById('empTableBody').addEventListener('click', function(ev) {
 setupSortHeaders();
 
 // ── Excel export (SheetJS, loaded via CDN in <head>) ──
+// Builds a worksheet with an explanatory note row above the header row, so
+// the methodology is visible to anyone who opens the file, not just people
+// who saw the on-page tooltip first.
+function buildNotedSheet(note, headers, rows) {
+  var aoa = [[note], []];
+  aoa.push(headers);
+  rows.forEach(function(r) { aoa.push(headers.map(function(h) { return r[h]; })); });
+  var ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }];
+  return ws;
+}
+
+var VALUE_SCORE_NOTE = 'Value Score (1-5) is a heuristic estimate of likely usefulness to company processes — based on keyword relevance (process, cost, efficiency, quality, etc.) and level of detail. It is NOT a verified judgment of merit; use it to triage a long list, not to decide outcomes on its own. Sorted chronologically, most recent submission first.';
+
 function downloadIdeasExcel() {
   if (!allIdeas.length) { alert('No innovation ideas to export this month.'); return; }
-  var rows = allIdeas.map(function(i) { return { Name: i.name, Department: i.department, Idea: i.text }; });
-  var ws = XLSX.utils.json_to_sheet(rows);
+  var headers = ['Date', 'Name', 'Department', 'Idea', 'Value Score (1-5)', 'Why this score'];
+  var rows = allIdeas.map(function(i) {
+    return {
+      'Date': i.timestamp ? i.timestamp.toLocaleDateString('en-IN') : '—',
+      'Name': i.name,
+      'Department': i.department,
+      'Idea': i.text,
+      'Value Score (1-5)': i.valueScore,
+      'Why this score': i.valueReasons.join('; ')
+    };
+  });
+  var ws = buildNotedSheet(VALUE_SCORE_NOTE, headers, rows);
   var wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Innovation Ideas');
   XLSX.writeFile(wb, 'innovation-ideas-' + document.getElementById('monthSelect').value + '.xlsx');
 }
 function downloadRemarksExcel() {
   if (!allRemarks.length) { alert('No remarks to export this month.'); return; }
+  var headers = ['Date', 'Name', 'Department', 'Source', 'Given By', 'Remark', 'Value Score (1-5)', 'Why this score'];
   var rows = allRemarks.map(function(r) {
     return {
-      Name: r.name,
-      Department: r.department,
-      Source: r.source === 'self' ? 'Self-report' : 'Manager',
+      'Date': r.timestamp ? r.timestamp.toLocaleDateString('en-IN') : '—',
+      'Name': r.name,
+      'Department': r.department,
+      'Source': r.source === 'self' ? 'Self-report' : 'Manager',
       'Given By': r.source === 'self' ? r.name : (r.authorName || 'Manager'),
-      Remark: r.text
+      'Remark': r.text,
+      'Value Score (1-5)': r.valueScore,
+      'Why this score': r.valueReasons.join('; ')
     };
   });
-  var ws = XLSX.utils.json_to_sheet(rows);
+  var ws = buildNotedSheet(VALUE_SCORE_NOTE, headers, rows);
   var wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Team Remarks');
   XLSX.writeFile(wb, 'team-remarks-' + document.getElementById('monthSelect').value + '.xlsx');
