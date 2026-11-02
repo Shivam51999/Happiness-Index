@@ -63,38 +63,36 @@
   }
 
   /* ── Hero briefing ── */
-  .hero { background: linear-gradient(180deg, #FFFFFF 0%, var(--paper) 100%); border-bottom: 1px solid var(--line); padding: 36px 0 32px; }
-  .hero-inner { display: grid; grid-template-columns: 240px 1fr; gap: 40px; align-items: start; }
-  .hero-logo { height: 84px; width: auto; display: block; margin-bottom: 18px; }
-  .hero-score-block { border-right: 1px solid var(--line); padding-right: 40px; }
-  .hero-title { font-size: 13px; font-weight: 700; color: var(--ink); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; font-family: 'Source Serif 4', Georgia, serif; }
+  .hero { background: linear-gradient(180deg, #FFFFFF 0%, var(--paper) 100%); border-bottom: 1px solid var(--line); padding: 38px 0 34px; }
+  .hero-inner { display: grid; grid-template-columns: 190px 240px 1fr; gap: 44px; align-items: center; }
+  .hero-logo-col { display: flex; align-items: center; justify-content: center; height: 100%; border-right: 1px solid var(--line); padding-right: 44px; }
+  .hero-logo { height: 100px; width: auto; display: block; }
+  .hero-score-col { border-right: 1px solid var(--line); padding-right: 44px; }
+  .hero-title { font-size: 14px; font-weight: 700; color: var(--ink); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; font-family: 'Source Serif 4', Georgia, serif; }
+  .hero-month { font-size: 12.5px; color: var(--text-soft); font-style: italic; margin-bottom: 6px; }
   .hero-score-wrap { display: flex; align-items: baseline; gap: 2px; }
-  .hero-score { font-size: 58px; font-weight: 700; line-height: 1; }
+  .hero-score { font-size: 56px; font-weight: 700; line-height: 1; }
   .hero-score.score-high-color { color: var(--green); }
   .hero-score.score-mid-color { color: var(--amber); }
   .hero-score.score-low-color { color: var(--red); }
-  .hero-score-unit { font-size: 22px; font-weight: 700; color: var(--text-soft); }
-  .hero-score-label { font-size: 12px; color: var(--text-soft); margin-top: 8px; }
-  .hero-month { font-size: 12.5px; color: var(--text-soft); margin-top: 4px; font-style: italic; }
-  .hero-delta { font-size: 14px; margin-top: 10px; display: inline-flex; align-items: center; gap: 5px; }
+  .hero-score-unit { font-size: 20px; font-weight: 700; color: var(--text-soft); }
+  .hero-delta { font-size: 13px; margin-top: 10px; display: inline-flex; align-items: center; gap: 5px; }
   .hero-delta.up { color: var(--green); }
   .hero-delta.down { color: var(--red); }
   .hero-delta.flat { color: var(--text-soft); }
-  .hero-narrative { font-size: 17px; line-height: 1.65; color: var(--text); max-width: 76ch; font-weight: 400; }
-  .hero-narrative em { font-style: italic; color: var(--ink); }
-  .hero-stats { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
-  .hero-stat-line { font-size: 14.5px; color: var(--text); }
-  .hero-stat-line strong { color: var(--ink); }
-  .hero-chips { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
-  .hero-team-line { font-size: 15px; font-weight: 700; }
-  .hero-team-line.good { color: var(--green); }
-  .hero-team-line.risk { color: var(--red); }
-  .chip { background: #FFFFFF; border: 1px solid var(--line); border-left: 3px solid; border-radius: 4px; padding: 10px 14px; font-size: 12.5px; max-width: 300px; }
-  .chip-risk { border-left-color: var(--red); }
-  .chip-gap { border-left-color: var(--amber); }
-  .chip-bright { border-left-color: var(--green); }
-  .chip-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-soft); margin-bottom: 3px; }
-  .chip-text { color: var(--text); }
+  .hero-stats-col { display: flex; flex-direction: column; gap: 20px; }
+  .hero-response-row { display: flex; gap: 40px; flex-wrap: wrap; }
+  .hero-response-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-soft); margin-bottom: 5px; }
+  .hero-response-value { font-size: 22px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .hero-response-sub { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+  .hero-team-pills { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hero-team-pill { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 24px; font-size: 13.5px; font-weight: 700; }
+  .hero-team-pill .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .hero-team-pill.good { background: var(--green-l); color: var(--green); }
+  .hero-team-pill.good .dot { background: var(--green); }
+  .hero-team-pill.risk { background: var(--red-l); color: var(--red); }
+  .hero-team-pill.risk .dot { background: var(--red); }
+  .hero-narrative { font-size: 15px; line-height: 1.6; color: var(--text-soft); }
 
   /* ── KPI strip ── */
   .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 24px 0; }
@@ -124,7 +122,12 @@
   .card h3 { font-size: 16px; margin: 0 0 4px; color: var(--ink); font-weight: 600; }
   .card-sub { font-size: 12px; color: var(--text-soft); margin: 0 0 16px; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } .kpi-row { grid-template-columns: repeat(2,1fr); } .hero-inner { grid-template-columns: 1fr; } .hero-score-block { border-right: none; padding-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 20px; } }
+  @media (max-width: 900px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .kpi-row { grid-template-columns: repeat(2,1fr); }
+    .hero-inner { grid-template-columns: 1fr; }
+    .hero-logo-col, .hero-score-col { border-right: none; padding-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 20px; justify-content: flex-start; }
+  }
 
   /* ── Dept bars ── */
   .dept-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer; }
@@ -224,18 +227,18 @@
 
 <div class="hero">
   <div class="wrap hero-inner">
-    <div class="hero-score-block">
+    <div class="hero-logo-col">
       <img src="mangalam-logo.png" alt="Mangalam Landmarks" class="hero-logo">
-      <div class="hero-title">Mangalam Team Happiness Score</div>
-      <div class="hero-score-wrap"><span class="hero-score" id="heroScore">—</span><span class="hero-score-unit" id="heroScoreUnit">/10</span></div>
-      <div class="hero-score-label">Org happiness score, out of 10, blended</div>
+    </div>
+    <div class="hero-score-col">
+      <div class="hero-title">Mangalam Team Happiness Index</div>
       <div class="hero-month" id="heroMonth"></div>
+      <div class="hero-score-wrap"><span class="hero-score" id="heroScore">—</span><span class="hero-score-unit" id="heroScoreUnit">/10</span></div>
       <div class="hero-delta flat" id="heroDelta">vs last month: —</div>
     </div>
-    <div>
-      <div class="hero-stats" id="heroStats"></div>
-      <div class="hero-narrative" id="heroNarrative" style="margin-top:14px;"></div>
-      <div class="hero-chips" id="heroChips"></div>
+    <div class="hero-stats-col">
+      <div id="heroStats"></div>
+      <div class="hero-narrative" id="heroNarrative"></div>
     </div>
   </div>
 </div>
@@ -246,14 +249,14 @@
 
   <div class="card">
     <h3>Department Pulse</h3>
-    <p class="card-sub">Click a department to filter the Employee Detail table below.</p>
+    <p class="card-sub">Click a department to filter the Team Detail table below.</p>
     <div id="deptBars"></div>
     <div class="insight" id="insightDeptPulse"></div>
   </div>
 
   <div class="card">
     <h3>Perception Gaps — Manager vs. Self</h3>
-    <p class="card-sub">Positive = employee feels worse than manager thinks. Negative = manager underestimates them.</p>
+    <p class="card-sub">Positive = team member feels worse than manager thinks. Negative = manager underestimates them.</p>
     <div id="divergenceList"></div>
     <div class="insight" id="insightGaps"></div>
   </div>
@@ -292,13 +295,14 @@
   </div>
 
   <div class="card">
-    <h3>Employee Detail</h3>
+    <h3>Team Detail</h3>
     <p class="card-sub">Click a row to open that person's multi-month trend in the Full Report. Click a column heading to sort by it.</p>
 
     <div class="filter-bar">
-      <input type="text" id="filterName" placeholder="Search employee, department, or manager…" autocomplete="off">
+      <input type="text" id="filterName" placeholder="Search team member, department, manager, or location…" autocomplete="off">
       <select class="filter-select" id="filterDept"><option value="">All Departments</option></select>
       <select class="filter-select" id="filterManager"><option value="">All Managers</option></select>
+      <select class="filter-select" id="filterLocation"><option value="">All Locations</option></select>
       <select class="filter-select" id="filterScoreBand">
         <option value="">Any Score</option>
         <option value="high">7.5+ Healthy</option>
@@ -319,6 +323,7 @@
           <th class="sortable" data-sort="name">Name <span class="sort-arrow">▲▼</span></th>
           <th class="sortable" data-sort="department">Department <span class="sort-arrow">▲▼</span></th>
           <th class="sortable" data-sort="manager">Manager <span class="sort-arrow">▲▼</span></th>
+          <th class="sortable" data-sort="location">Location <span class="sort-arrow">▲▼</span></th>
           <th class="sortable" data-sort="selfAvg">Self-Report <span class="sort-arrow">▲▼</span></th>
           <th class="sortable" data-sort="managerScore">Manager View <span class="sort-arrow">▲▼</span></th>
           <th class="sortable" data-sort="combinedScore">Combined <span class="sort-arrow">▲▼</span></th>
@@ -333,7 +338,7 @@
 </div>
 
 <div class="footer-note">
-  This is a parallel, experimental view of the same live Happiness &amp; Satisfaction data (read-only — it does not write anywhere). It exists alongside the <a href="dashboard.html">original dashboard</a> without replacing it, so it can be safely deleted if something here doesn't work as expected. Manager attribution is joined from the live roster by name/ID match; if a Manager shows as "—" for someone in Employee Detail below, their name/ID didn't line up with the roster for this match.
+  This is a parallel, experimental view of the same live Happiness &amp; Satisfaction data (read-only — it does not write anywhere). It exists alongside the <a href="dashboard.html">original dashboard</a> without replacing it, so it can be safely deleted if something here doesn't work as expected. Manager attribution is joined from the live roster by name/ID match; if a Manager shows as "—" for someone in Team Detail below, their name/ID didn't line up with the roster for this match.
 </div>
 
 <script>
@@ -530,7 +535,7 @@ function fetchRoster() {
 // ── Derived analytics ──
 // (Flight Risk composite and Manager Calibration were removed from this
 // briefing per CHRO feedback — the underlying manager-join logic that feeds
-// the Employee Detail "Manager" column and filter lives in renderAll() below
+// the Team Detail "Manager" column and filter lives in renderAll() below
 // and is unaffected.)
 
 // ── Rendering ──
@@ -541,11 +546,10 @@ function renderHero(data, prev, month) {
   var deltaEl = document.getElementById('heroDelta');
   var narrEl = document.getElementById('heroNarrative');
   var statsEl = document.getElementById('heroStats');
-  var chipsEl = document.getElementById('heroChips');
 
   scoreEl.textContent = (data.orgAvgScore !== null && data.orgAvgScore !== undefined) ? data.orgAvgScore : '—';
   scoreEl.className = 'hero-score ' + (data.orgAvgScore !== null && data.orgAvgScore !== undefined ? (scoreBand(data.orgAvgScore) === 'high' ? 'score-high-color' : scoreBand(data.orgAvgScore) === 'mid' ? 'score-mid-color' : 'score-low-color') : '');
-  monthEl.textContent = month ? 'Score for ' + monthLabel(month) : '';
+  monthEl.textContent = month ? 'Score - ' + monthLabel(month) : '';
 
   if (prev && prev.orgAvgScore !== null && prev.orgAvgScore !== undefined && data.orgAvgScore !== null && data.orgAvgScore !== undefined) {
     var delta = Math.round((data.orgAvgScore - prev.orgAvgScore) * 10) / 10;
@@ -560,12 +564,12 @@ function renderHero(data, prev, month) {
   if (!data.employees || !data.employees.length) {
     narrEl.innerHTML = 'No responses recorded for this month yet.';
     statsEl.innerHTML = '';
-    chipsEl.innerHTML = '';
     return;
   }
+  narrEl.innerHTML = '';
 
-  // Employee response rate — directly from the backend's reported/total counts.
-  var empPct = data.totalEmployees ? Math.round((data.reportedCount / data.totalEmployees) * 100) : 0;
+  // Team response rate — directly from the backend's reported/total counts.
+  var teamPct = data.totalEmployees ? Math.round((data.reportedCount / data.totalEmployees) * 100) : 0;
 
   // Manager response rate — no direct backend field for this, so it is derived
   // transparently: a manager counts as "responded" if they submitted manager
@@ -582,12 +586,6 @@ function renderHero(data, prev, month) {
   var respondedManagers = Object.keys(managerRespondedSet).length;
   var mgrPct = totalManagers ? Math.round((respondedManagers / totalManagers) * 100) : 0;
 
-  narrEl.innerHTML = '';
-  var statsHtml = '';
-  statsHtml += '<div class="hero-stat-line">Employee Response Rate — <strong>' + data.reportedCount + ' / ' + data.totalEmployees + ' — ' + empPct + '%</strong></div>';
-  statsHtml += '<div class="hero-stat-line">Manager Response Rate — <strong>' + respondedManagers + ' / ' + totalManagers + ' — ' + mgrPct + '%</strong></div>';
-  statsEl.innerHTML = statsHtml;
-
   var weakestDept = null, strongestDept = null;
   (data.departmentSummary || []).forEach(function(d) {
     if (d.avgScore === null || d.avgScore === undefined) return;
@@ -595,14 +593,20 @@ function renderHero(data, prev, month) {
     if (!strongestDept || d.avgScore > strongestDept.avgScore) strongestDept = d;
   });
 
-  var chips = '';
+  var html = '';
+  html += '<div class="hero-response-row">';
+  html += '<div class="hero-response-item"><div class="hero-response-label">Team Response Rate</div><div class="hero-response-value">' + data.reportedCount + ' / ' + data.totalEmployees + ' — ' + teamPct + '%</div></div>';
+  html += '<div class="hero-response-item"><div class="hero-response-label">Manager Response Rate</div><div class="hero-response-value">' + respondedManagers + ' / ' + totalManagers + ' — ' + mgrPct + '%</div><div class="hero-response-sub">managers who submitted input for at least one team member</div></div>';
+  html += '</div>';
+  html += '<div class="hero-team-pills">';
   if (strongestDept) {
-    chips += '<div class="hero-team-line good">Happiest Team - ' + strongestDept.department + ' - ' + strongestDept.avgScore + '/10</div>';
+    html += '<div class="hero-team-pill good"><span class="dot"></span>Happiest Team - ' + strongestDept.department + ' - ' + strongestDept.avgScore + '/10</div>';
   }
   if (weakestDept) {
-    chips += '<div class="hero-team-line risk">Team at Risk - ' + weakestDept.department + ' - ' + weakestDept.avgScore + '/10</div>';
+    html += '<div class="hero-team-pill risk"><span class="dot"></span>Team at Risk - ' + weakestDept.department + ' - ' + weakestDept.avgScore + '/10</div>';
   }
-  chipsEl.innerHTML = chips;
+  html += '</div>';
+  statsEl.innerHTML = html;
 }
 
 function renderKpis(data, ideasCount) {
@@ -625,7 +629,7 @@ function renderDeptBars(data) {
   var html = '';
   (data.departmentSummary || []).forEach(function(d) {
     var pct = d.avgScore !== null ? (d.avgScore / 10 * 100) : 0;
-    html += '<div class="dept-bar-row" data-dept="' + d.department + '" title="Click to filter Employee Detail to ' + d.department + '">';
+    html += '<div class="dept-bar-row" data-dept="' + d.department + '" title="Click to filter Team Detail to ' + d.department + '">';
     html += '<div class="dept-name">' + d.department + '</div>';
     html += '<div class="dept-bar-track"><div class="dept-bar-fill" style="width:' + pct + '%; background:' + barColor(d.avgScore) + '"></div></div>';
     html += '<div class="dept-score">' + (d.avgScore ?? '—') + '</div>';
@@ -788,6 +792,7 @@ function renderTable(employees, month) {
     html += '<td>' + e.name + '</td>';
     html += '<td>' + e.department + '</td>';
     html += '<td>' + (e.manager || '—') + '</td>';
+    html += '<td>' + (e.location || '—') + '</td>';
     html += '<td>' + (e.selfAvg !== null ? '<span class="score-pill ' + scoreClass(e.selfAvg) + '">' + e.selfAvg + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
     html += '<td>' + (e.managerScore !== null ? '<span class="score-pill ' + scoreClass(e.managerScore) + '">' + e.managerScore + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
     html += '<td><span class="score-pill ' + scoreClass(e.combinedScore) + '">' + (e.combinedScore ?? '—') + '</span></td>';
@@ -795,7 +800,7 @@ function renderTable(employees, month) {
     html += '<td>' + (e.attritionRisk ? '<span class="badge badge-risk">At Risk</span>' : '') + '</td>';
     html += '</tr>';
   });
-  document.getElementById('empTableBody').innerHTML = html || '<tr><td colspan="9" class="empty-state">No employees match the current filters.</td></tr>';
+  document.getElementById('empTableBody').innerHTML = html || '<tr><td colspan="10" class="empty-state">No team members match the current filters.</td></tr>';
 }
 
 function renderInnovationIdeas(data) {
@@ -884,11 +889,19 @@ function populateManagerFilter(employees) {
   sel.innerHTML = '<option value="">All Managers</option>' + mgrs.map(function(m) { return '<option value="' + m + '">' + m + '</option>'; }).join('');
   sel.value = current;
 }
+function populateLocationFilter(employees) {
+  var sel = document.getElementById('filterLocation');
+  var current = sel.value;
+  var locs = Array.from(new Set(employees.map(function(e) { return e.location; }).filter(Boolean))).sort();
+  sel.innerHTML = '<option value="">All Locations</option>' + locs.map(function(l) { return '<option value="' + l + '">' + l + '</option>'; }).join('');
+  sel.value = current;
+}
 function getFilters() {
   return {
     name: document.getElementById('filterName').value.trim().toLowerCase(),
     dept: document.getElementById('filterDept').value,
     manager: document.getElementById('filterManager').value,
+    location: document.getElementById('filterLocation').value,
     band: document.getElementById('filterScoreBand').value,
     riskOnly: document.getElementById('filterRiskOnly').checked,
     missingOnly: document.getElementById('filterMissingOnly').checked
@@ -925,24 +938,26 @@ function applyFilters() {
   var f = getFilters();
   var filtered = currentEmployees.filter(function(e) {
     if (f.name) {
-      var hay = (e.name + ' ' + e.department + ' ' + (e.manager || '')).toLowerCase();
+      var hay = (e.name + ' ' + e.department + ' ' + (e.manager || '') + ' ' + (e.location || '')).toLowerCase();
       if (hay.indexOf(f.name) === -1) return false;
     }
     if (f.dept && e.department !== f.dept) return false;
     if (f.manager && e.manager !== f.manager) return false;
+    if (f.location && e.location !== f.location) return false;
     if (f.band && scoreBand(e.combinedScore) !== f.band) return false;
     if (f.riskOnly && !e.attritionRisk) return false;
     if (f.missingOnly && e.selfAvg !== null && e.managerScore !== null) return false;
     return true;
   });
   if (sortState.field) filtered = sortEmployees(filtered, sortState.field, sortState.dir);
-  document.getElementById('filterCount').textContent = filtered.length + ' of ' + currentEmployees.length + ' employees';
+  document.getElementById('filterCount').textContent = filtered.length + ' of ' + currentEmployees.length + ' team members';
   renderTable(filtered, document.getElementById('monthSelect').value);
 }
 function clearFilters() {
   document.getElementById('filterName').value = '';
   document.getElementById('filterDept').value = '';
   document.getElementById('filterManager').value = '';
+  document.getElementById('filterLocation').value = '';
   document.getElementById('filterScoreBand').value = '';
   document.getElementById('filterRiskOnly').checked = false;
   document.getElementById('filterMissingOnly').checked = false;
@@ -1014,9 +1029,9 @@ function renderInsightGaps(employees) {
   var over = withGap.filter(function(e) { return e.divergence > 1; }).length;
   var text = '<div class="insight-label">CHRO read</div>';
   if (under > over && under >= 3) {
-    text += under + ' employees feel notably worse than their manager perceives — more underestimation than overestimation this month, which usually means managers need help reading early distress signals rather than just visible performance.';
+    text += under + ' team members feel notably worse than their manager perceives — more underestimation than overestimation this month, which usually means managers need help reading early distress signals rather than just visible performance.';
   } else if (over > under && over >= 3) {
-    text += over + ' employees are rated by their manager as less happy than they actually report — worth checking managers aren&rsquo;t projecting their own read onto the team.';
+    text += over + ' team members are rated by their manager as less happy than they actually report — worth checking managers aren&rsquo;t projecting their own read onto the team.';
   } else {
     text += 'Perception gaps are small and roughly balanced this month — self-report and manager view are reasonably aligned org-wide.';
   }
@@ -1082,13 +1097,14 @@ function renderInsightRatingDist(data) {
 function renderAll(data, prev, roster, month) {
   rosterById = {}; rosterByName = {};
   (roster || []).forEach(function(r) {
-    if (r.ID) rosterById[r.ID] = r.Manager || null;
-    if (r.Name) rosterByName[String(r.Name).trim().toLowerCase()] = r.Manager || null;
+    var info = { manager: r.Manager || null, location: r.Location || null };
+    if (r.ID) rosterById[r.ID] = info;
+    if (r.Name) rosterByName[String(r.Name).trim().toLowerCase()] = info;
   });
 
   currentEmployees = (data.employees || []).map(function(e) {
-    var manager = (e.id && rosterById[e.id]) || rosterByName[String(e.name || '').trim().toLowerCase()] || null;
-    return Object.assign({}, e, { manager: manager, selfAvg: deriveSelfAvg(e), managerScore: deriveManagerScore(e), attritionRisk: deriveAttritionRisk(e) });
+    var info = (e.id && rosterById[e.id]) || rosterByName[String(e.name || '').trim().toLowerCase()] || {};
+    return Object.assign({}, e, { manager: info.manager || null, location: info.location || null, selfAvg: deriveSelfAvg(e), managerScore: deriveManagerScore(e), attritionRisk: deriveAttritionRisk(e) });
   });
   var enrichedData = Object.assign({}, data, { employees: currentEmployees });
 
@@ -1104,6 +1120,7 @@ function renderAll(data, prev, roster, month) {
   renderInsightRatingDist(enrichedData);
   populateDeptFilter(currentEmployees);
   populateManagerFilter(currentEmployees);
+  populateLocationFilter(currentEmployees);
   sortState = { field: null, dir: 1 };
   document.querySelectorAll('th.sortable').forEach(function(h) { h.classList.remove('sort-active'); });
   applyFilters();
@@ -1127,7 +1144,7 @@ function loadAll(month) {
 populateMonthSelect(6);
 loadAll(document.getElementById('monthSelect').value);
 document.getElementById('monthSelect').addEventListener('change', function() { loadAll(this.value); });
-['filterName', 'filterDept', 'filterManager', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
+['filterName', 'filterDept', 'filterManager', 'filterLocation', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
   var el = document.getElementById(id);
   el.addEventListener(id === 'filterName' ? 'input' : 'change', applyFilters);
 });
