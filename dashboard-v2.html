@@ -22,6 +22,9 @@
     --text: #1F2937;
     --text-soft: #6B7280;
     --line: #E7E1D2;
+    --pie-green: #8FD6A8;
+    --pie-brown: #9C6B3E;
+    --pie-red: #E2574C;
   }
   * { box-sizing: border-box; }
   body {
@@ -61,18 +64,31 @@
 
   /* ── Hero briefing ── */
   .hero { background: linear-gradient(180deg, #FFFFFF 0%, var(--paper) 100%); border-bottom: 1px solid var(--line); padding: 36px 0 32px; }
-  .hero-inner { display: grid; grid-template-columns: 220px 1fr; gap: 40px; align-items: start; }
-  .hero-logo { height: 42px; width: auto; display: block; margin-bottom: 16px; }
+  .hero-inner { display: grid; grid-template-columns: 240px 1fr; gap: 40px; align-items: start; }
+  .hero-logo { height: 84px; width: auto; display: block; margin-bottom: 18px; }
   .hero-score-block { border-right: 1px solid var(--line); padding-right: 40px; }
-  .hero-score { font-size: 60px; font-weight: 700; line-height: 1; color: var(--ink); }
+  .hero-title { font-size: 13px; font-weight: 700; color: var(--ink); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; font-family: 'Source Serif 4', Georgia, serif; }
+  .hero-score-wrap { display: flex; align-items: baseline; gap: 2px; }
+  .hero-score { font-size: 58px; font-weight: 700; line-height: 1; }
+  .hero-score.score-high-color { color: var(--green); }
+  .hero-score.score-mid-color { color: var(--amber); }
+  .hero-score.score-low-color { color: var(--red); }
+  .hero-score-unit { font-size: 22px; font-weight: 700; color: var(--text-soft); }
   .hero-score-label { font-size: 12px; color: var(--text-soft); margin-top: 8px; }
+  .hero-month { font-size: 12.5px; color: var(--text-soft); margin-top: 4px; font-style: italic; }
   .hero-delta { font-size: 14px; margin-top: 10px; display: inline-flex; align-items: center; gap: 5px; }
   .hero-delta.up { color: var(--green); }
   .hero-delta.down { color: var(--red); }
   .hero-delta.flat { color: var(--text-soft); }
   .hero-narrative { font-size: 17px; line-height: 1.65; color: var(--text); max-width: 76ch; font-weight: 400; }
   .hero-narrative em { font-style: italic; color: var(--ink); }
-  .hero-chips { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+  .hero-stats { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+  .hero-stat-line { font-size: 14.5px; color: var(--text); }
+  .hero-stat-line strong { color: var(--ink); }
+  .hero-chips { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
+  .hero-team-line { font-size: 15px; font-weight: 700; }
+  .hero-team-line.good { color: var(--green); }
+  .hero-team-line.risk { color: var(--red); }
   .chip { background: #FFFFFF; border: 1px solid var(--line); border-left: 3px solid; border-radius: 4px; padding: 10px 14px; font-size: 12.5px; max-width: 300px; }
   .chip-risk { border-left-color: var(--red); }
   .chip-gap { border-left-color: var(--amber); }
@@ -81,7 +97,7 @@
   .chip-text { color: var(--text); }
 
   /* ── KPI strip ── */
-  .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin: 24px 0; }
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 24px 0; }
   .kpi-card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
   .kpi-label { font-size: 10.5px; color: var(--text-soft); margin-bottom: 6px; }
   .kpi-value { font-size: 22px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
@@ -210,12 +226,15 @@
   <div class="wrap hero-inner">
     <div class="hero-score-block">
       <img src="mangalam-logo.png" alt="Mangalam Landmarks" class="hero-logo">
-      <div class="hero-score" id="heroScore">—</div>
+      <div class="hero-title">Mangalam Team Happiness Score</div>
+      <div class="hero-score-wrap"><span class="hero-score" id="heroScore">—</span><span class="hero-score-unit" id="heroScoreUnit">/10</span></div>
       <div class="hero-score-label">Org happiness score, out of 10, blended</div>
+      <div class="hero-month" id="heroMonth"></div>
       <div class="hero-delta flat" id="heroDelta">vs last month: —</div>
     </div>
     <div>
-      <div class="hero-narrative" id="heroNarrative">Loading this month's data…</div>
+      <div class="hero-stats" id="heroStats"></div>
+      <div class="hero-narrative" id="heroNarrative" style="margin-top:14px;"></div>
       <div class="hero-chips" id="heroChips"></div>
     </div>
   </div>
@@ -232,32 +251,16 @@
     <div class="insight" id="insightDeptPulse"></div>
   </div>
 
-  <div class="grid-2">
-    <div class="card">
-      <h3>Perception Gaps — Manager vs. Self</h3>
-      <p class="card-sub">Positive = employee feels worse than manager thinks. Negative = manager underestimates them.</p>
-      <div id="divergenceList"></div>
-      <div class="insight" id="insightGaps"></div>
-    </div>
-    <div class="card">
-      <h3>Manager Calibration</h3>
-      <p class="card-sub">Average gap between what each manager perceives and what their team self-reports — a check on whether a manager's read of their team is accurate, not just whether the team is happy.</p>
-      <div id="calibrationTable"></div>
-      <div class="empty-state" id="calibrationCaveat" style="display:none; padding-top:10px; border-top:1px solid var(--line); margin-top:10px;"></div>
-      <div class="insight" id="insightCalibration"></div>
-    </div>
-  </div>
-
   <div class="card">
-    <h3>Flight Risk — Composite Ranking</h3>
-    <p class="card-sub">A transparent 0–100 score blending low self-reported score, an existing manager attrition flag, and cases where a manager may be underestimating a struggling employee. This is a triage aid, not a verdict — read the factor tags before acting.</p>
-    <div id="flightRiskList"></div>
-    <div class="insight" id="insightFlightRisk"></div>
+    <h3>Perception Gaps — Manager vs. Self</h3>
+    <p class="card-sub">Positive = employee feels worse than manager thinks. Negative = manager underestimates them.</p>
+    <div id="divergenceList"></div>
+    <div class="insight" id="insightGaps"></div>
   </div>
 
   <div class="card">
     <h3>Weakest Dimension by Department</h3>
-    <p class="card-sub">Average self-report score per dimension; lowest-scoring dimension highlighted per department.</p>
+    <p class="card-sub">Average self-report score per dimension; the relatively lowest-scoring dimension is marked per department, but only flagged red when it is genuinely below the healthy threshold (7.5). A department where everything scores 8–9.5 is shown in green, not red — relatively weakest is not the same as unhealthy.</p>
     <div id="dimensionList"></div>
     <div class="insight" id="insightWeakestDim"></div>
   </div>
@@ -272,6 +275,7 @@
     <h3>Question-wise Rating Distribution</h3>
     <p class="card-sub">Self-report ratings for every objective question, grouped into Healthy / Watch / At Risk bands.</p>
     <div id="dimensionPies"></div>
+    <div class="insight" id="insightRatingDist"></div>
   </div>
 
   <div class="grid-2">
@@ -294,6 +298,7 @@
     <div class="filter-bar">
       <input type="text" id="filterName" placeholder="Search employee, department, or manager…" autocomplete="off">
       <select class="filter-select" id="filterDept"><option value="">All Departments</option></select>
+      <select class="filter-select" id="filterManager"><option value="">All Managers</option></select>
       <select class="filter-select" id="filterScoreBand">
         <option value="">Any Score</option>
         <option value="high">7.5+ Healthy</option>
@@ -328,7 +333,7 @@
 </div>
 
 <div class="footer-note">
-  This is a parallel, experimental view of the same live Happiness &amp; Satisfaction data (read-only — it does not write anywhere). It exists alongside the <a href="dashboard.html">original dashboard</a> without replacing it, so it can be safely deleted if something here doesn't work as expected. Manager attribution is joined from the live roster by name/ID match; if that match is incomplete for some employees, a note will appear under Manager Calibration above.
+  This is a parallel, experimental view of the same live Happiness &amp; Satisfaction data (read-only — it does not write anywhere). It exists alongside the <a href="dashboard.html">original dashboard</a> without replacing it, so it can be safely deleted if something here doesn't work as expected. Manager attribution is joined from the live roster by name/ID match; if a Manager shows as "—" for someone in Employee Detail below, their name/ID didn't line up with the roster for this match.
 </div>
 
 <script>
@@ -523,61 +528,24 @@ function fetchRoster() {
 }
 
 // ── Derived analytics ──
-
-// Flight Risk composite (0-100), documented and capped, not a black box:
-//   up to 60 pts  — how low the blended combined score is
-//   +25 pts       — manager has already flagged Attrition_Risk_Flag = Yes
-//   +15 pts       — divergence < -1.5 (manager may be underestimating someone who is actually struggling)
-function computeFlightRisk(e) {
-  var score = 0;
-  var factors = [];
-  if (e.combinedScore !== null && e.combinedScore !== undefined) {
-    var lowComponent = Math.max(0, Math.min(60, (10 - e.combinedScore) * 6));
-    score += lowComponent;
-    if (lowComponent >= 24) factors.push('Low combined score');
-  }
-  if (e.attritionRisk) { score += 25; factors.push('Manager-flagged risk'); }
-  if (e.divergence !== null && e.divergence !== undefined && e.divergence < -1.5) {
-    score += 15; factors.push('Manager may be underestimating');
-  }
-  if (e.managerInput && e.managerInput.Overload_Flag === 'Yes') factors.push('Overload flag');
-  score = Math.round(Math.min(100, score));
-  return { score: score, factors: factors };
-}
-
-function computeManagerCalibration(employees) {
-  var byMgr = {};
-  var unmatched = 0;
-  employees.forEach(function(e) {
-    if (!e.manager) { unmatched++; return; }
-    if (e.divergence === null || e.divergence === undefined) return;
-    if (!byMgr[e.manager]) byMgr[e.manager] = { name: e.manager, gaps: [] };
-    byMgr[e.manager].gaps.push(e.divergence);
-  });
-  var rows = Object.keys(byMgr).map(function(name) {
-    var g = byMgr[name].gaps;
-    var avgSigned = g.reduce(function(a, b) { return a + b; }, 0) / g.length;
-    var avgAbs = g.reduce(function(a, b) { return a + Math.abs(b); }, 0) / g.length;
-    var verdict;
-    if (avgAbs < 1) verdict = { cls: 'badge-calibrated', label: 'Well-calibrated' };
-    else if (avgSigned > 1.5) verdict = { cls: 'badge-over', label: 'Tends to overestimate' };
-    else if (avgSigned < -1.5) verdict = { cls: 'badge-under', label: 'Tends to underestimate' };
-    else verdict = { cls: 'badge-nodata', label: 'Mixed' };
-    return { name: name, teamSize: g.length, avgSigned: Math.round(avgSigned * 10) / 10, avgAbs: Math.round(avgAbs * 10) / 10, verdict: verdict };
-  });
-  rows.sort(function(a, b) { return b.avgAbs - a.avgAbs; });
-  return { rows: rows, unmatched: unmatched };
-}
+// (Flight Risk composite and Manager Calibration were removed from this
+// briefing per CHRO feedback — the underlying manager-join logic that feeds
+// the Employee Detail "Manager" column and filter lives in renderAll() below
+// and is unaffected.)
 
 // ── Rendering ──
 
-function renderHero(data, prev) {
+function renderHero(data, prev, month) {
   var scoreEl = document.getElementById('heroScore');
+  var monthEl = document.getElementById('heroMonth');
   var deltaEl = document.getElementById('heroDelta');
   var narrEl = document.getElementById('heroNarrative');
+  var statsEl = document.getElementById('heroStats');
   var chipsEl = document.getElementById('heroChips');
 
   scoreEl.textContent = (data.orgAvgScore !== null && data.orgAvgScore !== undefined) ? data.orgAvgScore : '—';
+  scoreEl.className = 'hero-score ' + (data.orgAvgScore !== null && data.orgAvgScore !== undefined ? (scoreBand(data.orgAvgScore) === 'high' ? 'score-high-color' : scoreBand(data.orgAvgScore) === 'mid' ? 'score-mid-color' : 'score-low-color') : '');
+  monthEl.textContent = month ? 'Score for ' + monthLabel(month) : '';
 
   if (prev && prev.orgAvgScore !== null && prev.orgAvgScore !== undefined && data.orgAvgScore !== null && data.orgAvgScore !== undefined) {
     var delta = Math.round((data.orgAvgScore - prev.orgAvgScore) * 10) / 10;
@@ -591,62 +559,56 @@ function renderHero(data, prev) {
 
   if (!data.employees || !data.employees.length) {
     narrEl.innerHTML = 'No responses recorded for this month yet.';
+    statsEl.innerHTML = '';
     chipsEl.innerHTML = '';
     return;
   }
 
-  var pct = data.totalEmployees ? Math.round((data.reportedCount / data.totalEmployees) * 100) : 0;
-  var bandWord = data.orgAvgScore >= 7.5 ? 'a healthy' : (data.orgAvgScore >= 5 ? 'a watch-level' : 'an at-risk');
+  // Employee response rate — directly from the backend's reported/total counts.
+  var empPct = data.totalEmployees ? Math.round((data.reportedCount / data.totalEmployees) * 100) : 0;
 
-  var weakestDept = null;
+  // Manager response rate — no direct backend field for this, so it is derived
+  // transparently: a manager counts as "responded" if they submitted manager
+  // input for at least one of their team members this month. Total managers
+  // comes from the live roster join (same source as the Manager column below).
+  var managerSet = {};
+  var managerRespondedSet = {};
+  (data.employees || []).forEach(function(e) {
+    if (!e.manager) return;
+    managerSet[e.manager] = true;
+    if (e.managerInput) managerRespondedSet[e.manager] = true;
+  });
+  var totalManagers = Object.keys(managerSet).length;
+  var respondedManagers = Object.keys(managerRespondedSet).length;
+  var mgrPct = totalManagers ? Math.round((respondedManagers / totalManagers) * 100) : 0;
+
+  narrEl.innerHTML = '';
+  var statsHtml = '';
+  statsHtml += '<div class="hero-stat-line">Employee Response Rate — <strong>' + data.reportedCount + ' / ' + data.totalEmployees + ' — ' + empPct + '%</strong></div>';
+  statsHtml += '<div class="hero-stat-line">Manager Response Rate — <strong>' + respondedManagers + ' / ' + totalManagers + ' — ' + mgrPct + '%</strong></div>';
+  statsEl.innerHTML = statsHtml;
+
+  var weakestDept = null, strongestDept = null;
   (data.departmentSummary || []).forEach(function(d) {
     if (d.avgScore === null || d.avgScore === undefined) return;
     if (!weakestDept || d.avgScore < weakestDept.avgScore) weakestDept = d;
-  });
-
-  var biggestGap = null;
-  data.employees.forEach(function(e) {
-    if (e.divergence === null || e.divergence === undefined) return;
-    if (!biggestGap || Math.abs(e.divergence) > Math.abs(biggestGap.divergence)) biggestGap = e;
-  });
-
-  var attritionCount = (data.alerts || []).filter(function(a) { return a.type === 'ATTRITION_RISK'; }).length;
-
-  var strongestDept = null;
-  (data.departmentSummary || []).forEach(function(d) {
-    if (d.avgScore === null || d.avgScore === undefined) return;
     if (!strongestDept || d.avgScore > strongestDept.avgScore) strongestDept = d;
   });
 
-  var narrative = 'The org score this month is <strong>' + (data.orgAvgScore ?? '—') + ' / 10</strong>, ' + bandWord + ' level, on a <strong>' + pct + '%</strong> response rate (' + data.reportedCount + ' of ' + data.totalEmployees + ').';
-  if (weakestDept) {
-    narrative += ' <em>' + weakestDept.department + '</em> is the department to watch this month, at <strong>' + weakestDept.avgScore + '</strong>.';
-  }
-  if (attritionCount > 0) {
-    narrative += ' Managers have raised <strong>' + attritionCount + '</strong> attrition-risk flag' + (attritionCount === 1 ? '' : 's') + ' this month.';
-  }
-  narrEl.innerHTML = narrative;
-
   var chips = '';
-  if (weakestDept) {
-    chips += '<div class="chip chip-risk"><div class="chip-label">Top risk</div><div class="chip-text">' + weakestDept.department + ' is the lowest-scoring department at ' + weakestDept.avgScore + '/10.</div></div>';
-  }
-  if (biggestGap) {
-    chips += '<div class="chip chip-gap"><div class="chip-label">Widest perception gap</div><div class="chip-text">' + biggestGap.name + ' (' + biggestGap.department + '), gap of ' + (biggestGap.divergence > 0 ? '+' : '') + biggestGap.divergence + '.</div></div>';
-  }
   if (strongestDept) {
-    chips += '<div class="chip chip-bright"><div class="chip-label">Bright spot</div><div class="chip-text">' + strongestDept.department + ' leads at ' + strongestDept.avgScore + '/10.</div></div>';
+    chips += '<div class="hero-team-line good">Happiest Team - ' + strongestDept.department + ' - ' + strongestDept.avgScore + '/10</div>';
+  }
+  if (weakestDept) {
+    chips += '<div class="hero-team-line risk">Team at Risk - ' + weakestDept.department + ' - ' + weakestDept.avgScore + '/10</div>';
   }
   chipsEl.innerHTML = chips;
 }
 
-function renderKpis(data, calibration, ideasCount) {
+function renderKpis(data, ideasCount) {
   var pct = data.totalEmployees ? Math.round((data.reportedCount / data.totalEmployees) * 100) : 0;
   var atRisk = (data.alerts || []).filter(function(a) { return a.type === 'ATTRITION_RISK'; }).length;
   var orgColorClass = (data.orgAvgScore !== null && data.orgAvgScore !== undefined) ? (data.orgAvgScore < 6 ? 'alert-color' : 'good-color') : '';
-
-  var allGaps = calibration.rows.reduce(function(acc, r) { return acc.concat(new Array(r.teamSize).fill(r.avgAbs)); }, []);
-  var orgCalibIndex = allGaps.length ? Math.round((allGaps.reduce(function(a,b){return a+b;},0) / allGaps.length) * 10) / 10 : null;
 
   var innovationRate = data.reportedCount ? Math.round((ideasCount / data.reportedCount) * 1000) / 10 : 0;
 
@@ -655,7 +617,6 @@ function renderKpis(data, calibration, ideasCount) {
   html += '<div class="kpi-card"><div class="kpi-label">Response Rate</div><div class="kpi-value">' + pct + '%</div><div class="kpi-sub">' + data.reportedCount + ' of ' + data.totalEmployees + '</div></div>';
   html += '<div class="kpi-card"><div class="kpi-label">Attrition Risk Flags</div><div class="kpi-value ' + (atRisk > 0 ? 'alert-color' : '') + '">' + atRisk + '</div><div class="kpi-sub">flagged by managers</div></div>';
   html += '<div class="kpi-card"><div class="kpi-label">Active Alerts</div><div class="kpi-value">' + (data.alerts || []).length + '</div><div class="kpi-sub">low score, divergence, risk</div></div>';
-  html += '<div class="kpi-card"><div class="kpi-label">Manager Calibration</div><div class="kpi-value">' + (orgCalibIndex ?? '—') + '</div><div class="kpi-sub">avg |gap|, lower is better</div></div>';
   html += '<div class="kpi-card"><div class="kpi-label">Innovation Engagement</div><div class="kpi-value">' + innovationRate + '%</div><div class="kpi-sub">of respondents shared an idea</div></div>';
   document.getElementById('kpiRow').innerHTML = html;
 }
@@ -702,45 +663,6 @@ function renderDivergence(data) {
   el.innerHTML = html;
 }
 
-function renderCalibrationTable(calibration) {
-  var el = document.getElementById('calibrationTable');
-  var caveatEl = document.getElementById('calibrationCaveat');
-  if (!calibration.rows.length) {
-    el.innerHTML = '<div class="empty-state">Not enough matched manager/self-report pairs yet this month.</div>';
-  } else {
-    var html = '<table><thead><tr><th>Manager</th><th>Team</th><th>Avg Gap</th><th>Read</th></tr></thead><tbody>';
-    calibration.rows.forEach(function(r) {
-      html += '<tr><td>' + r.name + '</td><td>' + r.teamSize + '</td><td>' + (r.avgSigned > 0 ? '+' : '') + r.avgSigned + '</td><td><span class="badge ' + r.verdict.cls + '">' + r.verdict.label + '</span></td></tr>';
-    });
-    html += '</tbody></table>';
-    el.innerHTML = html;
-  }
-  if (calibration.unmatched > 0) {
-    caveatEl.style.display = 'block';
-    caveatEl.textContent = 'Manager attribution could not be matched for ' + calibration.unmatched + ' employee(s) this month — check that Name/ID values in the roster line up with the dashboard employee records.';
-  } else {
-    caveatEl.style.display = 'none';
-  }
-}
-
-function renderFlightRisk(employees) {
-  var scored = employees.map(function(e) { return { e: e, risk: computeFlightRisk(e) }; })
-    .filter(function(x) { return x.risk.score > 0; });
-  scored.sort(function(a, b) { return b.risk.score - a.risk.score; });
-  var top = scored.slice(0, 10);
-  var el = document.getElementById('flightRiskList');
-  if (!top.length) { el.innerHTML = '<div class="empty-state">No elevated flight-risk signals this month.</div>'; return; }
-  var html = '';
-  top.forEach(function(x, i) {
-    html += '<div class="fr-item">';
-    html += '<div class="fr-rank">' + (i + 1) + '</div>';
-    html += '<div style="width:170px; flex-shrink:0;"><div class="fr-name">' + x.e.name + '</div><div class="fr-dept">' + x.e.department + '</div></div>';
-    html += '<div style="flex:1;"><div class="fr-bar-track"><div class="fr-bar-fill" style="width:' + x.risk.score + '%"></div></div><div class="fr-factors">' + x.risk.factors.map(function(f) { return '<span class="fr-factor">' + f + '</span>'; }).join('') + '</div></div>';
-    html += '<div class="fr-score">' + x.risk.score + '</div>';
-    html += '</div>';
-  });
-  el.innerHTML = html;
-}
 
 function renderDimensions(data) {
   var deptDims = {};
@@ -771,9 +693,27 @@ function renderDimensions(data) {
     html += '<tr><td>' + dept + '</td>';
     Object.keys(DIMENSION_LABELS).forEach(function(dim) {
       var isWeak = weakest && weakest.dim === dim;
-      html += '<td' + (isWeak ? ' style="background:var(--red-l); font-weight:700; color:var(--red);"' : '') + '>' + (avgs[dim] ?? '—') + '</td>';
+      // Only style a weakest cell as alarming (red/amber) when it is actually
+      // below the healthy threshold (scoreBand). A department where every
+      // dimension sits at 8-9.5 still has a relatively "weakest" one, but it
+      // is not logical to red-flag an 8.7-9.5 score — that's healthy.
+      var cellStyle = '';
+      if (isWeak) {
+        var band = scoreBand(weakest.avg);
+        if (band === 'low') cellStyle = ' style="background:var(--red-l); font-weight:700; color:var(--red);"';
+        else if (band === 'mid') cellStyle = ' style="background:var(--amber-l); font-weight:700; color:var(--amber);"';
+        else cellStyle = ' style="font-weight:700; color:var(--green);"';
+      }
+      html += '<td' + cellStyle + '>' + (avgs[dim] ?? '—') + '</td>';
     });
-    html += '<td>' + (weakest ? DIMENSION_LABELS[weakest.dim] : '—') + '</td></tr>';
+    var weakestNote = '';
+    if (weakest) {
+      var wBand = scoreBand(weakest.avg);
+      weakestNote = DIMENSION_LABELS[weakest.dim] + (wBand === 'high' ? ' <span style="color:var(--green); font-weight:600; font-size:11px;">(still healthy)</span>' : '');
+    } else {
+      weakestNote = '—';
+    }
+    html += '<td>' + weakestNote + '</td></tr>';
   });
   html += '</tbody></table>';
   el.innerHTML = html;
@@ -825,12 +765,15 @@ function renderDimensionPies(data) {
     var highPct = Math.round((t.high / t.total) * 1000) / 10;
     var midPct = Math.round((t.mid / t.total) * 1000) / 10;
     var lowPct = Math.round((t.low / t.total) * 1000) / 10;
+    // Colors here are intentionally distinct from the rest of the page's
+    // score palette — scoped to this chart only, chosen for higher legend
+    // visibility: light green / brown / red instead of the muted green/amber/red used elsewhere.
     var seg1 = highPct, seg2 = highPct + midPct;
-    var gradient = 'conic-gradient(var(--green) 0% ' + seg1 + '%, var(--amber) ' + seg1 + '% ' + seg2 + '%, var(--red) ' + seg2 + '% 100%)';
+    var gradient = 'conic-gradient(var(--pie-green) 0% ' + seg1 + '%, var(--pie-brown) ' + seg1 + '% ' + seg2 + '%, var(--pie-red) ' + seg2 + '% 100%)';
     html += '<div class="pie-item"><div class="pie-title">' + label + '</div><div class="pie-circle" style="background:' + gradient + '"></div><div class="pie-legend">';
-    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--green)"></span>Healthy: ' + highPct + '% (' + t.high + ')</div>';
-    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--amber)"></span>Watch: ' + midPct + '% (' + t.mid + ')</div>';
-    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--red)"></span>At Risk: ' + lowPct + '% (' + t.low + ')</div></div></div>';
+    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--pie-green)"></span>Healthy: ' + highPct + '% (' + t.high + ')</div>';
+    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--pie-brown)"></span>Watch: ' + midPct + '% (' + t.mid + ')</div>';
+    html += '<div class="pie-legend-row"><span class="pie-legend-dot" style="background:var(--pie-red)"></span>At Risk: ' + lowPct + '% (' + t.low + ')</div></div></div>';
   });
   html += '</div>';
   container.innerHTML = html;
@@ -934,10 +877,18 @@ function populateDeptFilter(employees) {
   sel.innerHTML = '<option value="">All Departments</option>' + depts.map(function(d) { return '<option value="' + d + '">' + d + '</option>'; }).join('');
   sel.value = current;
 }
+function populateManagerFilter(employees) {
+  var sel = document.getElementById('filterManager');
+  var current = sel.value;
+  var mgrs = Array.from(new Set(employees.map(function(e) { return e.manager; }).filter(Boolean))).sort();
+  sel.innerHTML = '<option value="">All Managers</option>' + mgrs.map(function(m) { return '<option value="' + m + '">' + m + '</option>'; }).join('');
+  sel.value = current;
+}
 function getFilters() {
   return {
     name: document.getElementById('filterName').value.trim().toLowerCase(),
     dept: document.getElementById('filterDept').value,
+    manager: document.getElementById('filterManager').value,
     band: document.getElementById('filterScoreBand').value,
     riskOnly: document.getElementById('filterRiskOnly').checked,
     missingOnly: document.getElementById('filterMissingOnly').checked
@@ -978,6 +929,7 @@ function applyFilters() {
       if (hay.indexOf(f.name) === -1) return false;
     }
     if (f.dept && e.department !== f.dept) return false;
+    if (f.manager && e.manager !== f.manager) return false;
     if (f.band && scoreBand(e.combinedScore) !== f.band) return false;
     if (f.riskOnly && !e.attritionRisk) return false;
     if (f.missingOnly && e.selfAvg !== null && e.managerScore !== null) return false;
@@ -990,6 +942,7 @@ function applyFilters() {
 function clearFilters() {
   document.getElementById('filterName').value = '';
   document.getElementById('filterDept').value = '';
+  document.getElementById('filterManager').value = '';
   document.getElementById('filterScoreBand').value = '';
   document.getElementById('filterRiskOnly').checked = false;
   document.getElementById('filterMissingOnly').checked = false;
@@ -1014,6 +967,27 @@ function deriveManagerScore(e) {
   if (!e.managerInput) return null;
   var v = Number(e.managerInput.Perceived_Satisfaction_Score);
   return isNaN(v) ? null : v;
+}
+
+// attritionRisk bug fix: a bare `if (e.attritionRisk)` / `!e.attritionRisk`
+// check is true for ANY non-empty string, including the literal string "No"
+// — which is exactly what some Apps Script deployments send for
+// Attrition_Risk_Flag. That silently flagged healthy, high-scoring employees
+// (combined scores of 8, 9, 10) as "At Risk" just because the flag field was
+// present as text rather than a real boolean. isYesFlag()/deriveAttritionRisk()
+// normalize it explicitly instead of trusting JS truthiness.
+function isYesFlag(val) {
+  if (val === true) return true;
+  if (typeof val === 'number') return val === 1;
+  if (typeof val === 'string') return /^\s*(yes|y|true|1)\s*$/i.test(val);
+  return false;
+}
+function deriveAttritionRisk(e) {
+  if (e.managerInput && e.managerInput.Attrition_Risk_Flag !== undefined && e.managerInput.Attrition_Risk_Flag !== null) {
+    return isYesFlag(e.managerInput.Attrition_Risk_Flag);
+  }
+  if (typeof e.attritionRisk === 'string') return isYesFlag(e.attritionRisk);
+  return e.attritionRisk === true;
 }
 
 // ── CHRO interpretation panels ── rule-based, transparent, no black box.
@@ -1045,32 +1019,6 @@ function renderInsightGaps(employees) {
     text += over + ' employees are rated by their manager as less happy than they actually report — worth checking managers aren&rsquo;t projecting their own read onto the team.';
   } else {
     text += 'Perception gaps are small and roughly balanced this month — self-report and manager view are reasonably aligned org-wide.';
-  }
-  el.innerHTML = text;
-}
-function renderInsightCalibration(calibration) {
-  var el = document.getElementById('insightCalibration');
-  if (!calibration.rows.length) { el.innerHTML = ''; return; }
-  var over = calibration.rows.filter(function(r) { return r.verdict.label === 'Tends to overestimate'; }).length;
-  var under = calibration.rows.filter(function(r) { return r.verdict.label === 'Tends to underestimate'; }).length;
-  var text = '<div class="insight-label">CHRO read</div>';
-  if (over > 0) {
-    text += over + ' manager(s) consistently rate their team happier than the team rates itself — a possible blind spot. Pair this with skip-level check-ins rather than relying on manager sentiment alone.';
-  } else if (under > 0) {
-    text += under + ' manager(s) consistently rate their team lower than the team rates itself — not automatically a problem, but worth a quick conversation on what they&rsquo;re seeing that self-reports aren&rsquo;t capturing.';
-  } else {
-    text += 'Manager perception is reasonably well-calibrated against self-reports across the board this month.';
-  }
-  el.innerHTML = text;
-}
-function renderInsightFlightRisk(employees) {
-  var el = document.getElementById('insightFlightRisk');
-  var high = employees.map(function(e) { return computeFlightRisk(e); }).filter(function(r) { return r.score >= 50; });
-  var text = '<div class="insight-label">CHRO read</div>';
-  if (!high.length) {
-    text += 'No one crossed the high-risk threshold (50+) this month.';
-  } else {
-    text += high.length + ' employee(s) scored 50 or above on the flight-risk composite — treat this as a prioritized shortlist for proactive stay conversations, not a final verdict on who will leave.';
   }
   el.innerHTML = text;
 }
@@ -1107,8 +1055,31 @@ function renderInsightWeakestDim(data) {
   }
   el.innerHTML = text;
 }
+function renderInsightRatingDist(data) {
+  var el = document.getElementById('insightRatingDist');
+  var tally = { high: 0, mid: 0, low: 0, total: 0 };
+  var worstDim = null;
+  Object.keys(DIMENSION_LABELS).forEach(function(dim) {
+    var vals = (data.employees || []).filter(function(e) { return e.selfReport; }).map(function(e) { return Number(e.selfReport[dim]); }).filter(function(v) { return !isNaN(v); });
+    var t = computeBandTally(vals);
+    tally.high += t.high; tally.mid += t.mid; tally.low += t.low; tally.total += t.total;
+    if (t.total && (!worstDim || t.lowPct > worstDim.lowPct)) worstDim = { label: DIMENSION_LABELS[dim], lowPct: t.lowPct };
+  });
+  var el2 = el;
+  if (!tally.total) { el2.innerHTML = ''; return; }
+  var lowPct = Math.round((tally.low / tally.total) * 1000) / 10;
+  var text = '<div class="insight-label">CHRO read</div>';
+  if (lowPct >= 15) {
+    text += lowPct + '% of all question ratings org-wide fall in the At Risk band' + (worstDim && worstDim.lowPct >= 15 ? ', concentrated most in "' + worstDim.label + '"' : '') + ' — this is broad enough to warrant an org-wide response, not just isolated coaching.';
+  } else if (lowPct > 0) {
+    text += 'Only ' + lowPct + '% of ratings fall in the At Risk band org-wide — concerns exist but are contained rather than systemic right now.';
+  } else {
+    text += 'No question this month drew an At Risk rating org-wide — a genuinely clean read, not just an average masking outliers.';
+  }
+  el2.innerHTML = text;
+}
 
-function renderAll(data, prev, roster) {
+function renderAll(data, prev, roster, month) {
   rosterById = {}; rosterByName = {};
   (roster || []).forEach(function(r) {
     if (r.ID) rosterById[r.ID] = r.Manager || null;
@@ -1117,32 +1088,28 @@ function renderAll(data, prev, roster) {
 
   currentEmployees = (data.employees || []).map(function(e) {
     var manager = (e.id && rosterById[e.id]) || rosterByName[String(e.name || '').trim().toLowerCase()] || null;
-    return Object.assign({}, e, { manager: manager, selfAvg: deriveSelfAvg(e), managerScore: deriveManagerScore(e) });
+    return Object.assign({}, e, { manager: manager, selfAvg: deriveSelfAvg(e), managerScore: deriveManagerScore(e), attritionRisk: deriveAttritionRisk(e) });
   });
   var enrichedData = Object.assign({}, data, { employees: currentEmployees });
 
-  var calibration = computeManagerCalibration(currentEmployees);
-
-  renderHero(enrichedData, prev);
+  renderHero(enrichedData, prev, month);
   renderDeptBars(enrichedData);
   renderInsightDeptPulse(enrichedData);
   renderDivergence(enrichedData);
   renderInsightGaps(currentEmployees);
-  renderCalibrationTable(calibration);
-  renderInsightCalibration(calibration);
-  renderFlightRisk(currentEmployees);
-  renderInsightFlightRisk(currentEmployees);
   renderDimensions(enrichedData);
   renderInsightWeakestDim(enrichedData);
   renderFocusTable(enrichedData);
   renderDimensionPies(enrichedData);
+  renderInsightRatingDist(enrichedData);
   populateDeptFilter(currentEmployees);
+  populateManagerFilter(currentEmployees);
   sortState = { field: null, dir: 1 };
   document.querySelectorAll('th.sortable').forEach(function(h) { h.classList.remove('sort-active'); });
   applyFilters();
   allIdeas = renderInnovationIdeas(enrichedData);
   allRemarks = renderTeamRemarks(enrichedData);
-  renderKpis(enrichedData, calibration, allIdeas.length);
+  renderKpis(enrichedData, allIdeas.length);
 }
 
 function loadAll(month) {
@@ -1153,14 +1120,14 @@ function loadAll(month) {
       document.getElementById('heroNarrative').innerHTML = data && data.error ? data.error : 'Could not reach the tracker backend.';
       return;
     }
-    renderAll(data, prev, Array.isArray(roster) ? roster : []);
+    renderAll(data, prev, Array.isArray(roster) ? roster : [], month);
   });
 }
 
 populateMonthSelect(6);
 loadAll(document.getElementById('monthSelect').value);
 document.getElementById('monthSelect').addEventListener('change', function() { loadAll(this.value); });
-['filterName', 'filterDept', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
+['filterName', 'filterDept', 'filterManager', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
   var el = document.getElementById(id);
   el.addEventListener(id === 'filterName' ? 'input' : 'change', applyFilters);
 });
