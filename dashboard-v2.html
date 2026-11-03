@@ -475,6 +475,9 @@ function valueScoreClass(score) {
 // miscounted as "pending"). Used everywhere a roster/dashboard name match
 // is attempted, so there is exactly one definition of "same name".
 function normalizeName(s) { return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+// Same idea for IDs — a roster ID of "ML0023" and a submission ID of
+// " ml0023 " are the same person, but a raw string match would miss it.
+function normalizeId(s) { return String(s || '').trim().toUpperCase(); }
 
 // Single source of truth for "pending" — used by the hero stats, Team
 // Detail filters, and the Pending Survey Breakdown, so every number on this
@@ -1238,14 +1241,14 @@ function renderAll(data, prev, roster, month) {
   var activeRoster = [];
   (roster || []).forEach(function(r) {
     var info = { manager: r.Manager || null, location: r.Location || null, name: r.Name || null, id: r.ID || null, department: r.Department || null };
-    if (r.ID) rosterById[r.ID] = info;
+    if (r.ID) rosterById[normalizeId(r.ID)] = info;
     if (r.Name) rosterByName[normalizeName(r.Name)] = info;
     if (r.Status === 'Active') activeRoster.push(info);
   });
 
   var dashById = {}, dashByName = {};
   (data.employees || []).forEach(function(e) {
-    if (e.id) dashById[e.id] = e;
+    if (e.id) dashById[normalizeId(e.id)] = e;
     if (e.name) dashByName[normalizeName(e.name)] = e;
   });
 
@@ -1257,7 +1260,7 @@ function renderAll(data, prev, roster, month) {
 
   var matchedDash = [];
   currentEmployees = basePopulation.map(function(r) {
-    var e = (r.id && dashById[r.id]) || dashByName[normalizeName(r.name)] || null;
+    var e = (r.id && dashById[normalizeId(r.id)]) || dashByName[normalizeName(r.name)] || null;
     if (e) matchedDash.push(e);
     e = e || {};
     return Object.assign({}, e, {
@@ -1284,9 +1287,10 @@ function renderAll(data, prev, roster, month) {
   var unmatchedInactiveStatus = [];
   (data.employees || []).forEach(function(e) {
     if (matchedDash.indexOf(e) !== -1) return;
-    var rInfo = (e.id && rosterById[e.id]) || rosterByName[normalizeName(e.name)] || null;
-    if (rInfo) { unmatchedInactiveStatus.push(e.name || '(unnamed)'); }
-    else { unmatchedNoRosterMatch.push(e.name || '(unnamed)'); }
+    var rInfo = (e.id && rosterById[normalizeId(e.id)]) || rosterByName[normalizeName(e.name)] || null;
+    var label = e.name || (e.id ? ('ID ' + e.id + ', no name on the record') : '(record with no name and no ID)');
+    if (rInfo) { unmatchedInactiveStatus.push(label); }
+    else { unmatchedNoRosterMatch.push(label); }
     currentEmployees.push(Object.assign({}, e, {
       manager: (rInfo && rInfo.manager) || null,
       location: (rInfo && rInfo.location) || null,
