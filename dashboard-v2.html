@@ -248,6 +248,20 @@
   <div class="kpi-row" id="kpiRow"></div>
 
   <div class="card">
+    <h3>Monthly Happiness Trend</h3>
+    <p class="card-sub">Org happiness score over the last 6 months. Dashed line marks the healthy threshold (7.5).</p>
+    <div id="trendChart"></div>
+    <div class="insight" id="insightTrend"></div>
+  </div>
+
+  <div class="card">
+    <h3>Department Leaderboard — Monthly Trend &amp; Award Candidates</h3>
+    <p class="card-sub">Ranked by average score across the tracked months, not just this month's snapshot — built so a "Happiest Department" recognition rewards a sustained pattern rather than one lucky month.</p>
+    <div id="deptLeaderboardTable"></div>
+    <div class="insight" id="insightDeptLeaderboard"></div>
+  </div>
+
+  <div class="card">
     <h3>Pending Survey Breakdown</h3>
     <p class="card-sub">Who hasn't responded yet, grouped the way you need it — pick a dimension to group by; the other two become filters, like a pivot table.</p>
     <div class="filter-bar">
@@ -543,6 +557,11 @@ function monthLabel(m) {
   var parts = m.split('-');
   var d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
   return d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+}
+function shortMonthLabel(m) {
+  var parts = m.split('-');
+  var d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+  return d.toLocaleString('en-US', { month: 'short' });
 }
 
 function populateMonthSelect(monthsBack) {
@@ -1224,7 +1243,253 @@ function renderInsightRatingDist(data) {
   el2.innerHTML = text;
 }
 
-function renderAll(data, prev, roster, month) {
+// ── Monthly Happiness Trend — self-built inline SVG line chart, no external
+// charting library, consistent with the rest of this page. Each point is
+// colored by the same health-band convention used everywhere else (green
+// ≥7.5, amber 5-7.4, red <5), and a dashed reference line marks the healthy
+// threshold so the chart is readable without a legend.
+function renderMonthlyTrend(trendSeries) {
+  var el = document.getElementById('trendChart');
+  var points = (trendSeries || [])
+    .filter(function(t) { return t.data && !t.data.error && t.data.orgAvgScore !== null && t.data.orgAvgScore !== undefined; })
+    .map(function(t) { return { month: t.month, score: t.data.orgAvgScore }; });
+
+  if (points.length < 2) {
+    el.innerHTML = '<div class="empty-state">Not enough months of history yet to plot a trend — need at least 2 months with a recorded score.</div>';
+    return;
+  }
+
+  var w = 760, h = 190, padL = 34, padR = 16, padT = 18, padB = 28;
+  var plotW = w - padL - padR, plotH = h - padT - padB;
+  function xPos(i) { return padL + (points.length === 1 ? 0 : (i / (points.length - 1)) * plotW); }
+  function yPos(score) { return padT + plotH - (Math.max(0, Math.min(10, score)) / 10) * plotH; }
+
+  var gridHtml = '';
+  [0, 2.5, 5, 7.5, 10].forEach(function(v) {
+    var gy = yPos(v);
+    var isHealthyLine = v === 7.5;
+    gridHtml += '<line x1="' + padL + '" y1="' + gy + '" x2="' + (w - padR) + '" y2="' + gy + '" stroke="' + (isHealthyLine ? 'var(--green)' : 'var(--line)') + '" stroke-width="1" ' + (isHealthyLine ? 'stroke-dasharray="4 3" opacity="0.55"' : '') + '/>';
+    gridHtml += '<text x="' + (padL - 8) + '" y="' + (gy + 4) + '" font-size="10" text-anchor="end" fill="var(--text-soft)">' + v + '</text>';
+  });
+
+  var pathD = points.map(function(p, i) { return (i === 0 ? 'M' : 'L') + xPos(i).toFixed(1) + ',' + yPos(p.score).toFixed(1); }).join(' ');
+
+  var marksHtml = points.map(function(p, i) {
+    var px = xPos(i), py = yPos(p.score);
+    var band = scoreBand(p.score);
+    var color = band === 'high' ? 'var(--green)' : band === 'mid' ? 'var(--amber)' : 'var(--red)';
+    return '<circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="4.5" fill="' + color + '" stroke="#fff" stroke-width="1.5"><title>' + monthLabel(p.month) + ': ' + p.score + '/10</title></circle>' +
+      '<text x="' + px.toFixed(1) + '" y="' + (py - 11).toFixed(1) + '" font-size="11.5" font-weight="700" text-anchor="middle" fill="var(--ink)">' + p.score + '</text>' +
+      '<text x="' + px.toFixed(1) + '" y="' + (h - 8) + '" font-size="10.5" text-anchor="middle" fill="var(--text-soft)">' + shortMonthLabel(p.month) + '</text>';
+  }).join('');
+
+  el.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width:100%; height:auto; display:block;">' +
+    gridHtml +
+    '<path d="' + pathD + '" fill="none" stroke="var(--ink)" stroke-width="2.25"/>' +
+    marksHtml +
+    '</svg>';
+}
+
+function renderInsightTrend(trendSeries) {
+  var el = document.getElementById('insightTrend');
+  var points = (trendSeries || [])
+    .filter(function(t) { return t.data && !t.data.error && t.data.orgAvgScore !== null && t.data.orgAvgScore !== undefined; })
+    .map(function(t) { return { month: t.month, score: t.data.orgAvgScore }; });
+
+  if (points.length < 2) { el.innerHTML = ''; return; }
+
+  var first = points[0], last = points[points.length - 1];
+  var totalChange = Math.round((last.score - first.score) * 10) / 10;
+  var direction = totalChange > 0.2 ? 'improved' : totalChange < -0.2 ? 'declined' : 'held broadly steady';
+
+  var minPoint = points.reduce(function(a, b) { return b.score < a.score ? b : a; });
+  var maxPoint = points.reduce(function(a, b) { return b.score > a.score ? b : a; });
+
+  var belowHealthy = points.filter(function(p) { return p.score < 7.5; });
+
+  var text = '<div class="insight-label">CHRO read</div>';
+  text += 'Over the last ' + points.length + ' months, the org score has ' + direction + ' — from ' + first.score + ' in ' + monthLabel(first.month) + ' to ' + last.score + ' in ' + monthLabel(last.month) + ' (' + (totalChange > 0 ? '+' : '') + totalChange + ').';
+  if (minPoint.month !== maxPoint.month) {
+    text += ' The low point was ' + minPoint.score + ' in ' + monthLabel(minPoint.month) + '; the high point was ' + maxPoint.score + ' in ' + monthLabel(maxPoint.month) + '.';
+  }
+  if (belowHealthy.length) {
+    text += ' ' + belowHealthy.length + ' of these months dipped below the healthy threshold (7.5) — worth checking whether that lines up with a specific event (appraisal cycle, restructuring, festival-season workload, etc.) rather than a slow structural decline.';
+  } else {
+    text += ' The score has stayed at or above the healthy threshold (7.5) throughout this window.';
+  }
+  el.innerHTML = text;
+}
+
+function computeDeptTrendSeries(trendSeries) {
+  var valid = (trendSeries || []).filter(function(t) { return t.data && !t.data.error; });
+  var deptNames = [];
+  valid.forEach(function(t) {
+    (t.data.departmentSummary || []).forEach(function(d) {
+      if (deptNames.indexOf(d.department) === -1) deptNames.push(d.department);
+    });
+  });
+  var series = {};
+  deptNames.forEach(function(dept) {
+    series[dept] = valid.map(function(t) {
+      var row = (t.data.departmentSummary || []).filter(function(d) { return d.department === dept; })[0];
+      return { month: t.month, score: row ? row.avgScore : null };
+    });
+  });
+  return { months: valid.map(function(t) { return t.month; }), series: series };
+}
+
+function stdDev(nums) {
+  if (!nums.length) return 0;
+  var mean = nums.reduce(function(a, b) { return a + b; }, 0) / nums.length;
+  var variance = nums.reduce(function(a, b) { return a + Math.pow(b - mean, 2); }, 0) / nums.length;
+  return Math.sqrt(variance);
+}
+
+function computeDeptLeaderboard(trendSeries) {
+  var ct = computeDeptTrendSeries(trendSeries);
+  var rows = Object.keys(ct.series).map(function(dept) {
+    var pts = ct.series[dept];
+    var validPts = pts.filter(function(p) { return p.score !== null && p.score !== undefined; });
+    var scores = validPts.map(function(p) { return p.score; });
+    var avg = scores.length ? Math.round((scores.reduce(function(a, b) { return a + b; }, 0) / scores.length) * 10) / 10 : null;
+    var sd = scores.length ? Math.round(stdDev(scores) * 100) / 100 : null;
+    var current = validPts.length ? validPts[validPts.length - 1].score : null;
+    var change = validPts.length >= 2 ? Math.round((validPts[validPts.length - 1].score - validPts[0].score) * 10) / 10 : null;
+    var streak = 0;
+    for (var i = pts.length - 1; i >= 0; i--) {
+      if (pts[i].score !== null && pts[i].score !== undefined && pts[i].score >= 7.5) streak++;
+      else break;
+    }
+    return { department: dept, pts: pts, avg: avg, stdDev: sd, current: current, change: change, streak: streak, monthsCounted: validPts.length };
+  });
+  rows.sort(function(a, b) {
+    if (a.avg === null) return 1;
+    if (b.avg === null) return -1;
+    return b.avg - a.avg;
+  });
+  return { rows: rows, maxMonths: ct.months.length };
+}
+
+function computeDeptAwards(rows, maxMonths) {
+  var awards = {};
+  var eligible = rows.filter(function(r) { return r.monthsCounted >= 2 && r.monthsCounted === maxMonths; });
+
+  if (eligible.length) {
+    var sustained = eligible.slice().sort(function(a, b) {
+      if (b.avg !== a.avg) return b.avg - a.avg;
+      return a.stdDev - b.stdDev;
+    })[0];
+    awards[sustained.department] = (awards[sustained.department] || []).concat(['🏆 Sustained Excellence']);
+
+    var streakCandidates = eligible.filter(function(r) { return r.streak >= 2; });
+    if (streakCandidates.length) {
+      var streaker = streakCandidates.sort(function(a, b) { return b.streak - a.streak; })[0];
+      awards[streaker.department] = (awards[streaker.department] || []).concat(['🔥 Longest Healthy Streak (' + streaker.streak + ' mo)']);
+    }
+  }
+
+  var improvedCandidates = rows.filter(function(r) { return r.monthsCounted >= 2 && r.change !== null && r.change > 0.3; });
+  if (improvedCandidates.length) {
+    var mostImproved = improvedCandidates.sort(function(a, b) { return b.change - a.change; })[0];
+    awards[mostImproved.department] = (awards[mostImproved.department] || []).concat(['📈 Most Improved (+' + mostImproved.change + ')']);
+  }
+
+  return awards;
+}
+
+function renderDeptSparkline(pts) {
+  var w = 120, h = 32, pad = 3;
+  var valid = pts.map(function(p, i) { return { i: i, score: p.score, month: p.month }; }).filter(function(p) { return p.score !== null && p.score !== undefined; });
+  if (valid.length < 2) return '<span style="color:var(--text-soft);font-size:12px;">not enough data</span>';
+  var n = pts.length;
+  var x = function(i) { return pad + (i * (w - 2 * pad)) / (n - 1); };
+  var y = function(s) { return h - pad - (s / 10) * (h - 2 * pad); };
+  var segs = [];
+  var seg = [];
+  pts.forEach(function(p, i) {
+    if (p.score === null || p.score === undefined) {
+      if (seg.length > 1) segs.push(seg);
+      seg = [];
+      return;
+    }
+    seg.push({ x: x(i), y: y(p.score), score: p.score, month: p.month });
+  });
+  if (seg.length > 1) segs.push(seg);
+  else if (seg.length === 1 && segs.length === 0) segs.push(seg);
+
+  var svg = '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">';
+  segs.forEach(function(s) {
+    if (s.length > 1) {
+      var d = s.map(function(pt, i) { return (i === 0 ? 'M' : 'L') + pt.x.toFixed(1) + ',' + pt.y.toFixed(1); }).join(' ');
+      svg += '<path d="' + d + '" fill="none" stroke="#9CA3AF" stroke-width="1.5"/>';
+    }
+  });
+  pts.forEach(function(p, i) {
+    if (p.score === null || p.score === undefined) return;
+    var color = p.score >= 7.5 ? 'var(--green)' : p.score >= 5 ? 'var(--amber)' : 'var(--red)';
+    svg += '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(p.score).toFixed(1) + '" r="2.4" fill="' + color + '"><title>' + monthLabel(p.month) + ': ' + p.score + '</title></circle>';
+  });
+  svg += '</svg>';
+  return svg;
+}
+
+function renderDeptLeaderboard(trendSeries) {
+  var tableEl = document.getElementById('deptLeaderboardTable');
+  var insightEl = document.getElementById('insightDeptLeaderboard');
+  var lb = computeDeptLeaderboard(trendSeries);
+  var rows = lb.rows, maxMonths = lb.maxMonths;
+
+  if (!rows.length) { tableEl.innerHTML = '<p class="card-sub">No department data available yet.</p>'; insightEl.innerHTML = ''; return; }
+
+  var awards = computeDeptAwards(rows, maxMonths);
+
+  var html = '<table class="data-table"><thead><tr>' +
+    '<th>Department</th><th>' + maxMonths + '-Month Trend</th><th>Avg Score</th><th>Current</th><th>Change</th><th>Healthy Streak</th><th>Award</th>' +
+    '</tr></thead><tbody>';
+
+  rows.forEach(function(r) {
+    var changeStr = r.change === null ? '—' : (r.change > 0 ? '+' : '') + r.change;
+    var changeColor = r.change === null ? 'var(--text-soft)' : r.change > 0 ? 'var(--green)' : r.change < 0 ? 'var(--red)' : 'var(--text-soft)';
+    var badgeList = awards[r.department] || [];
+    html += '<tr>' +
+      '<td><strong>' + r.department + '</strong></td>' +
+      '<td>' + renderDeptSparkline(r.pts) + '</td>' +
+      '<td>' + (r.avg === null ? '<span class="score-pill">—</span>' : '<span class="score-pill ' + scoreClass(r.avg) + '">' + r.avg + '</span>') + '</td>' +
+      '<td>' + (r.current === null ? '—' : r.current) + '</td>' +
+      '<td style="color:' + changeColor + ';font-weight:600;">' + changeStr + '</td>' +
+      '<td>' + (r.streak > 0 ? r.streak + ' mo' : '—') + '</td>' +
+      '<td>' + (badgeList.length ? badgeList.map(function(b) { return '<div style="white-space:nowrap;">' + b + '</div>'; }).join('') : '—') + '</td>' +
+      '</tr>';
+  });
+  html += '</tbody></table>';
+  tableEl.innerHTML = html;
+
+  var text = '<div class="insight-label">CHRO read</div>';
+  if (maxMonths < 2) {
+    text += 'Only one month of department-level data is available so far. Hold off on naming an award — a single snapshot can\'t tell a consistent performer from a lucky month. Check back once 2–3 months have accumulated.';
+  } else {
+    var top = rows[0];
+    text += '<strong>' + top.department + '</strong> leads on average score across the ' + maxMonths + ' months tracked (' + top.avg + '/10';
+    if (top.stdDev !== null) text += ', std. dev. ' + top.stdDev;
+    text += ').';
+    if (maxMonths < 4) {
+      text += ' That said, with only ' + maxMonths + ' months on record, treat this as an early signal rather than a settled result — a defensible award needs a longer track record before it\'s bulletproof.';
+    } else {
+      text += ' With ' + maxMonths + ' months of history, this is a reasonably defensible "Happiest Department" pick rather than a one-off.';
+    }
+    var improved = rows.filter(function(r) { return awards[r.department] && awards[r.department].some(function(b) { return b.indexOf('Most Improved') === 0 || b.indexOf('📈') === 0; }); });
+    if (improved.length) {
+      text += ' Separately, <strong>' + improved[0].department + '</strong> shows the sharpest upward movement (' + (improved[0].change > 0 ? '+' : '') + improved[0].change + ') — worth recognizing as a turnaround story even if it isn\'t the top absolute score.';
+    }
+    var risky = rows.filter(function(r) { return r.avg !== null && r.avg < 5; });
+    if (risky.length) {
+      text += ' On the other end, ' + risky.map(function(r) { return r.department; }).join(', ') + (risky.length > 1 ? ' sit' : ' sits') + ' below the at-risk threshold (5.0) and need attention before any recognition conversation.';
+    }
+  }
+  insightEl.innerHTML = text;
+}
+
+function renderAll(data, prev, roster, month, trendSeries) {
   // ── Roster-true population fix ──
   // Previously this dashboard counted "total" and "pending" purely from
   // data.employees — the array the Apps Script backend returns for this
@@ -1310,6 +1575,9 @@ function renderAll(data, prev, roster, month) {
 
   renderHero(enrichedData, prev, month);
   renderInsightDataQuality(unmatchedNoRosterMatch, unmatchedInactiveStatus);
+  renderMonthlyTrend(trendSeries);
+  renderInsightTrend(trendSeries);
+  renderDeptLeaderboard(trendSeries);
   renderDeptBars(enrichedData);
   renderInsightDeptPulse(enrichedData);
   renderDivergence(enrichedData);
@@ -1334,13 +1602,29 @@ function renderAll(data, prev, roster, month) {
 
 function loadAll(month) {
   document.getElementById('heroNarrative').innerHTML = 'Loading this month\u2019s data…';
-  Promise.all([fetchMonth(month), fetchMonth(shiftMonth(month, -1)), fetchRoster()]).then(function(results) {
-    var data = results[0], prev = results[1], roster = results[2];
+  // Monthly trend covers the same 6-month window as the month picker. The
+  // current month and the prior month are already fetched separately below
+  // (for the hero score and its vs-last-month delta) — only 4 more months
+  // need fetching here, to avoid asking the backend for the same month twice.
+  var trendMonthsBack = [];
+  for (var i = 5; i >= 2; i--) trendMonthsBack.push(shiftMonth(month, -i));
+
+  Promise.all([
+    fetchMonth(month),
+    fetchMonth(shiftMonth(month, -1)),
+    fetchRoster(),
+    Promise.all(trendMonthsBack.map(function(m) { return fetchMonth(m).then(function(d) { return { month: m, data: d }; }); }))
+  ]).then(function(results) {
+    var data = results[0], prev = results[1], roster = results[2], histSeries = results[3];
     if (!data || data.error) {
       document.getElementById('heroNarrative').innerHTML = data && data.error ? data.error : 'Could not reach the tracker backend.';
       return;
     }
-    renderAll(data, prev, Array.isArray(roster) ? roster : [], month);
+    var trendSeries = histSeries.concat([
+      { month: shiftMonth(month, -1), data: prev },
+      { month: month, data: data }
+    ]);
+    renderAll(data, prev, Array.isArray(roster) ? roster : [], month, trendSeries);
   });
 }
 
