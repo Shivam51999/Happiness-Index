@@ -248,6 +248,25 @@
   <div class="kpi-row" id="kpiRow"></div>
 
   <div class="card">
+    <h3>Pending Survey Breakdown</h3>
+    <p class="card-sub">Who hasn't responded yet, grouped the way you need it — pick a dimension to group by; the other two become filters, like a pivot table.</p>
+    <div class="filter-bar">
+      <label class="filter-check" style="gap:8px;">Group by
+        <select class="filter-select" id="pendingGroupBy">
+          <option value="department">Department</option>
+          <option value="manager">Manager</option>
+          <option value="location">Location</option>
+        </select>
+      </label>
+      <select class="filter-select" id="pendingFilterDept"><option value="">All Departments</option></select>
+      <select class="filter-select" id="pendingFilterManager"><option value="">All Managers</option></select>
+      <select class="filter-select" id="pendingFilterLocation"><option value="">All Locations</option></select>
+    </div>
+    <div id="pendingBreakdownTable"></div>
+    <div class="insight" id="insightDataQuality" style="display:none; margin-top:14px;"></div>
+  </div>
+
+  <div class="card">
     <h3>Department Pulse</h3>
     <p class="card-sub">Click a department to filter the Team Detail table below.</p>
     <div id="deptBars"></div>
@@ -311,7 +330,8 @@
         <option value="na">No Data</option>
       </select>
       <label class="filter-check"><input type="checkbox" id="filterRiskOnly"> At Risk flag only</label>
-      <label class="filter-check"><input type="checkbox" id="filterMissingOnly"> Not Filled</label>
+      <label class="filter-check"><input type="checkbox" id="filterTeamPending"> Team Survey Pending</label>
+      <label class="filter-check"><input type="checkbox" id="filterManagerPending"> Manager Survey Pending</label>
       <button class="filter-clear" id="filterClearBtn">Clear filters</button>
       <div class="filter-count" id="filterCount"></div>
     </div>
@@ -449,6 +469,19 @@ function valueScoreClass(score) {
   return 'score-na';
 }
 
+// Name matching normalizer — collapses stray leading/trailing/double spaces
+// and case differences between the roster sheet and form-submission names
+// (the single most common reason a real submission fails to join and gets
+// miscounted as "pending"). Used everywhere a roster/dashboard name match
+// is attempted, so there is exactly one definition of "same name".
+function normalizeName(s) { return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+
+// Single source of truth for "pending" — used by the hero stats, Team
+// Detail filters, and the Pending Survey Breakdown, so every number on this
+// page agrees with every other number by construction.
+function isTeamPending(e) { return e.selfAvg === null || e.selfAvg === undefined; }
+function isManagerPending(e) { return e.managerScore === null || e.managerScore === undefined; }
+
 function scoreClass(score) {
   if (score === null || score === undefined) return 'score-na';
   if (score >= 7.5) return 'score-high';
@@ -571,20 +604,16 @@ function renderHero(data, prev, month) {
   // Team response rate — directly from the backend's reported/total counts.
   var teamPct = data.totalEmployees ? Math.round((data.reportedCount / data.totalEmployees) * 100) : 0;
 
-  // Manager response rate — no direct backend field for this, so it is derived
-  // transparently: a manager counts as "responded" if they submitted manager
-  // input for at least one of their team members this month. Total managers
-  // comes from the live roster join (same source as the Manager column below).
-  var managerSet = {};
-  var managerRespondedSet = {};
-  (data.employees || []).forEach(function(e) {
-    if (!e.manager) return;
-    managerSet[e.manager] = true;
-    if (e.managerInput) managerRespondedSet[e.manager] = true;
-  });
-  var totalManagers = Object.keys(managerSet).length;
-  var respondedManagers = Object.keys(managerRespondedSet).length;
-  var mgrPct = totalManagers ? Math.round((respondedManagers / totalManagers) * 100) : 0;
+  // Manager response rate — this used to count a manager as "responded" the
+  // moment they rated ANY ONE of their team members, which badly overstated
+  // completion (a manager with 8 reports who rated 1 of them counted as
+  // fully done). It now measures the same way Team Response Rate does: how
+  // many individual team members have actually been rated by their manager,
+  // out of everyone who needs one — this is what the Flags/Manager View
+  // column in Team Detail visually shows, so the two now agree.
+  var managerExpected = data.employees.length;
+  var managerCompleted = data.employees.filter(function(e) { return e.managerScore !== null && e.managerScore !== undefined; }).length;
+  var mgrPct = managerExpected ? Math.round((managerCompleted / managerExpected) * 100) : 0;
 
   var weakestDept = null, strongestDept = null;
   (data.departmentSummary || []).forEach(function(d) {
@@ -596,7 +625,7 @@ function renderHero(data, prev, month) {
   var html = '';
   html += '<div class="hero-response-row">';
   html += '<div class="hero-response-item"><div class="hero-response-label">Team Response Rate</div><div class="hero-response-value">' + data.reportedCount + ' / ' + data.totalEmployees + ' — ' + teamPct + '%</div></div>';
-  html += '<div class="hero-response-item"><div class="hero-response-label">Manager Response Rate</div><div class="hero-response-value">' + respondedManagers + ' / ' + totalManagers + ' — ' + mgrPct + '%</div><div class="hero-response-sub">managers who submitted input for at least one team member</div></div>';
+  html += '<div class="hero-response-item"><div class="hero-response-label">Manager Response Rate</div><div class="hero-response-value">' + managerCompleted + ' / ' + managerExpected + ' — ' + mgrPct + '%</div><div class="hero-response-sub">team members rated by their manager</div></div>';
   html += '</div>';
   html += '<div class="hero-team-pills">';
   if (strongestDept) {
@@ -896,6 +925,101 @@ function populateLocationFilter(employees) {
   sel.innerHTML = '<option value="">All Locations</option>' + locs.map(function(l) { return '<option value="' + l + '">' + l + '</option>'; }).join('');
   sel.value = current;
 }
+
+// ── Pending Survey Breakdown (pivot-style) ──
+function populatePendingFilters(employees) {
+  var deptSel = document.getElementById('pendingFilterDept');
+  var mgrSel = document.getElementById('pendingFilterManager');
+  var locSel = document.getElementById('pendingFilterLocation');
+  var curDept = deptSel.value, curMgr = mgrSel.value, curLoc = locSel.value;
+  var depts = Array.from(new Set(employees.map(function(e) { return e.department; }).filter(Boolean))).sort();
+  var mgrs = Array.from(new Set(employees.map(function(e) { return e.manager; }).filter(Boolean))).sort();
+  var locs = Array.from(new Set(employees.map(function(e) { return e.location; }).filter(Boolean))).sort();
+  deptSel.innerHTML = '<option value="">All Departments</option>' + depts.map(function(d) { return '<option value="' + d + '">' + d + '</option>'; }).join('');
+  mgrSel.innerHTML = '<option value="">All Managers</option>' + mgrs.map(function(m) { return '<option value="' + m + '">' + m + '</option>'; }).join('');
+  locSel.innerHTML = '<option value="">All Locations</option>' + locs.map(function(l) { return '<option value="' + l + '">' + l + '</option>'; }).join('');
+  deptSel.value = curDept; mgrSel.value = curMgr; locSel.value = curLoc;
+}
+// Higher pending % is bad, so the color bands are deliberately inverted
+// from the usual score convention: 30%+ pending = red, 15-29% = amber,
+// under 15% = green. Reuses the existing score-pill classes for consistency.
+function pendingBandClass(pct) {
+  if (pct >= 30) return 'score-low';
+  if (pct >= 15) return 'score-mid';
+  return 'score-high';
+}
+function updatePendingFilterVisibility() {
+  var groupBy = document.getElementById('pendingGroupBy').value;
+  document.getElementById('pendingFilterDept').style.display = groupBy === 'department' ? 'none' : '';
+  document.getElementById('pendingFilterManager').style.display = groupBy === 'manager' ? 'none' : '';
+  document.getElementById('pendingFilterLocation').style.display = groupBy === 'location' ? 'none' : '';
+}
+function renderPendingBreakdown() {
+  updatePendingFilterVisibility();
+  var groupBy = document.getElementById('pendingGroupBy').value;
+  var fDept = document.getElementById('pendingFilterDept').value;
+  var fMgr = document.getElementById('pendingFilterManager').value;
+  var fLoc = document.getElementById('pendingFilterLocation').value;
+
+  var filtered = currentEmployees.filter(function(e) {
+    if (groupBy !== 'department' && fDept && e.department !== fDept) return false;
+    if (groupBy !== 'manager' && fMgr && e.manager !== fMgr) return false;
+    if (groupBy !== 'location' && fLoc && e.location !== fLoc) return false;
+    return true;
+  });
+
+  var groups = {};
+  filtered.forEach(function(e) {
+    var key = (groupBy === 'department' ? e.department : groupBy === 'manager' ? e.manager : e.location) || '(Not mapped)';
+    if (!groups[key]) groups[key] = { total: 0, teamPending: 0, mgrPending: 0 };
+    groups[key].total++;
+    if (isTeamPending(e)) groups[key].teamPending++;
+    if (isManagerPending(e)) groups[key].mgrPending++;
+  });
+
+  var rows = Object.keys(groups).map(function(k) {
+    var g = groups[k];
+    return {
+      name: k, total: g.total, teamPending: g.teamPending, mgrPending: g.mgrPending,
+      teamPendingPct: g.total ? Math.round((g.teamPending / g.total) * 100) : 0,
+      mgrPendingPct: g.total ? Math.round((g.mgrPending / g.total) * 100) : 0
+    };
+  });
+  rows.sort(function(a, b) { return b.teamPending - a.teamPending || a.name.localeCompare(b.name); });
+
+  var groupLabel = groupBy === 'department' ? 'Department' : groupBy === 'manager' ? 'Manager' : 'Location';
+  var el = document.getElementById('pendingBreakdownTable');
+  if (!rows.length) { el.innerHTML = '<div class="empty-state">No team members match the current filters.</div>'; return; }
+  var html = '<table><thead><tr><th>' + groupLabel + '</th><th>Total</th><th>Team Survey Pending</th><th>Manager Survey Pending</th></tr></thead><tbody>';
+  rows.forEach(function(r) {
+    html += '<tr><td>' + r.name + '</td><td>' + r.total + '</td>';
+    html += '<td><span class="score-pill ' + pendingBandClass(r.teamPendingPct) + '">' + r.teamPending + ' (' + r.teamPendingPct + '%)</span></td>';
+    html += '<td><span class="score-pill ' + pendingBandClass(r.mgrPendingPct) + '">' + r.mgrPending + ' (' + r.mgrPendingPct + '%)</span></td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+// Data quality callout — names any submitted response that could not be
+// cleanly matched to the live roster, so a genuine submission (e.g. the
+// CHRO's own) never silently shows as "pending" because of a name/status
+// mismatch, and the mismatch itself is visible and fixable at the source.
+function renderInsightDataQuality(noMatch, inactiveStatus) {
+  var el = document.getElementById('insightDataQuality');
+  if (!noMatch.length && !inactiveStatus.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  var text = '<div class="insight-label">Data quality check</div>';
+  if (noMatch.length) {
+    text += noMatch.length + ' submitted response(s) could not be matched to any roster entry by Name/ID — each is still counted correctly above as responded, but check for a spelling difference between the roster and the submission form for: ' + noMatch.join(', ') + '.';
+  }
+  if (inactiveStatus.length) {
+    if (noMatch.length) text += '<br><br>';
+    text += inactiveStatus.length + ' submitted response(s) matched a roster entry whose Status is not exactly "Active" — each is still counted correctly above as responded, but check the Status column in the roster for: ' + inactiveStatus.join(', ') + '.';
+  }
+  el.style.display = 'block';
+  el.innerHTML = text;
+}
+
 function getFilters() {
   return {
     name: document.getElementById('filterName').value.trim().toLowerCase(),
@@ -904,7 +1028,8 @@ function getFilters() {
     location: document.getElementById('filterLocation').value,
     band: document.getElementById('filterScoreBand').value,
     riskOnly: document.getElementById('filterRiskOnly').checked,
-    missingOnly: document.getElementById('filterMissingOnly').checked
+    teamPending: document.getElementById('filterTeamPending').checked,
+    managerPending: document.getElementById('filterManagerPending').checked
   };
 }
 function sortEmployees(list, field, dir) {
@@ -946,7 +1071,8 @@ function applyFilters() {
     if (f.location && e.location !== f.location) return false;
     if (f.band && scoreBand(e.combinedScore) !== f.band) return false;
     if (f.riskOnly && !e.attritionRisk) return false;
-    if (f.missingOnly && e.selfAvg !== null && e.managerScore !== null) return false;
+    if (f.teamPending && !isTeamPending(e)) return false;
+    if (f.managerPending && !isManagerPending(e)) return false;
     return true;
   });
   if (sortState.field) filtered = sortEmployees(filtered, sortState.field, sortState.dir);
@@ -960,7 +1086,8 @@ function clearFilters() {
   document.getElementById('filterLocation').value = '';
   document.getElementById('filterScoreBand').value = '';
   document.getElementById('filterRiskOnly').checked = false;
-  document.getElementById('filterMissingOnly').checked = false;
+  document.getElementById('filterTeamPending').checked = false;
+  document.getElementById('filterManagerPending').checked = false;
   applyFilters();
 }
 
@@ -1112,14 +1239,14 @@ function renderAll(data, prev, roster, month) {
   (roster || []).forEach(function(r) {
     var info = { manager: r.Manager || null, location: r.Location || null, name: r.Name || null, id: r.ID || null, department: r.Department || null };
     if (r.ID) rosterById[r.ID] = info;
-    if (r.Name) rosterByName[String(r.Name).trim().toLowerCase()] = info;
+    if (r.Name) rosterByName[normalizeName(r.Name)] = info;
     if (r.Status === 'Active') activeRoster.push(info);
   });
 
   var dashById = {}, dashByName = {};
   (data.employees || []).forEach(function(e) {
     if (e.id) dashById[e.id] = e;
-    if (e.name) dashByName[String(e.name).trim().toLowerCase()] = e;
+    if (e.name) dashByName[normalizeName(e.name)] = e;
   });
 
   // If the roster came back empty (fetch failure, etc.) fall back to the
@@ -1128,8 +1255,11 @@ function renderAll(data, prev, roster, month) {
     return { manager: null, location: null, name: e.name, id: e.id, department: e.department };
   });
 
+  var matchedDash = [];
   currentEmployees = basePopulation.map(function(r) {
-    var e = (r.id && dashById[r.id]) || dashByName[String(r.name || '').trim().toLowerCase()] || {};
+    var e = (r.id && dashById[r.id]) || dashByName[normalizeName(r.name)] || null;
+    if (e) matchedDash.push(e);
+    e = e || {};
     return Object.assign({}, e, {
       name: e.name || r.name,
       department: e.department || r.department,
@@ -1142,15 +1272,40 @@ function renderAll(data, prev, roster, month) {
     });
   });
 
+  // Reconciliation pass — a real submitted response must never silently
+  // disappear just because its Name/ID didn't line up with an ACTIVE
+  // roster row above (this is exactly what was happening: a genuine
+  // self-report existed, but a name mismatch meant it was never matched,
+  // so the person still showed as "pending"). Anything in the backend's
+  // employee list that wasn't matched above is added as its own row here —
+  // it counts as responded if it has a score — and is flagged by name in a
+  // Data Quality note so the underlying roster mismatch can be fixed.
+  var unmatchedNoRosterMatch = [];
+  var unmatchedInactiveStatus = [];
+  (data.employees || []).forEach(function(e) {
+    if (matchedDash.indexOf(e) !== -1) return;
+    var rInfo = (e.id && rosterById[e.id]) || rosterByName[normalizeName(e.name)] || null;
+    if (rInfo) { unmatchedInactiveStatus.push(e.name || '(unnamed)'); }
+    else { unmatchedNoRosterMatch.push(e.name || '(unnamed)'); }
+    currentEmployees.push(Object.assign({}, e, {
+      manager: (rInfo && rInfo.manager) || null,
+      location: (rInfo && rInfo.location) || null,
+      selfAvg: deriveSelfAvg(e),
+      managerScore: deriveManagerScore(e),
+      attritionRisk: deriveAttritionRisk(e)
+    }));
+  });
+
   // Team Response Rate and the KPI Response Rate tile use totalEmployees /
   // reportedCount — recomputed here against the roster-true population
   // instead of trusting the backend's own (narrower) figures.
   var rosterTotalEmployees = currentEmployees.length;
-  var rosterReportedCount = currentEmployees.filter(function(e) { return e.selfAvg !== null; }).length;
+  var rosterReportedCount = currentEmployees.filter(function(e) { return !isTeamPending(e); }).length;
 
   var enrichedData = Object.assign({}, data, { employees: currentEmployees, totalEmployees: rosterTotalEmployees, reportedCount: rosterReportedCount });
 
   renderHero(enrichedData, prev, month);
+  renderInsightDataQuality(unmatchedNoRosterMatch, unmatchedInactiveStatus);
   renderDeptBars(enrichedData);
   renderInsightDeptPulse(enrichedData);
   renderDivergence(enrichedData);
@@ -1163,6 +1318,8 @@ function renderAll(data, prev, roster, month) {
   populateDeptFilter(currentEmployees);
   populateManagerFilter(currentEmployees);
   populateLocationFilter(currentEmployees);
+  populatePendingFilters(currentEmployees);
+  renderPendingBreakdown();
   sortState = { field: null, dir: 1 };
   document.querySelectorAll('th.sortable').forEach(function(h) { h.classList.remove('sort-active'); });
   applyFilters();
@@ -1186,11 +1343,14 @@ function loadAll(month) {
 populateMonthSelect(6);
 loadAll(document.getElementById('monthSelect').value);
 document.getElementById('monthSelect').addEventListener('change', function() { loadAll(this.value); });
-['filterName', 'filterDept', 'filterManager', 'filterLocation', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
+['filterName', 'filterDept', 'filterManager', 'filterLocation', 'filterScoreBand', 'filterRiskOnly', 'filterTeamPending', 'filterManagerPending'].forEach(function(id) {
   var el = document.getElementById(id);
   el.addEventListener(id === 'filterName' ? 'input' : 'change', applyFilters);
 });
 document.getElementById('filterClearBtn').addEventListener('click', clearFilters);
+['pendingGroupBy', 'pendingFilterDept', 'pendingFilterManager', 'pendingFilterLocation'].forEach(function(id) {
+  document.getElementById(id).addEventListener('change', renderPendingBreakdown);
+});
 document.getElementById('empTableBody').addEventListener('click', function(ev) {
   var row = ev.target.closest('tr.clickable-row');
   if (row && row.dataset.url) window.open(row.dataset.url, '_blank');
