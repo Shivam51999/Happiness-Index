@@ -499,6 +499,16 @@ function normalizeId(s) { return String(s || '').trim().toUpperCase(); }
 function isTeamPending(e) { return e.selfAvg === null || e.selfAvg === undefined; }
 function isManagerPending(e) { return e.managerScore === null || e.managerScore === undefined; }
 
+// Directors/CEO/COO with no one above them to rate them, and who are not
+// expected to self-rate — their self/manager fields are structurally
+// always blank, not a real pending response. They stay visible as rows in
+// Team Detail (so HR can still see them), but are excluded from every
+// completion-rate / "% responded" calculation (Team Response Rate, Manager
+// Response Rate, Pending Survey Breakdown) so they don't distort those
+// numbers — per CHRO instruction.
+var EXCLUDED_FROM_COMPLETION_NAMES = ['subhash shantaram sakore', 'ramdas damodar phuge'];
+function isExcludedFromCompletion(e) { return EXCLUDED_FROM_COMPLETION_NAMES.indexOf(normalizeName(e.name)) !== -1; }
+
 function scoreClass(score) {
   if (score === null || score === undefined) return 'score-na';
   if (score >= 7.5) return 'score-high';
@@ -633,8 +643,9 @@ function renderHero(data, prev, month) {
   // many individual team members have actually been rated by their manager,
   // out of everyone who needs one — this is what the Flags/Manager View
   // column in Team Detail visually shows, so the two now agree.
-  var managerExpected = data.employees.length;
-  var managerCompleted = data.employees.filter(function(e) { return e.managerScore !== null && e.managerScore !== undefined; }).length;
+  var managerPool = data.employees.filter(function(e) { return !isExcludedFromCompletion(e); });
+  var managerExpected = managerPool.length;
+  var managerCompleted = managerPool.filter(function(e) { return e.managerScore !== null && e.managerScore !== undefined; }).length;
   var mgrPct = managerExpected ? Math.round((managerCompleted / managerExpected) * 100) : 0;
 
   var weakestDept = null, strongestDept = null;
@@ -984,6 +995,7 @@ function renderPendingBreakdown() {
   var fLoc = document.getElementById('pendingFilterLocation').value;
 
   var filtered = currentEmployees.filter(function(e) {
+    if (isExcludedFromCompletion(e)) return false;
     if (groupBy !== 'department' && fDept && e.department !== fDept) return false;
     if (groupBy !== 'manager' && fMgr && e.manager !== fMgr) return false;
     if (groupBy !== 'location' && fLoc && e.location !== fLoc) return false;
@@ -1567,9 +1579,12 @@ function renderAll(data, prev, roster, month, trendSeries) {
 
   // Team Response Rate and the KPI Response Rate tile use totalEmployees /
   // reportedCount — recomputed here against the roster-true population
-  // instead of trusting the backend's own (narrower) figures.
-  var rosterTotalEmployees = currentEmployees.length;
-  var rosterReportedCount = currentEmployees.filter(function(e) { return !isTeamPending(e); }).length;
+  // instead of trusting the backend's own (narrower) figures. Directors
+  // with no one to rate them and no self-rating expectation are excluded
+  // from this count entirely (see isExcludedFromCompletion).
+  var completionPool = currentEmployees.filter(function(e) { return !isExcludedFromCompletion(e); });
+  var rosterTotalEmployees = completionPool.length;
+  var rosterReportedCount = completionPool.filter(function(e) { return !isTeamPending(e); }).length;
 
   var enrichedData = Object.assign({}, data, { employees: currentEmployees, totalEmployees: rosterTotalEmployees, reportedCount: rosterReportedCount });
 
