@@ -286,13 +286,16 @@
     <div class="filter-bar">
       <div class="filter-search">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input type="text" id="searchInput" placeholder="Search name or department…" autocomplete="off">
+        <input type="text" id="searchInput" placeholder="Search name, department, manager, or location…" autocomplete="off">
       </div>
       <select class="filter-select" id="filterDept">
         <option value="">All Departments</option>
       </select>
       <select class="filter-select" id="filterManager">
         <option value="">All Managers</option>
+      </select>
+      <select class="filter-select" id="filterLocation">
+        <option value="">All Locations</option>
       </select>
       <select class="filter-select" id="filterScoreField">
         <option value="combinedScore">Combined Score</option>
@@ -311,8 +314,12 @@
         At Risk flag only
       </label>
       <label class="filter-chip">
-        <input type="checkbox" id="filterMissingOnly">
-        Not Filled (Self or Manager)
+        <input type="checkbox" id="filterTeamPending">
+        Team Survey Pending
+      </label>
+      <label class="filter-chip">
+        <input type="checkbox" id="filterManagerPending">
+        Manager Survey Pending
       </label>
       <button class="filter-clear" id="filterClearBtn">Clear filters</button>
     </div>
@@ -382,6 +389,38 @@ function scoreBand(score) {
   return 'low';
 }
 
+// ── Roster-true join — same approach as the Executive Briefing tab ──
+// Manager was previously an unused filter: the backend's per-employee
+// record has no Manager field on it, so e.manager was always undefined and
+// the dropdown was always empty. Location didn't exist at all. Both are now
+// joined from the live Active roster, matched by ID first (normalized for
+// stray case/whitespace), then by normalized Name — and, as on the
+// Executive Briefing tab, a genuine submission is never dropped just
+// because the match fails: it is still included, flagged in a Data Quality
+// note instead of silently miscounted.
+function normalizeName(s) { return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+function normalizeId(s) { return String(s || '').trim().toUpperCase(); }
+function isYesFlag(val) {
+  if (val === true) return true;
+  if (typeof val === 'number') return val === 1;
+  if (typeof val === 'string') return /^\s*(yes|y|true|1)\s*$/i.test(val);
+  return false;
+}
+function deriveAttritionRisk(e) {
+  if (e.managerInput && e.managerInput.Attrition_Risk_Flag !== undefined && e.managerInput.Attrition_Risk_Flag !== null) {
+    return isYesFlag(e.managerInput.Attrition_Risk_Flag);
+  }
+  if (typeof e.attritionRisk === 'string') return isYesFlag(e.attritionRisk);
+  return e.attritionRisk === true;
+}
+function isTeamPending(e) { return e.selfAvg === null || e.selfAvg === undefined; }
+function isManagerPending(e) { return e.managerScore === null || e.managerScore === undefined; }
+function fetchRoster() {
+  return fetch(APPS_SCRIPT_URL + '?action=roster&token=' + encodeURIComponent(ACCESS_TOKEN))
+    .then(function(r) { return r.json(); })
+    .catch(function() { return []; });
+}
+
 function getMonthFromQuery() {
   var params = new URLSearchParams(window.location.search);
   return params.get('month');
@@ -436,7 +475,7 @@ function prettyKey(k) {
 
 function buildHeader() {
   var headRow = document.getElementById('tableHeadRow');
-  var html = '<th>#</th><th>Name</th><th>Department</th>';
+  var html = '<th>#</th><th>Name</th><th>Department</th><th>Manager</th><th>Location</th>';
   Object.keys(DIMENSION_LABELS).forEach(function(k) {
     html += '<th>' + DIMENSION_LABELS[k] + '</th>';
   });
@@ -456,7 +495,7 @@ function findSubjectiveValue(e, key) {
 function renderTable(employees) {
   var body = document.getElementById('fullTableBody');
   if (!employees.length) {
-    var colCount = 3 + Object.keys(DIMENSION_LABELS).length + 1 + subjectiveKeys.length;
+    var colCount = 5 + Object.keys(DIMENSION_LABELS).length + 1 + subjectiveKeys.length;
     body.innerHTML = '<tr><td colspan="' + colCount + '" class="empty-state">No employees match the current search, or no data for this month yet.</td></tr>';
     return;
   }
@@ -466,6 +505,8 @@ function renderTable(employees) {
     html += '<td>' + (idx + 1) + '</td>';
     html += '<td>' + e.name + '</td>';
     html += '<td>' + e.department + '</td>';
+    html += '<td>' + (e.manager || '—') + '</td>';
+    html += '<td>' + (e.location || '—') + '</td>';
     Object.keys(DIMENSION_LABELS).forEach(function(k) {
       var v = e.selfReport ? e.selfReport[k] : null;
       html += '<td>' + (v !== null && v !== undefined && v !== '' ? '<span class="score-pill ' + scoreClass(v) + '">' + v + '</span>' : '<span class="score-pill score-na">—</span>') + '</td>';
@@ -501,15 +542,27 @@ function populateManagerFilter(employees) {
   if (managers.indexOf(current) !== -1) sel.value = current;
 }
 
+function populateLocationFilter(employees) {
+  var sel = document.getElementById('filterLocation');
+  var current = sel.value;
+  var locs = Array.from(new Set(employees.map(function(e) { return e.location; }).filter(function(l) { return l; }))).sort();
+  var opts = ['<option value="">All Locations</option>'];
+  locs.forEach(function(l) { opts.push('<option value="' + l + '">' + l + '</option>'); });
+  sel.innerHTML = opts.join('');
+  if (locs.indexOf(current) !== -1) sel.value = current;
+}
+
 function getFilters() {
   return {
     name: document.getElementById('searchInput').value.trim().toLowerCase(),
     dept: document.getElementById('filterDept').value,
     manager: document.getElementById('filterManager').value,
+    location: document.getElementById('filterLocation').value,
     scoreField: document.getElementById('filterScoreField').value,
     scoreBand: document.getElementById('filterScoreBand').value,
     riskOnly: document.getElementById('filterRiskOnly').checked,
-    missingOnly: document.getElementById('filterMissingOnly').checked
+    teamPending: document.getElementById('filterTeamPending').checked,
+    managerPending: document.getElementById('filterManagerPending').checked
   };
 }
 
@@ -517,17 +570,19 @@ function applyFilters() {
   var f = getFilters();
   var filtered = currentEmployees.filter(function(e) {
     if (f.name) {
-      var haystack = (e.name + ' ' + e.department + ' ' + (e.manager || '')).toLowerCase();
+      var haystack = (e.name + ' ' + e.department + ' ' + (e.manager || '') + ' ' + (e.location || '')).toLowerCase();
       if (haystack.indexOf(f.name) === -1) return false;
     }
     if (f.dept && e.department !== f.dept) return false;
     if (f.manager && e.manager !== f.manager) return false;
+    if (f.location && e.location !== f.location) return false;
     if (f.scoreBand) {
       var val = e[f.scoreField];
       if (scoreBand(val) !== f.scoreBand) return false;
     }
     if (f.riskOnly && !e.attritionRisk) return false;
-    if (f.missingOnly && !(!e.selfReport || !e.managerInput)) return false;
+    if (f.teamPending && !isTeamPending(e)) return false;
+    if (f.managerPending && !isManagerPending(e)) return false;
     return true;
   });
 
@@ -543,20 +598,28 @@ function clearFilters() {
   document.getElementById('searchInput').value = '';
   document.getElementById('filterDept').value = '';
   document.getElementById('filterManager').value = '';
+  document.getElementById('filterLocation').value = '';
   document.getElementById('filterScoreField').value = 'combinedScore';
   document.getElementById('filterScoreBand').value = '';
   document.getElementById('filterRiskOnly').checked = false;
-  document.getElementById('filterMissingOnly').checked = false;
+  document.getElementById('filterTeamPending').checked = false;
+  document.getElementById('filterManagerPending').checked = false;
   applyFilters();
 }
 
-function renderSubjectiveNote() {
+function renderSubjectiveNote(unmatchedNoRosterMatch, unmatchedInactiveStatus) {
   var el = document.getElementById('subjectiveNote');
+  var html = '';
   if (!subjectiveKeys.length) {
-    el.innerHTML = '<div class="note-banner">No open-text / subjective answer fields were found in the data returned for this month — only rating fields are shown below. If the backend later returns additional text fields (comments, retention reason, etc.), they will appear here automatically.</div>';
-  } else {
-    el.innerHTML = '';
+    html += '<div class="note-banner">No open-text / subjective answer fields were found in the data returned for this month — only rating fields are shown below. If the backend later returns additional text fields (comments, retention reason, etc.), they will appear here automatically.</div>';
   }
+  if (unmatchedNoRosterMatch && unmatchedNoRosterMatch.length) {
+    html += '<div class="note-banner">Data quality: ' + unmatchedNoRosterMatch.length + ' submitted response(s) could not be matched to any roster entry by Name/ID — each is still included in the table below, but check for a spelling difference between the roster and the submission form for: ' + unmatchedNoRosterMatch.join(', ') + '.</div>';
+  }
+  if (unmatchedInactiveStatus && unmatchedInactiveStatus.length) {
+    html += '<div class="note-banner">Data quality: ' + unmatchedInactiveStatus.length + ' submitted response(s) matched a roster entry whose Status is not exactly "Active" — each is still included in the table below, but check the Status column in the roster for: ' + unmatchedInactiveStatus.join(', ') + '.</div>';
+  }
+  el.innerHTML = html;
 }
 
 function fetchFullReport(month) {
@@ -569,26 +632,77 @@ function fetchFullReport(month) {
     return;
   }
 
-  fetch(APPS_SCRIPT_URL + '?action=dashboard&month=' + month + '&token=' + encodeURIComponent(ACCESS_TOKEN))
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.error) {
+  Promise.all([
+    fetch(APPS_SCRIPT_URL + '?action=dashboard&month=' + month + '&token=' + encodeURIComponent(ACCESS_TOKEN)).then(function(r) { return r.json(); }),
+    fetchRoster()
+  ]).then(function(results) {
+      var data = results[0];
+      var roster = Array.isArray(results[1]) ? results[1] : [];
+      if (!data || data.error) {
         document.getElementById('resultCount').textContent = '';
-        document.getElementById('fullTableBody').innerHTML = '<tr><td class="empty-state">' + data.error + '</td></tr>';
+        document.getElementById('fullTableBody').innerHTML = '<tr><td class="empty-state">' + (data && data.error ? data.error : 'Could not reach the tracker backend.') + '</td></tr>';
         return;
       }
-      currentEmployees = (data.employees || []).map(function(e) {
+
+      var rosterById = {}, rosterByName = {};
+      var activeRoster = [];
+      roster.forEach(function(r) {
+        var info = { manager: r.Manager || null, location: r.Location || null, name: r.Name || null, id: r.ID || null, department: r.Department || null };
+        if (r.ID) rosterById[normalizeId(r.ID)] = info;
+        if (r.Name) rosterByName[normalizeName(r.Name)] = info;
+        if (r.Status === 'Active') activeRoster.push(info);
+      });
+
+      var dashById = {}, dashByName = {};
+      (data.employees || []).forEach(function(e) {
+        if (e.id) dashById[normalizeId(e.id)] = e;
+        if (e.name) dashByName[normalizeName(e.name)] = e;
+      });
+
+      var basePopulation = activeRoster.length ? activeRoster : (data.employees || []).map(function(e) {
+        return { manager: null, location: null, name: e.name, id: e.id, department: e.department };
+      });
+
+      function enrich(e, r) {
         var mgrScore = e.managerInput ? Number(e.managerInput.Perceived_Satisfaction_Score) : null;
         return Object.assign({}, e, {
+          name: e.name || (r && r.name),
+          department: e.department || (r && r.department),
+          id: e.id || (r && r.id),
+          manager: (r && r.manager) || null,
+          location: (r && r.location) || null,
           selfAvg: selfReportAvg(e.selfReport),
-          managerScore: (mgrScore !== null && !isNaN(mgrScore)) ? mgrScore : null
+          managerScore: (mgrScore !== null && !isNaN(mgrScore)) ? mgrScore : null,
+          attritionRisk: deriveAttritionRisk(e)
         });
+      }
+
+      var matchedDash = [];
+      currentEmployees = basePopulation.map(function(r) {
+        var e = (r.id && dashById[normalizeId(r.id)]) || dashByName[normalizeName(r.name)] || null;
+        if (e) matchedDash.push(e);
+        return enrich(e || {}, r);
       });
+
+      // Reconciliation — a genuine submission is never dropped just because
+      // it didn't match an Active roster row; it's added as its own row and
+      // flagged by name/ID in the Data Quality note instead.
+      var unmatchedNoRosterMatch = [];
+      var unmatchedInactiveStatus = [];
+      (data.employees || []).forEach(function(e) {
+        if (matchedDash.indexOf(e) !== -1) return;
+        var rInfo = (e.id && rosterById[normalizeId(e.id)]) || rosterByName[normalizeName(e.name)] || null;
+        var label = e.name || (e.id ? ('ID ' + e.id + ', no name on the record') : '(record with no name and no ID)');
+        if (rInfo) { unmatchedInactiveStatus.push(label); } else { unmatchedNoRosterMatch.push(label); }
+        currentEmployees.push(enrich(e, rInfo));
+      });
+
       subjectiveKeys = detectSubjectiveKeys(currentEmployees);
-      renderSubjectiveNote();
+      renderSubjectiveNote(unmatchedNoRosterMatch, unmatchedInactiveStatus);
       buildHeader();
       populateDeptFilter(currentEmployees);
       populateManagerFilter(currentEmployees);
+      populateLocationFilter(currentEmployees);
       applyFilters();
     })
     .catch(function() {
@@ -788,7 +902,7 @@ fetchFullReport(document.getElementById('monthSelect').value);
 document.getElementById('monthSelect').addEventListener('change', function() {
   fetchFullReport(this.value);
 });
-['searchInput', 'filterDept', 'filterManager', 'filterScoreField', 'filterScoreBand', 'filterRiskOnly', 'filterMissingOnly'].forEach(function(id) {
+['searchInput', 'filterDept', 'filterManager', 'filterLocation', 'filterScoreField', 'filterScoreBand', 'filterRiskOnly', 'filterTeamPending', 'filterManagerPending'].forEach(function(id) {
   var el = document.getElementById(id);
   var evt = (id === 'searchInput') ? 'input' : 'change';
   el.addEventListener(evt, applyFilters);
