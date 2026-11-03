@@ -1095,18 +1095,60 @@ function renderInsightRatingDist(data) {
 }
 
 function renderAll(data, prev, roster, month) {
+  // ── Roster-true population fix ──
+  // Previously this dashboard counted "total" and "pending" purely from
+  // data.employees — the array the Apps Script backend returns for this
+  // month. That array only contains people who have at least SOME record
+  // for the month (a self-report row, a manager-input row, etc). Anyone who
+  // hasn't submitted anything at all for the month was simply absent from
+  // it — not counted as pending, not counted at all — which silently
+  // undercounts both Team and Manager pending. To fix this, every ACTIVE
+  // employee from the live roster is now included as a row, whether or not
+  // the backend has a record for them this month; a missing record just
+  // means every score field stays null (shown as "—"), correctly counted
+  // as not-yet-responded.
   rosterById = {}; rosterByName = {};
+  var activeRoster = [];
   (roster || []).forEach(function(r) {
-    var info = { manager: r.Manager || null, location: r.Location || null };
+    var info = { manager: r.Manager || null, location: r.Location || null, name: r.Name || null, id: r.ID || null, department: r.Department || null };
     if (r.ID) rosterById[r.ID] = info;
     if (r.Name) rosterByName[String(r.Name).trim().toLowerCase()] = info;
+    if (r.Status === 'Active') activeRoster.push(info);
   });
 
-  currentEmployees = (data.employees || []).map(function(e) {
-    var info = (e.id && rosterById[e.id]) || rosterByName[String(e.name || '').trim().toLowerCase()] || {};
-    return Object.assign({}, e, { manager: info.manager || null, location: info.location || null, selfAvg: deriveSelfAvg(e), managerScore: deriveManagerScore(e), attritionRisk: deriveAttritionRisk(e) });
+  var dashById = {}, dashByName = {};
+  (data.employees || []).forEach(function(e) {
+    if (e.id) dashById[e.id] = e;
+    if (e.name) dashByName[String(e.name).trim().toLowerCase()] = e;
   });
-  var enrichedData = Object.assign({}, data, { employees: currentEmployees });
+
+  // If the roster came back empty (fetch failure, etc.) fall back to the
+  // backend's own employee list rather than showing zero rows.
+  var basePopulation = activeRoster.length ? activeRoster : (data.employees || []).map(function(e) {
+    return { manager: null, location: null, name: e.name, id: e.id, department: e.department };
+  });
+
+  currentEmployees = basePopulation.map(function(r) {
+    var e = (r.id && dashById[r.id]) || dashByName[String(r.name || '').trim().toLowerCase()] || {};
+    return Object.assign({}, e, {
+      name: e.name || r.name,
+      department: e.department || r.department,
+      id: e.id || r.id,
+      manager: r.manager || null,
+      location: r.location || null,
+      selfAvg: deriveSelfAvg(e),
+      managerScore: deriveManagerScore(e),
+      attritionRisk: deriveAttritionRisk(e)
+    });
+  });
+
+  // Team Response Rate and the KPI Response Rate tile use totalEmployees /
+  // reportedCount — recomputed here against the roster-true population
+  // instead of trusting the backend's own (narrower) figures.
+  var rosterTotalEmployees = currentEmployees.length;
+  var rosterReportedCount = currentEmployees.filter(function(e) { return e.selfAvg !== null; }).length;
+
+  var enrichedData = Object.assign({}, data, { employees: currentEmployees, totalEmployees: rosterTotalEmployees, reportedCount: rosterReportedCount });
 
   renderHero(enrichedData, prev, month);
   renderDeptBars(enrichedData);
